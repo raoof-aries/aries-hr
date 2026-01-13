@@ -1,0 +1,159 @@
+/* SalarySlip page styles — all classes prefixed with salarySlip- */
+
+.salarySlip-root {
+  padding: 18px;
+  background: transparent;
+}
+
+/* Header */
+.salarySlip-header {
+  margin-bottom: 12px;
+}
+.salarySlip-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0f1724;
+}
+.salarySlip-sub {
+  margin: 4px 0 0 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* Controls */
+.salarySlip-controls {
+  margin: 12px 0 18px 0;
+}
+.salarySlip-controlRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.salarySlip-label {
+  font-size: 0.85rem;
+  color: #374151;
+  margin-right: 6px;
+}
+
+/* selects & search */
+.salarySlip-select {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #e6e9ef;
+  background: #ffffff;
+  font-weight: 600;
+  min-width: 120px;
+}
+.salarySlip-search {
+  flex: 1 1 220px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #e6e9ef;
+  background: #fff;
+}
+
+/* summary */
+.salarySlip-summary {
+  margin-bottom: 8px;
+}
+.salarySlip-count {
+  color: #374151;
+  font-weight: 600;
+}
+
+/* list items */
+.salarySlip-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.salarySlip-empty {
+  padding: 18px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #6b7280;
+  border: 1px dashed #e6e9ef;
+}
+
+.salarySlip-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+  border: 1px solid #eef2ff;
+}
+
+.salarySlip-itemLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.salarySlip-itemTitle {
+  font-weight: 700;
+  color: #0f1724;
+}
+.salarySlip-itemYear {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-left: 8px;
+}
+.salarySlip-itemMeta {
+  color: #6b7280;
+  font-size: 0.88rem;
+}
+.salarySlip-metaValue {
+  color: #374151;
+  font-weight: 600;
+}
+
+/* right side actions */
+.salarySlip-itemRight {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.salarySlip-link,
+.salarySlip-download {
+  padding: 8px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* view link primary */
+.salarySlip-link {
+  background: linear-gradient(90deg, #06b6d4, #7c3aed);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(7, 22, 34, 0.06);
+}
+
+/* download ghost */
+.salarySlip-download {
+  border: 1px solid #e6e9ef;
+  background: #fff;
+  color: #374151;
+}
+
+/* small screen layout */
+@media (max-width: 640px) {
+  .salarySlip-controlRow {
+    gap: 8px;
+  }
+  .salarySlip-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .salarySlip-itemRight {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

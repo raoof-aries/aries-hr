@@ -1,0 +1,13 @@
+.featureList-header h1 {
+  margin: 0;
+}
+.featureList-header p {
+  color: #64748b;
+}
+
+.featureList-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}

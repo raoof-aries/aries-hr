@@ -1,0 +1,21 @@
+.featureCard-root {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.featureCard-root:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+.featureCard-root h3 {
+  margin: 0 0 6px 0;
+}
+.featureCard-root p {
+  margin: 0;
+  color: #64748b;
+}
