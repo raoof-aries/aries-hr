@@ -69,6 +69,25 @@ export default function SalarySlip() {
     return items;
   }, [selectedYear, selectedMonth, query]);
 
+  const handleDownload = async (pdfUrl, fileName) => {
+    try {
+      const response = await fetch(pdfUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Fallback to opening in new tab
+      window.open(pdfUrl, "_blank");
+    }
+  };
+
   return (
     <main className="container salarySlip-root">
       <div className="salarySlip-background">
@@ -219,10 +238,14 @@ export default function SalarySlip() {
                   </svg>
                   View
                 </a>
-                <a
+                <button
                   className="salarySlip-download"
-                  href={item.pdf}
-                  download
+                  onClick={() =>
+                    handleDownload(
+                      item.pdf,
+                      `salary-slip-${item.month}-${item.year}.pdf`
+                    )
+                  }
                   aria-label={`Download salary slip ${item.month} ${item.year}`}
                 >
                   <svg
@@ -238,7 +261,7 @@ export default function SalarySlip() {
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                   </svg>
                   Download
-                </a>
+                </button>
               </div>
             </article>
           ))
