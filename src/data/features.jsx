@@ -2,7 +2,7 @@ export const features = [
   {
     id: "salary",
     title: "Salary Slip",
-    description: "View and download your monthly salary slip",
+    description: "Access your monthly salary slip",
     route: "/salary-slip",
   },
   {

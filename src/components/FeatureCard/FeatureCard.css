@@ -1,21 +1,197 @@
 .featureCard-root {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 28px;
   color: inherit;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  text-decoration: none;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.featureCard-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    rgba(139, 92, 246, 0.1)
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.featureCard-root::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.featureCard-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.2),
+    rgba(139, 92, 246, 0.2)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: #93c5fd;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.featureCard-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.featureCard-content h3 {
+  margin: 0 0 6px 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.3px;
+  transition: all 0.3s ease;
+}
+
+.featureCard-content p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  transition: color 0.3s ease;
+}
+
+.featureCard-arrow {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .featureCard-root:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px) scale(1.02);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
 }
 
-.featureCard-root h3 {
-  margin: 0 0 6px 0;
+.featureCard-root:hover .featureCard-glow {
+  opacity: 1;
 }
-.featureCard-root p {
-  margin: 0;
-  color: #64748b;
+
+.featureCard-root:hover::before {
+  transform: scaleX(1);
+}
+
+.featureCard-root:hover .featureCard-icon {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.4),
+    rgba(139, 92, 246, 0.4)
+  );
+  transform: rotate(-5deg) scale(1.1);
+  color: #bfdbfe;
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.featureCard-root:hover .featureCard-content h3 {
+  color: #bfdbfe;
+  transform: translateX(4px);
+}
+
+.featureCard-root:hover .featureCard-content p {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.featureCard-root:hover .featureCard-arrow {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.3),
+    rgba(139, 92, 246, 0.3)
+  );
+  border-color: rgba(139, 92, 246, 0.4);
+  color: white;
+  transform: translateX(4px);
+}
+
+.featureCard-root:active {
+  transform: translateY(-2px) scale(1);
+}
+
+/* Tablet and up */
+@media (min-width: 640px) {
+  .featureCard-root {
+    padding: 32px;
+    gap: 24px;
+  }
+
+  .featureCard-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .featureCard-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .featureCard-content h3 {
+    font-size: 1.375rem;
+    margin-bottom: 8px;
+  }
+
+  .featureCard-content p {
+    font-size: 1rem;
+  }
+
+  .featureCard-arrow {
+    width: 44px;
+    height: 44px;
+  }
+
+  .featureCard-arrow svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .featureCard-root {
+    padding: 36px;
+  }
+
+  .featureCard-content h3 {
+    font-size: 1.5rem;
+  }
 }

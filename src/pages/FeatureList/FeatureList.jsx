@@ -5,9 +5,16 @@ import "./FeatureList.css";
 export default function FeatureList() {
   return (
     <main className="container featureList-root">
+      <div className="featureList-background">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+      </div>
+
       <header className="featureList-header">
+        <div className="featureList-badge">Employee Portal</div>
         <h1>HR Portal</h1>
-        <p>Employee self-service</p>
+        <p>Employee self-service platform</p>
       </header>
 
       <section className="featureList-grid">
