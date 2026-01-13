@@ -84,8 +84,8 @@ export default function SalarySlip() {
           aria-label="Go back to home"
         >
           <svg
-            width="20"
-            height="20"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -95,28 +95,18 @@ export default function SalarySlip() {
           >
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Back
         </button>
-
-        <div className="salarySlip-titleGroup">
-          <h1 className="salarySlip-title">Salary Slip</h1>
-          <p className="salarySlip-sub">
-            Select year and month to view your salary slip PDF.
-          </p>
-        </div>
+        <h1 className="salarySlip-title">Salary Slip</h1>
       </header>
 
       <section className="salarySlip-controls">
         <div className="salarySlip-controlRow">
-          <div className="salarySlip-selectGroup">
-            <label className="salarySlip-label" htmlFor="salary-year">
-              Year
-            </label>
+          <div className="salarySlip-filtersSection">
             <select
-              id="salary-year"
               className="salarySlip-select"
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
+              aria-label="Select year"
             >
               {years.map((y) => (
                 <option key={y} value={y}>
@@ -124,17 +114,12 @@ export default function SalarySlip() {
                 </option>
               ))}
             </select>
-          </div>
 
-          <div className="salarySlip-selectGroup">
-            <label className="salarySlip-label" htmlFor="salary-month">
-              Month
-            </label>
             <select
-              id="salary-month"
               className="salarySlip-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
+              aria-label="Select month"
             >
               <option value="All">All months</option>
               {monthsForYear.map((m) => (
@@ -143,9 +128,7 @@ export default function SalarySlip() {
                 </option>
               ))}
             </select>
-          </div>
 
-          <div className="salarySlip-searchGroup">
             <input
               type="search"
               placeholder="Search month, file or id..."
@@ -155,14 +138,14 @@ export default function SalarySlip() {
               aria-label="Search salary slips"
             />
           </div>
-        </div>
-      </section>
 
-      <section className="salarySlip-summary">
-        <p className="salarySlip-count">
-          <span className="salarySlip-countNumber">{filtered.length}</span>{" "}
-          slip(s) found
-        </p>
+          <div className="salarySlip-countSection">
+            <p className="salarySlip-count">
+              <span className="salarySlip-countNumber">{filtered.length}</span>{" "}
+              {filtered.length === 1 ? "slip" : "slips"} found
+            </p>
+          </div>
+        </div>
       </section>
 
       <section className="salarySlip-list" aria-live="polite">
