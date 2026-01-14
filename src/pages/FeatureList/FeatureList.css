@@ -73,6 +73,39 @@
   animation: fadeInDown 0.8s ease-out;
 }
 
+.featureList-logoutButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.featureList-logoutButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px);
+  color: #fca5a5;
+}
+
+.featureList-logoutButton svg {
+  transition: transform 0.3s ease;
+}
+
+.featureList-logoutButton:hover svg {
+  transform: translateX(2px);
+}
+
 @keyframes fadeInDown {
   from {
     opacity: 0;
