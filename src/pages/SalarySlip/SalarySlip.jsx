@@ -89,8 +89,8 @@ export default function SalarySlip() {
   };
 
   return (
-    <main className="container salarySlip-root">
-      <div className="salarySlip-background">
+    <main className="page-root salarySlip-root">
+      <div className="page-background salarySlip-background">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>
@@ -119,10 +119,10 @@ export default function SalarySlip() {
       </header>
 
       <section className="salarySlip-controls">
-        <div className="salarySlip-controlRow">
-          <div className="salarySlip-filtersSection">
+        <div className="filter-controlRow salarySlip-controlRow">
+          <div className="filter-filtersSection salarySlip-filtersSection">
             <select
-              className="salarySlip-select"
+              className="filter-select salarySlip-select"
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
               aria-label="Select year"
@@ -135,7 +135,7 @@ export default function SalarySlip() {
             </select>
 
             <select
-              className="salarySlip-select"
+              className="filter-select salarySlip-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               aria-label="Select month"
@@ -151,25 +151,27 @@ export default function SalarySlip() {
             <input
               type="search"
               placeholder="Search month, file or id..."
-              className="salarySlip-search"
+              className="filter-search salarySlip-search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search salary slips"
             />
           </div>
 
-          <div className="salarySlip-countSection">
-            <p className="salarySlip-count">
-              <span className="salarySlip-countNumber">{filtered.length}</span>{" "}
+          <div className="filter-countSection salarySlip-countSection">
+            <p className="filter-count salarySlip-count">
+              <span className="filter-countNumber salarySlip-countNumber">
+                {filtered.length}
+              </span>{" "}
               {filtered.length === 1 ? "slip" : "slips"} found
             </p>
           </div>
         </div>
       </section>
 
-      <section className="salarySlip-list" aria-live="polite">
+      <section className="slip-list salarySlip-list" aria-live="polite">
         {filtered.length === 0 ? (
-          <div className="salarySlip-empty">
+          <div className="slip-empty salarySlip-empty">
             <svg
               width="48"
               height="48"
@@ -187,9 +189,9 @@ export default function SalarySlip() {
           </div>
         ) : (
           filtered.map((item) => (
-            <article className="salarySlip-item" key={item.id}>
-              <div className="salarySlip-itemTop">
-                <div className="salarySlip-itemIcon">
+            <article className="slip-item salarySlip-item" key={item.id}>
+              <div className="slip-itemTop salarySlip-itemTop">
+                <div className="slip-itemIcon salarySlip-itemIcon">
                   <svg
                     width="24"
                     height="24"
@@ -205,20 +207,22 @@ export default function SalarySlip() {
                   </svg>
                 </div>
 
-                <div className="salarySlip-itemLeft">
-                  <div className="salarySlip-itemTitle">
+                <div className="slip-itemLeft salarySlip-itemLeft">
+                  <div className="slip-itemTitle salarySlip-itemTitle">
                     {item.month} {item.year}
                   </div>
-                  <div className="salarySlip-itemMeta">
+                  <div className="slip-itemMeta salarySlip-itemMeta">
                     Slip ID:{" "}
-                    <span className="salarySlip-metaValue">{item.id}</span>
+                    <span className="slip-metaValue salarySlip-metaValue">
+                      {item.id}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="salarySlip-itemRight">
+              <div className="slip-itemRight salarySlip-itemRight">
                 <a
-                  className="salarySlip-link"
+                  className="slip-link salarySlip-link"
                   href={item.pdf}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -239,7 +243,7 @@ export default function SalarySlip() {
                   View
                 </a>
                 <button
-                  className="salarySlip-download"
+                  className="slip-download salarySlip-download"
                   onClick={() =>
                     handleDownload(
                       item.pdf,

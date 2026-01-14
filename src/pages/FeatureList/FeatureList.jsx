@@ -4,8 +4,8 @@ import "./FeatureList.css";
 
 export default function FeatureList() {
   return (
-    <main className="container featureList-root">
-      <div className="featureList-background">
+    <main className=" page-root featureList-root">
+      <div className="page-background featureList-background">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>

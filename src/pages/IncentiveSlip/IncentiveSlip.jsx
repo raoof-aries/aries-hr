@@ -93,8 +93,8 @@ export default function IncentiveSlip() {
   };
 
   return (
-    <main className="container incentiveSlip-root">
-      <div className="incentiveSlip-background">
+    <main className="page-root incentiveSlip-root">
+      <div className="page-background incentiveSlip-background">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>
@@ -123,10 +123,10 @@ export default function IncentiveSlip() {
       </header>
 
       <section className="incentiveSlip-controls">
-        <div className="incentiveSlip-controlRow">
-          <div className="incentiveSlip-filtersSection">
+        <div className="filter-controlRow incentiveSlip-controlRow">
+          <div className="filter-filtersSection incentiveSlip-filtersSection">
             <select
-              className="incentiveSlip-select"
+              className="filter-select incentiveSlip-select"
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
               aria-label="Select year"
@@ -139,7 +139,7 @@ export default function IncentiveSlip() {
             </select>
 
             <select
-              className="incentiveSlip-select"
+              className="filter-select incentiveSlip-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               aria-label="Select month"
@@ -155,16 +155,16 @@ export default function IncentiveSlip() {
             <input
               type="search"
               placeholder="Search month, file or id..."
-              className="incentiveSlip-search"
+              className="filter-search incentiveSlip-search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search incentive slips"
             />
           </div>
 
-          <div className="incentiveSlip-countSection">
-            <p className="incentiveSlip-count">
-              <span className="incentiveSlip-countNumber">
+          <div className="filter-countSection incentiveSlip-countSection">
+            <p className="filter-count incentiveSlip-count">
+              <span className="filter-countNumber incentiveSlip-countNumber">
                 {filtered.length}
               </span>{" "}
               {filtered.length === 1 ? "slip" : "slips"} found
@@ -173,9 +173,9 @@ export default function IncentiveSlip() {
         </div>
       </section>
 
-      <section className="incentiveSlip-list" aria-live="polite">
+      <section className="slip-list incentiveSlip-list" aria-live="polite">
         {filtered.length === 0 ? (
-          <div className="incentiveSlip-empty">
+          <div className="slip-empty incentiveSlip-empty">
             <svg
               width="48"
               height="48"
@@ -193,9 +193,9 @@ export default function IncentiveSlip() {
           </div>
         ) : (
           filtered.map((item) => (
-            <article className="incentiveSlip-item" key={item.id}>
-              <div className="incentiveSlip-itemTop">
-                <div className="incentiveSlip-itemIcon">
+            <article className="slip-item incentiveSlip-item" key={item.id}>
+              <div className="slip-itemTop incentiveSlip-itemTop">
+                <div className="slip-itemIcon incentiveSlip-itemIcon">
                   <svg
                     width="24"
                     height="24"
@@ -211,20 +211,22 @@ export default function IncentiveSlip() {
                   </svg>
                 </div>
 
-                <div className="incentiveSlip-itemLeft">
-                  <div className="incentiveSlip-itemTitle">
+                <div className="slip-itemLeft incentiveSlip-itemLeft">
+                  <div className="slip-itemTitle incentiveSlip-itemTitle">
                     {item.month} {item.year}
                   </div>
-                  <div className="incentiveSlip-itemMeta">
+                  <div className="slip-itemMeta incentiveSlip-itemMeta">
                     Slip ID:{" "}
-                    <span className="incentiveSlip-metaValue">{item.id}</span>
+                    <span className="slip-metaValue incentiveSlip-metaValue">
+                      {item.id}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="incentiveSlip-itemRight">
+              <div className="slip-itemRight incentiveSlip-itemRight">
                 <a
-                  className="incentiveSlip-link"
+                  className="slip-link incentiveSlip-link"
                   href={item.pdf}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -245,7 +247,7 @@ export default function IncentiveSlip() {
                   View
                 </a>
                 <button
-                  className="incentiveSlip-download"
+                  className="slip-download incentiveSlip-download"
                   onClick={() =>
                     handleDownload(
                       item.pdf,
