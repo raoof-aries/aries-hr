@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import salaryData from "../../data/salarySlips.json";
 import "./SalarySlip.css";
 
@@ -24,7 +23,6 @@ function monthIndex(monthName) {
 }
 
 export default function SalarySlip() {
-  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const years = useMemo(() => {
     const yrs = Array.from(new Set(salaryData.salarySlips.map((s) => s.year)));
@@ -89,35 +87,7 @@ export default function SalarySlip() {
   };
 
   return (
-    <main className="page-root salarySlip-root">
-      <div className="page-background salarySlip-background">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
-
-      <header className="salarySlip-header">
-        <button
-          className="salarySlip-backButton"
-          onClick={() => navigate("/")}
-          aria-label="Go back to home"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="salarySlip-title">Salary Slip</h1>
-      </header>
-
+    <div className="salarySlip-container">
       <section className="salarySlip-controls">
         <div className="filter-controlRow salarySlip-controlRow">
           <div className="filter-filtersSection salarySlip-filtersSection">
@@ -271,6 +241,6 @@ export default function SalarySlip() {
           ))
         )}
       </section>
-    </main>
+    </div>
   );
 }

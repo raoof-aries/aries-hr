@@ -5,12 +5,17 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState("");
 
   // Check for existing session on mount
   useEffect(() => {
     const storedAuth = localStorage.getItem("isAuthenticated");
+    const storedUserName = localStorage.getItem("userName");
     if (storedAuth === "true") {
       setIsAuthenticated(true);
+      if (storedUserName) {
+        setUserName(storedUserName);
+      }
     }
     setIsLoading(false);
   }, []);
@@ -20,7 +25,9 @@ export function AuthProvider({ children }) {
     // TODO: Replace with actual API call to PHP backend
     if (username === "admin" && password === "password") {
       setIsAuthenticated(true);
+      setUserName(username);
       localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("userName", username);
       return { success: true };
     }
     return { success: false, error: "Invalid username or password" };
@@ -28,12 +35,15 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setIsAuthenticated(false);
+    setUserName("");
     localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userName");
   };
 
   const value = {
     isAuthenticated,
     isLoading,
+    userName,
     login,
     logout,
   };

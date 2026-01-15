@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import incentiveData from "../../data/incentiveSlips.json";
 import "./IncentiveSlip.css";
 
@@ -24,7 +23,6 @@ function monthIndex(monthName) {
 }
 
 export default function IncentiveSlip() {
-  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const years = useMemo(() => {
     const yrs = Array.from(
@@ -93,35 +91,7 @@ export default function IncentiveSlip() {
   };
 
   return (
-    <main className="page-root incentiveSlip-root">
-      <div className="page-background incentiveSlip-background">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
-
-      <header className="incentiveSlip-header">
-        <button
-          className="incentiveSlip-backButton"
-          onClick={() => navigate("/")}
-          aria-label="Go back to home"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="incentiveSlip-title">Incentive Slip</h1>
-      </header>
-
+    <div className="incentiveSlip-container">
       <section className="incentiveSlip-controls">
         <div className="filter-controlRow incentiveSlip-controlRow">
           <div className="filter-filtersSection incentiveSlip-filtersSection">
@@ -275,6 +245,6 @@ export default function IncentiveSlip() {
           ))
         )}
       </section>
-    </main>
+    </div>
   );
 }

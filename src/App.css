@@ -42,8 +42,26 @@ textarea {
 .page-root {
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  background: #f5f5f7;
   overflow: hidden;
+}
+
+/* Apple-like theme variables */
+:root {
+  --accent-color: #0787f5;
+  --accent-hover: #0671d1;
+  --accent-light: rgba(7, 135, 245, 0.1);
+  --accent-lighter: rgba(7, 135, 245, 0.05);
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f7;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-hover: rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.16);
 }
 
 /* Shared page background & blobs */
@@ -69,7 +87,7 @@ textarea {
 .blob-1 {
   width: 400px;
   height: 400px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: var(--accent-color);
   top: -100px;
   left: -100px;
   animation-delay: 0s;
@@ -78,7 +96,7 @@ textarea {
 .blob-2 {
   width: 500px;
   height: 500px;
-  background: linear-gradient(135deg, #ec4899, #f43f5e);
+  background: var(--accent-color);
   bottom: -150px;
   right: -150px;
   animation-delay: 5s;
@@ -87,7 +105,7 @@ textarea {
 .blob-3 {
   width: 350px;
   height: 350px;
-  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  background: var(--accent-color);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -163,7 +181,7 @@ textarea {
 
 .filter-countNumber {
   font-weight: 700;
-  color: #93c5fd;
+  color: var(--accent-color);
   font-size: 1.125rem;
 }
 
@@ -171,30 +189,29 @@ textarea {
 .filter-search {
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  color: white;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-size: 0.9375rem;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
 }
 
 .filter-select:focus,
 .filter-search:focus {
   outline: none;
-  border-color: rgba(139, 92, 246, 0.5);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px var(--accent-light), var(--shadow-sm);
 }
 
 .filter-select option {
-  background: #1e293b;
-  color: white;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .filter-search::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
 }
 
 .slip-list {
@@ -213,16 +230,17 @@ textarea {
   justify-content: center;
   gap: 16px;
   padding: 48px 24px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--bg-primary);
+  border: 1px dashed var(--border-color);
+  border-radius: 18px;
+  color: var(--text-secondary);
   text-align: center;
+  box-shadow: var(--shadow-sm);
 }
 
 .slip-empty svg {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
+  opacity: 0.5;
 }
 
 .slip-empty p {
@@ -236,12 +254,31 @@ textarea {
   flex-direction: column;
   align-items: flex-start;
   gap: 16px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.slip-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-color),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .slip-itemTop {
@@ -257,10 +294,14 @@ textarea {
 }
 
 .slip-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(139, 92, 246, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.2);
+  background: var(--bg-primary);
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.slip-item:hover::before {
+  opacity: 1;
 }
 
 .slip-itemIcon {
@@ -269,42 +310,38 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.2),
-    rgba(139, 92, 246, 0.2)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--accent-lighter);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  color: #93c5fd;
-  transition: all 0.3s ease;
+  color: var(--accent-color);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
 .slip-item:hover .slip-itemIcon {
-  transform: scale(1.1);
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.3),
-    rgba(139, 92, 246, 0.3)
-  );
-  color: #bfdbfe;
+  transform: scale(1.08);
+  background: var(--accent-light);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 12px var(--accent-lighter);
 }
 
 .slip-itemTitle {
   margin-bottom: 6px;
   font-size: 1.125rem;
-  font-weight: 700;
-  color: white;
+  font-weight: 600;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
+  line-height: 1.4;
 }
 
 .slip-itemMeta {
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .slip-metaValue {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -320,8 +357,8 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 18px;
+  gap: 8px;
+  padding: 12px 20px;
   border-radius: 10px;
   text-decoration: none;
   font-weight: 600;
@@ -329,29 +366,66 @@ textarea {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   flex: 1;
+  min-width: 120px;
+  cursor: pointer;
+  border: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .slip-link {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: var(--accent-color);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(7, 135, 245, 0.2);
+}
+
+.slip-link::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.slip-link:hover::before {
+  left: 100%;
 }
 
 .slip-link:hover {
+  background: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 6px 16px rgba(7, 135, 245, 0.35);
+}
+
+.slip-link:active {
+  transform: translateY(0);
 }
 
 .slip-download {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .slip-download:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: #e8e8ed;
+  border-color: var(--border-hover);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  color: var(--accent-color);
+}
+
+.slip-download:active {
+  transform: translateY(0);
 }
 
 @media (min-width: 640px) {
@@ -412,6 +486,11 @@ textarea {
 
   .slip-itemTitle {
     font-size: 1.25rem;
+  }
+
+  .slip-link,
+  .slip-download {
+    min-width: 140px;
   }
 }
 

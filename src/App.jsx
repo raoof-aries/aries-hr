@@ -4,7 +4,12 @@ import Login from "./pages/Login/Login";
 import FeatureList from "./pages/FeatureList/FeatureList";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
 import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
+import Attendance from "./pages/Attendance/Attendance";
+import Leave from "./pages/Leave/Leave";
+import Profile from "./pages/Profile/Profile";
+import Documents from "./pages/Documents/Documents";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import Layout from "./components/Layout/Layout";
 
 function LoginRoute() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -48,7 +53,9 @@ function AppRoutes() {
         path="/"
         element={
           <ProtectedRoute>
-            <FeatureList />
+            <Layout>
+              <FeatureList />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -56,7 +63,9 @@ function AppRoutes() {
         path="/salary-slip"
         element={
           <ProtectedRoute>
-            <SalarySlip />
+            <Layout>
+              <SalarySlip />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -64,7 +73,49 @@ function AppRoutes() {
         path="/incentive-slip"
         element={
           <ProtectedRoute>
-            <IncentiveSlip />
+            <Layout>
+              <IncentiveSlip />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/attendance"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Attendance />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leave"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Leave />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Profile />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/documents"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Documents />
+            </Layout>
           </ProtectedRoute>
         }
       />

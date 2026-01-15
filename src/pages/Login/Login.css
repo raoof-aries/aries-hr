@@ -117,9 +117,9 @@
 
 .login-input:focus {
   outline: none;
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgba(7, 135, 245, 0.5);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(7, 135, 245, 0.1);
 }
 
 .login-input:disabled {
@@ -167,18 +167,20 @@
   padding: 14px 24px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: #0787f5;
   color: white;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(7, 135, 245, 0.3);
 }
 
 .login-button:hover:not(:disabled) {
+  background: #0671d1;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 24px rgba(7, 135, 245, 0.4);
 }
 
 .login-button:active:not(:disabled) {

@@ -1,224 +1,125 @@
-.featureList-root {
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-quick-access {
+  margin-top: 0;
+}
+
+.dashboard-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.dashboard-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   position: relative;
-  min-height: 100vh;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
   overflow: hidden;
 }
 
-.featureList-background {
+.dashboard-card::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
-  animation: float 20s ease-in-out infinite;
-}
-
-.blob-1 {
-  width: 400px;
-  height: 400px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  top: -100px;
-  left: -100px;
-  animation-delay: 0s;
-}
-
-.blob-2 {
-  width: 500px;
-  height: 500px;
-  background: linear-gradient(135deg, #ec4899, #f43f5e);
-  bottom: -150px;
-  right: -150px;
-  animation-delay: 5s;
-}
-
-.blob-3 {
-  width: 350px;
-  height: 350px;
-  background: linear-gradient(135deg, #06b6d4, #3b82f6);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation-delay: 10s;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(50px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-30px, 30px) scale(0.9);
-  }
-}
-
-.featureList-header {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 0 0 48px;
-  animation: fadeInDown 0.8s ease-out;
-}
-
-.featureList-logoutButton {
-  position: absolute;
-  top: 0;
   right: 0;
-  display: inline-flex;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #0787f5, transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.dashboard-card:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.dashboard-card:hover::before {
+  opacity: 1;
+}
+
+.dashboard-card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(7, 135, 245, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.featureList-logoutButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  transform: translateY(-2px);
-  color: #fca5a5;
+.dashboard-card:hover .dashboard-card-icon {
+  background: rgba(7, 135, 245, 0.15);
+  border-color: #0787f5;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(7, 135, 245, 0.2);
 }
 
-.featureList-logoutButton svg {
-  transition: transform 0.3s ease;
+.dashboard-card-content {
+  flex: 1;
+  min-width: 0;
 }
 
-.featureList-logoutButton:hover svg {
-  transform: translateX(2px);
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.featureList-badge {
-  display: inline-block;
-  padding: 8px 20px;
-  margin-bottom: 24px;
-  font-size: 0.875rem;
+.dashboard-card-title {
+  font-size: 18px;
   font-weight: 600;
-  color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 50px;
-  backdrop-filter: blur(10px);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  color: #1e293b;
+  margin: 0 0 4px 0;
 }
 
-.featureList-header h1 {
-  margin: 0 0 12px 0;
-  font-size: 3rem;
-  font-weight: 800;
-  color: white;
-  letter-spacing: -1.5px;
-  background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.featureList-header p {
+.dashboard-card-description {
+  font-size: 14px;
+  color: #64748b;
   margin: 0;
-  font-size: 1.125rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 400;
-  letter-spacing: 0.3px;
 }
 
-.featureList-grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  animation: fadeInUp 0.8s ease-out 0.3s both;
+.dashboard-card-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.dashboard-card:hover .dashboard-card-arrow {
+  color: #0787f5;
+  transform: translateX(4px);
 }
 
-/* Tablet */
 @media (min-width: 640px) {
-  .featureList-root {
-    padding: 60px 32px;
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
+}
 
-  .featureList-header {
-    padding: 0 0 56px;
-  }
-
-  .featureList-badge {
-    font-size: 0.9375rem;
-    padding: 10px 24px;
-  }
-
-  .featureList-header h1 {
-    font-size: 3.5rem;
-  }
-
-  .featureList-header p {
-    font-size: 1.25rem;
-  }
-
-  .featureList-grid {
+@media (min-width: 1024px) {
+  .dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
-  }
-}
-
-/* Desktop */
-@media (min-width: 1024px) {
-  .featureList-root {
-    padding: 80px 40px;
-  }
-
-  .featureList-header {
-    padding: 0 0 64px;
-  }
-
-  .featureList-header h1 {
-    font-size: 4rem;
-  }
-
-  .featureList-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 28px;
   }
 }
