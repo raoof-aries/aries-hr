@@ -8,6 +8,7 @@ import Attendance from "./pages/Attendance/Attendance";
 import Leave from "./pages/Leave/Leave";
 import Profile from "./pages/Profile/Profile";
 import Documents from "./pages/Documents/Documents";
+import Notifications from "./pages/Notifications/Notifications";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
 
@@ -115,6 +116,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <Documents />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Notifications />
             </Layout>
           </ProtectedRoute>
         }

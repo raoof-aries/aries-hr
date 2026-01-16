@@ -62,17 +62,6 @@ const menuItems = [
     ),
   },
   {
-    id: "profile",
-    title: "Profile",
-    route: "/profile",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-        <circle cx="12" cy="7" r="4"></circle>
-      </svg>
-    ),
-  },
-  {
     id: "documents",
     title: "Documents",
     route: "/documents",
@@ -86,6 +75,17 @@ const menuItems = [
       </svg>
     ),
   },
+  {
+    id: "profile",
+    title: "Profile",
+    route: "/profile",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    ),
+  },
 ];
 
 export default function Layout({ children }) {
@@ -95,7 +95,18 @@ export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const notificationRef = useRef(null);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Close notification dropdown when clicking outside
   useEffect(() => {
@@ -168,8 +179,11 @@ export default function Layout({ children }) {
       "/leave": "Leave Management",
       "/profile": "Profile",
       "/documents": "Documents",
+      "/notifications": "Notifications",
     };
-    return routeMap[location.pathname] || "Dashboard";
+    // Handle exact pathname match
+    const currentPath = location.pathname;
+    return routeMap[currentPath] || "Dashboard";
   };
 
   return (
@@ -243,7 +257,13 @@ export default function Layout({ children }) {
             <div className="layout-notifications" ref={notificationRef}>
               <button
                 className="layout-notification-button"
-                onClick={() => setNotificationOpen(!notificationOpen)}
+                onClick={() => {
+                  if (isMobile) {
+                    navigate("/notifications");
+                  } else {
+                    setNotificationOpen(!notificationOpen);
+                  }
+                }}
                 aria-label="Notifications"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -254,7 +274,7 @@ export default function Layout({ children }) {
                   <span className="layout-notification-badge">{notifications.length}</span>
                 )}
               </button>
-              {notificationOpen && (
+              {!isMobile && notificationOpen && (
                 <div className="layout-notification-dropdown">
                   <div className="layout-notification-header">
                     <h3>Notifications</h3>
@@ -290,12 +310,12 @@ export default function Layout({ children }) {
                 </div>
               )}
             </div>
-            <div className="layout-user-info">
+            <Link to="/profile" className="layout-user-info">
               <div className="layout-user-avatar">
                 {displayName.charAt(0).toUpperCase()}
               </div>
               <span className="layout-user-name">{displayName}</span>
-            </div>
+            </Link>
             <button
               className="layout-mobile-logout"
               onClick={handleLogout}

@@ -199,9 +199,9 @@
   border: none;
   cursor: pointer;
   overflow: visible;
-  min-width: 0 !important;
-  width: 40px !important; /* compact square */
-  height: 40px !important;
+  min-width: unset;
+  width: 40px; /* compact square */
+  height: 40px;
   box-sizing: border-box;
 }
 
@@ -209,8 +209,8 @@
 .incentiveSlip-link svg,
 .incentiveSlip-download svg {
   display: block;
-  width: 20px !important;
-  height: 20px !important;
+  width: 20px;
+  height: 20px;
 }
 
 /* view (neutral) */
@@ -256,16 +256,15 @@
   }
   .incentiveSlip-link,
   .incentiveSlip-download {
-    width: 44px !important;
-    height: 44px !important;
+    width: 44px;
+    height: 44px;
     padding: 6px;
     border-radius: 10px;
-    min-width: 0 !important;
   }
   .incentiveSlip-link svg,
   .incentiveSlip-download svg {
-    width: 24px !important;
-    height: 24px !important;
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -298,20 +297,19 @@
   .incentiveSlip-link,
   .incentiveSlip-download {
     flex: 1 1 0;
-    width: auto !important; /* allow flex to control width */
-    height: 44px !important;
+    width: auto; /* allow flex to control width */
+    height: 44px;
     padding: 0 12px;
     border-radius: 10px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 0 !important;
   }
 
   .incentiveSlip-link svg,
   .incentiveSlip-download svg {
-    width: 20px !important;
-    height: 20px !important;
+    width: 20px;
+    height: 20px;
   }
 
   /* If you want icons centered with labels later, there's room to add text inside buttons */
