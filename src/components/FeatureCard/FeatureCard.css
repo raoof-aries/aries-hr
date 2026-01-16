@@ -1,18 +1,21 @@
+/* Apple Design System - Feature Card */
 .featureCard-root {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 20px;
-  background: rgba(255, 255, 255, 0.05);
+  gap: 16px;
+  background: var(--bg-primary);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 28px;
+  -webkit-backdrop-filter: blur(20px);
+  border: 0.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
   color: inherit;
   text-decoration: none;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .featureCard-glow {
@@ -21,13 +24,9 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.1),
-    rgba(139, 92, 246, 0.1)
-  );
+  background: var(--apple-blue-lighter);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.25s ease;
   pointer-events: none;
 }
 
@@ -37,29 +36,25 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  height: 1px;
+  background: var(--apple-blue);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .featureCard-icon {
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.2),
-    rgba(139, 92, 246, 0.2)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  color: #93c5fd;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--apple-blue-lighter);
+  border: 0.5px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--apple-blue);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .featureCard-content {
@@ -68,41 +63,42 @@
 }
 
 .featureCard-content h3 {
-  margin: 0 0 6px 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: white;
+  margin: 0 0 4px 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .featureCard-content p {
   margin: 0;
-  font-size: 0.9375rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 15px;
+  color: var(--text-secondary);
   line-height: 1.5;
-  transition: color 0.3s ease;
+  font-weight: 400;
+  transition: color 0.25s ease;
 }
 
 .featureCard-arrow {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.4);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-secondary);
+  border: 0.5px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .featureCard-root:hover {
-  transform: translateY(-4px) scale(1.02);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(139, 92, 246, 0.3);
-  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
+  background: var(--bg-primary);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .featureCard-root:hover .featureCard-glow {
@@ -114,84 +110,77 @@
 }
 
 .featureCard-root:hover .featureCard-icon {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.4),
-    rgba(139, 92, 246, 0.4)
-  );
-  transform: rotate(-5deg) scale(1.1);
-  color: #bfdbfe;
-  border-color: rgba(139, 92, 246, 0.4);
+  background: var(--apple-blue-light);
+  transform: scale(1.05);
+  border-color: var(--apple-blue);
+  box-shadow: 0 2px 8px var(--apple-blue-lighter);
 }
 
 .featureCard-root:hover .featureCard-content h3 {
-  color: #bfdbfe;
-  transform: translateX(4px);
+  color: var(--text-primary);
+  transform: translateX(2px);
 }
 
 .featureCard-root:hover .featureCard-content p {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
 }
 
 .featureCard-root:hover .featureCard-arrow {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.3),
-    rgba(139, 92, 246, 0.3)
-  );
-  border-color: rgba(139, 92, 246, 0.4);
-  color: white;
-  transform: translateX(4px);
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+  color: var(--apple-blue);
+  transform: translateX(2px);
 }
 
 .featureCard-root:active {
-  transform: translateY(-2px) scale(1);
+  transform: translateY(0);
+  opacity: 0.9;
 }
 
 /* Tablet and up */
 @media (min-width: 640px) {
   .featureCard-root {
-    padding: 32px;
-    gap: 24px;
+    padding: 24px;
+    gap: 20px;
   }
 
   .featureCard-icon {
-    width: 64px;
-    height: 64px;
+    width: 56px;
+    height: 56px;
   }
 
   .featureCard-icon svg {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 
   .featureCard-content h3 {
-    font-size: 1.375rem;
-    margin-bottom: 8px;
+    font-size: 20px;
+    margin-bottom: 6px;
   }
 
   .featureCard-content p {
-    font-size: 1rem;
+    font-size: 17px;
   }
 
   .featureCard-arrow {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
   }
 
   .featureCard-arrow svg {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
   }
 }
 
 /* Desktop */
 @media (min-width: 1024px) {
   .featureCard-root {
-    padding: 36px;
+    padding: 28px;
   }
 
   .featureCard-content h3 {
-    font-size: 1.5rem;
+    font-size: 22px;
   }
 }

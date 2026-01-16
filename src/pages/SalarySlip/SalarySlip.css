@@ -1,11 +1,11 @@
+/* Apple Design System - Salary Slip Page */
 .salarySlip-container {
   margin: 0 auto;
-  /* do not force max-width here — parent layout controls page width */
 }
 
 /* Controls */
 .salarySlip-controls {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .salarySlip-controlRow {
@@ -31,49 +31,52 @@
 
 .filter-count.salarySlip-count {
   margin: 0;
-  color: #86868b;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 17px;
+  font-weight: 400;
 }
 
 .filter-countNumber.salarySlip-countNumber {
-  font-weight: 700;
-  color: #007aff;
-  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--apple-blue);
+  font-size: 20px;
 }
 
 .filter-select.salarySlip-select,
 .filter-search.salarySlip-search {
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid #e5e5e7;
-  background: #ffffff;
-  color: #1d1d1f;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 0.5px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 400;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .filter-select.salarySlip-select:focus,
 .filter-search.salarySlip-search:focus {
   outline: none;
-  border-color: #007aff;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px var(--apple-blue-light), var(--shadow-sm);
 }
 
 .filter-select.salarySlip-select option {
-  background: #fff;
-  color: #1d1d1f;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
+
 .filter-search.salarySlip-search::placeholder {
-  color: #86868b;
+  color: var(--text-tertiary);
 }
 
 /* List */
 .salarySlip-list {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .slip-empty.salarySlip-empty {
@@ -83,22 +86,26 @@
   justify-content: center;
   gap: 16px;
   padding: 48px 24px;
-  background: #fff;
-  border: 1px dashed #e5e5e7;
-  border-radius: 16px;
-  color: #86868b;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  color: var(--text-tertiary);
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .slip-empty.salarySlip-empty svg {
-  color: #d1d1d6;
+  color: var(--text-tertiary);
+  opacity: 0.5;
 }
+
 .slip-empty.salarySlip-empty p {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #86868b;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text-secondary);
 }
 
 /* Item */
@@ -106,13 +113,15 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 20px;
-  background: #fff;
-  border: 1px solid #e5e5e7;
-  border-radius: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  justify-content: space-between; /* ensure primary content left, actions compact to right */
+  padding: 16px;
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  justify-content: space-between;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .salarySlip-itemTop {
@@ -128,139 +137,143 @@
 }
 
 .slip-item.salarySlip-item:hover {
-  border-color: #d1d1d6;
+  border-color: var(--border-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
 }
 
 /* Icon tile */
 .slip-itemIcon.salarySlip-itemIcon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 122, 255, 0.1);
-  border-radius: 12px;
-  color: #007aff;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(0, 122, 255, 0.1);
+  background: var(--apple-blue-lighter);
+  border-radius: 10px;
+  color: var(--apple-blue);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 0.5px solid var(--border-color);
 }
 
 .slip-item.salarySlip-item:hover .slip-itemIcon.salarySlip-itemIcon {
   transform: scale(1.05);
-  background: rgba(0, 122, 255, 0.15);
+  background: var(--apple-blue-light);
+  border-color: var(--apple-blue);
 }
 
 .slip-itemTitle.salarySlip-itemTitle {
-  margin-bottom: 6px;
-  font-size: 1.125rem;
+  margin-bottom: 4px;
+  font-size: 17px;
   font-weight: 600;
-  color: #6e6e73;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 }
 
 .slip-itemMeta.salarySlip-itemMeta {
-  font-size: 0.875rem;
-  color: #86868b;
-  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
 
 .slip-metaValue.salarySlip-metaValue {
-  color: #1d1d1f;
-  font-weight: 700;
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
-/* ACTIONS container (desktop default: compact) */
+/* ACTIONS container */
 .salarySlip-itemRight {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   justify-content: flex-end;
-  width: auto; /* do not stretch across card on desktop */
+  width: auto;
   flex: 0 0 auto;
 }
 
-/* Compact action buttons (desktop default) */
-/* Buttons are sized to the icon width + small comfortable hit area */
+/* Compact action buttons */
 .salarySlip-link,
 .salarySlip-download {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px; /* minimal comfortable padding */
+  padding: 6px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.18s ease;
+  font-size: 15px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   flex: 0 0 auto;
   border: none;
   cursor: pointer;
   overflow: visible;
   min-width: unset;
-  width: 40px; /* compact square */
-  height: 40px;
+  width: 36px;
+  height: 36px;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Force consistent icon sizes */
 .salarySlip-link svg,
 .salarySlip-download svg {
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 /* view (neutral) */
 .salarySlip-link {
-  background: #f5f5f7;
-  color: #1d1d1f;
-  border: 1px solid #e5e5e7;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 0.5px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .salarySlip-link:hover {
-  background: #e8e8ed;
-  border-color: #d1d1d6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 /* primary download */
 .salarySlip-download {
-  background: #007aff;
+  background: var(--apple-blue);
   color: white;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
-  border: 1px solid rgba(0, 122, 255, 0.12);
+  box-shadow: var(--shadow-sm);
+  border: 0.5px solid rgba(0, 122, 255, 0.12);
 }
 
 .salarySlip-download:hover {
-  background: #0051d5;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35);
+  background: var(--apple-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-/* Larger screens: slightly increase icon tile and spacing but keep actions compact */
+/* Larger screens */
 @media (min-width: 960px) {
   .slip-item.salarySlip-item {
-    padding: 20px 24px;
+    padding: 20px;
   }
+
   .slip-itemIcon.salarySlip-itemIcon {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
   }
+
   .slip-itemTitle.salarySlip-itemTitle {
-    font-size: 1.125rem;
+    font-size: 17px;
   }
+
   .salarySlip-link,
   .salarySlip-download {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     padding: 6px;
     border-radius: 10px;
   }
+
   .salarySlip-link svg,
   .salarySlip-download svg {
     width: 20px;
@@ -268,13 +281,8 @@
   }
 }
 
-/* Mobile / narrow screens: make the action buttons split the card width equally */
-/* mobile breakpoint keeps UI consistent with your screenshots: two large buttons occupying equal halves */
+/* Mobile */
 @media (max-width: 639px) {
-  .salarySlip-container {
-    padding: 12px;
-  }
-
   .slip-item.salarySlip-item {
     flex-direction: column;
     align-items: stretch;
@@ -293,11 +301,10 @@
     justify-content: space-between;
   }
 
-  /* Make actions equal width and fill only the card width */
   .salarySlip-link,
   .salarySlip-download {
     flex: 1 1 0;
-    width: auto; /* allow flex to control width */
+    width: auto;
     height: 44px;
     padding: 0 12px;
     border-radius: 10px;
@@ -311,6 +318,4 @@
     width: 20px;
     height: 20px;
   }
-
-  /* If you want icons centered with labels later, there's room to add text inside buttons */
 }

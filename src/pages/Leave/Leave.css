@@ -1,20 +1,25 @@
+/* Apple Design System - Leave Page */
 .dummy-page {
-  background: #ffffff;
-  border-radius: 12px;
+  background: var(--bg-primary);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
   padding: 48px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+  border: 0.5px solid var(--border-color);
 }
 
 .dummy-page h1 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
   margin-bottom: 16px;
+  letter-spacing: -0.5px;
 }
 
 .dummy-page p {
-  font-size: 16px;
-  color: #64748b;
+  font-size: 17px;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
-

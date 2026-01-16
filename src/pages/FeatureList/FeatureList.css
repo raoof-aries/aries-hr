@@ -1,3 +1,4 @@
+/* Apple Design System - Dashboard */
 .dashboard-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -8,50 +9,54 @@
 }
 
 .dashboard-section-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0 0 20px 0;
+  letter-spacing: -0.4px;
 }
 
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 12px;
 }
 
 .dashboard-card {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 24px;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
+  padding: 16px;
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border-color);
+  border-radius: 12px;
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dashboard-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #0787f5, transparent);
+  height: 1px;
+  background: var(--apple-blue);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .dashboard-card:hover {
-  border-color: rgba(0, 0, 0, 0.15);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-4px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .dashboard-card:hover::before {
@@ -59,23 +64,24 @@
 }
 
 .dashboard-card-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(7, 135, 245, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
+  background: var(--apple-blue-lighter);
+  border: 0.5px solid var(--border-color);
+  border-radius: 10px;
   flex-shrink: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--apple-blue);
 }
 
 .dashboard-card:hover .dashboard-card-icon {
-  background: rgba(7, 135, 245, 0.15);
-  border-color: #0787f5;
-  transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(7, 135, 245, 0.2);
+  background: var(--apple-blue-light);
+  border-color: var(--apple-blue);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px var(--apple-blue-lighter);
 }
 
 .dashboard-card-content {
@@ -84,42 +90,44 @@
 }
 
 .dashboard-card-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
+  letter-spacing: -0.3px;
 }
 
 .dashboard-card-description {
-  font-size: 14px;
-  color: #64748b;
+  font-size: 15px;
+  color: var(--text-secondary);
   margin: 0;
+  font-weight: 400;
 }
 
 .dashboard-card-arrow {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
 .dashboard-card:hover .dashboard-card-arrow {
-  color: #0787f5;
-  transform: translateX(4px);
+  color: var(--apple-blue);
+  transform: translateX(2px);
 }
 
 @media (min-width: 640px) {
   .dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 16px;
   }
 }
 
 @media (min-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    gap: 20px;
   }
 }
