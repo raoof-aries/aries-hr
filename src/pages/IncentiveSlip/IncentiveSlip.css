@@ -1,8 +1,9 @@
 .incentiveSlip-container {
-  max-width: 1200px;
   margin: 0 auto;
+  /* do not force max-width here — parent layout controls page width */
 }
 
+/* Controls */
 .incentiveSlip-controls {
   margin-bottom: 24px;
 }
@@ -30,47 +31,46 @@
 
 .filter-count.incentiveSlip-count {
   margin: 0;
-  color: #475569 !important;
+  color: #86868b;
   font-size: 0.9375rem;
   font-weight: 500;
 }
 
 .filter-countNumber.incentiveSlip-countNumber {
   font-weight: 700;
-  color: #0787f5 !important;
+  color: #007aff;
   font-size: 1.125rem;
 }
 
 .filter-select.incentiveSlip-select,
 .filter-search.incentiveSlip-search {
   padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1 !important;
-  background: #ffffff !important;
-  color: #0f172a !important;
+  border-radius: 12px;
+  border: 1px solid #e5e5e7;
+  background: #ffffff;
+  color: #1d1d1f;
   font-size: 0.9375rem;
   font-weight: 500;
   transition: all 0.2s ease;
-  backdrop-filter: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .filter-select.incentiveSlip-select:focus,
 .filter-search.incentiveSlip-search:focus {
   outline: none;
-  border-color: #0787f5 !important;
-  background: #ffffff !important;
-  box-shadow: 0 0 0 4px rgba(7, 135, 245, 0.1);
+  border-color: #007aff;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .filter-select.incentiveSlip-select option {
-  background: #ffffff !important;
-  color: #0f172a !important;
+  background: #fff;
+  color: #1d1d1f;
 }
-
 .filter-search.incentiveSlip-search::placeholder {
-  color: #64748b !important;
+  color: #86868b;
 }
 
+/* List */
 .incentiveSlip-list {
   display: grid;
   gap: 16px;
@@ -83,37 +83,36 @@
   justify-content: center;
   gap: 16px;
   padding: 48px 24px;
-  background: #ffffff !important;
-  border: 1px dashed #e2e8f0 !important;
-  border-radius: 12px;
-  color: #64748b !important;
+  background: #fff;
+  border: 1px dashed #e5e5e7;
+  border-radius: 16px;
+  color: #86868b;
   text-align: center;
-  backdrop-filter: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .slip-empty.incentiveSlip-empty svg {
-  color: #cbd5e1 !important;
+  color: #d1d1d6;
 }
-
 .slip-empty.incentiveSlip-empty p {
   margin: 0;
   font-size: 1rem;
   font-weight: 500;
-  color: #64748b !important;
+  color: #86868b;
 }
 
+/* Item */
 .slip-item.incentiveSlip-item {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
   padding: 20px;
-  background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  border-radius: 18px;
-  transition: all 0.2s ease;
+  background: #fff;
+  border: 1px solid #e5e5e7;
+  border-radius: 16px;
+  transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  backdrop-filter: none !important;
+  justify-content: space-between; /* ensure primary content left, actions compact to right */
 }
 
 .incentiveSlip-itemTop {
@@ -129,204 +128,191 @@
 }
 
 .slip-item.incentiveSlip-item:hover {
-  border-color: rgba(0, 0, 0, 0.15) !important;
-  background: #ffffff !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #d1d1d6;
   transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
+/* Icon tile */
 .slip-itemIcon.incentiveSlip-itemIcon {
   width: 48px;
   height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(7, 135, 245, 0.1) !important;
-  border-radius: 10px;
-  color: #0787f5 !important;
+  background: rgba(0, 122, 255, 0.1);
+  border-radius: 12px;
+  color: #007aff;
   transition: all 0.2s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 122, 255, 0.1);
 }
 
 .slip-item.incentiveSlip-item:hover .slip-itemIcon.incentiveSlip-itemIcon {
   transform: scale(1.05);
-  background: rgba(7, 135, 245, 0.15) !important;
-  color: #0787f5 !important;
+  background: rgba(0, 122, 255, 0.15);
 }
 
 .slip-itemTitle.incentiveSlip-itemTitle {
   margin-bottom: 6px;
   font-size: 1.125rem;
-  font-weight: 700;
-  color: #020617 !important;
+  font-weight: 600;
+  color: #6e6e73;
   letter-spacing: -0.3px;
 }
 
 .slip-itemMeta.incentiveSlip-itemMeta {
   font-size: 0.875rem;
-  color: #334155 !important;
+  color: #86868b;
   font-weight: 500;
 }
 
 .slip-metaValue.incentiveSlip-metaValue {
-  color: #020617 !important;
+  color: #1d1d1f;
   font-weight: 700;
 }
 
+/* ACTIONS container (desktop default: compact) */
 .incentiveSlip-itemRight {
   display: flex;
   gap: 10px;
   align-items: center;
-  width: 100%;
   justify-content: flex-end;
+  width: auto; /* do not stretch across card on desktop */
+  flex: 0 0 auto;
 }
 
+/* Compact action buttons (desktop default) */
+/* Buttons are sized to the icon width + small comfortable hit area */
 .incentiveSlip-link,
 .incentiveSlip-download {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: 10px;
+  padding: 6px; /* minimal comfortable padding */
+  border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
   font-size: 0.875rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.18s ease;
   white-space: nowrap;
   flex: 0 0 auto;
   border: none;
   cursor: pointer;
-  min-width: 120px;
-  position: relative;
-  overflow: hidden;
+  overflow: visible;
+  min-width: 0 !important;
+  width: 40px !important; /* compact square */
+  height: 40px !important;
+  box-sizing: border-box;
 }
 
+/* Force consistent icon sizes */
+.incentiveSlip-link svg,
+.incentiveSlip-download svg {
+  display: block;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* view (neutral) */
 .incentiveSlip-link {
-  background: #0787f5;
-  color: white;
-  box-shadow: 0 2px 8px rgba(7, 135, 245, 0.2);
-}
-
-.incentiveSlip-link::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.incentiveSlip-link:hover::before {
-  left: 100%;
-}
-
-.incentiveSlip-link:hover {
-  background: #0671d1;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(7, 135, 245, 0.35);
-}
-
-.incentiveSlip-link:active {
-  transform: translateY(0);
-}
-
-.incentiveSlip-download {
   background: #f5f5f7;
   color: #1d1d1f;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  font-weight: 600;
+  border: 1px solid #e5e5e7;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.incentiveSlip-download:hover {
+.incentiveSlip-link:hover {
   background: #e8e8ed;
-  border-color: rgba(0, 0, 0, 0.15);
+  border-color: #d1d1d6;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  color: #0787f5;
 }
 
-.incentiveSlip-download:active {
-  transform: translateY(0);
+/* primary download */
+.incentiveSlip-download {
+  background: #007aff;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+  border: 1px solid rgba(0, 122, 255, 0.12);
 }
 
-/* Tablet and Desktop */
-@media (min-width: 640px) {
-  .incentiveSlip-controlRow {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
+.incentiveSlip-download:hover {
+  background: #0051d5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35);
+}
 
-  .incentiveSlip-countSection {
-    order: 1;
+/* Larger screens: slightly increase icon tile and spacing but keep actions compact */
+@media (min-width: 960px) {
+  .slip-item.incentiveSlip-item {
+    padding: 20px 24px;
   }
-
-  .incentiveSlip-filtersSection {
-    display: flex;
-    flex-direction: row;
-    order: 2;
-    gap: 12px;
-    grid-template-columns: none;
-  }
-
-  .incentiveSlip-select {
-    flex: 0 0 auto;
-    width: 140px;
-  }
-
-  .incentiveSlip-search {
-    flex: 0 0 auto;
-    width: 280px;
-    grid-column: auto;
-  }
-
-  .incentiveSlip-item {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .incentiveSlip-itemTop {
-    flex: 1;
-  }
-
-  .incentiveSlip-itemRight {
-    width: auto;
-    flex: 0 0 auto;
-  }
-
-  .incentiveSlip-itemRight {
-    width: auto;
-    flex: 0 0 auto;
-  }
-
-  .incentiveSlip-link,
-  .incentiveSlip-download {
-    flex: 0 0 auto;
-    min-width: 140px;
-  }
-
-  .incentiveSlip-itemIcon {
+  .slip-itemIcon.incentiveSlip-itemIcon {
     width: 56px;
     height: 56px;
   }
-
-  .incentiveSlip-itemTitle {
-    font-size: 1.25rem;
+  .slip-itemTitle.incentiveSlip-itemTitle {
+    font-size: 1.125rem;
   }
-
   .incentiveSlip-link,
   .incentiveSlip-download {
-    padding: 12px 20px;
-    font-size: 0.9375rem;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 6px;
+    border-radius: 10px;
+    min-width: 0 !important;
+  }
+  .incentiveSlip-link svg,
+  .incentiveSlip-download svg {
+    width: 24px !important;
+    height: 24px !important;
   }
 }
 
-@media (max-width: 550px) {
-  .incentiveSlip-count {
-    text-align: center;
+/* Mobile / narrow screens: make the action buttons split the card width equally */
+/* mobile breakpoint keeps UI consistent with your screenshots: two large buttons occupying equal halves */
+@media (max-width: 639px) {
+  .incentiveSlip-container {
+    padding: 12px;
   }
+
+  .slip-item.incentiveSlip-item {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .incentiveSlip-itemTop {
+    width: 100%;
+  }
+
+  .incentiveSlip-itemRight {
+    width: 100%;
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  /* Make actions equal width and fill only the card width */
+  .incentiveSlip-link,
+  .incentiveSlip-download {
+    flex: 1 1 0;
+    width: auto !important; /* allow flex to control width */
+    height: 44px !important;
+    padding: 0 12px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0 !important;
+  }
+
+  .incentiveSlip-link svg,
+  .incentiveSlip-download svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* If you want icons centered with labels later, there's room to add text inside buttons */
 }

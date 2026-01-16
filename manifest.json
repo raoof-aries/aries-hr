@@ -1,6 +1,6 @@
 {
-  "name": "HR Portal",
-  "short_name": "HR App",
+  "name": "Aries HRMS",
+  "short_name": "Aries HRMS",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

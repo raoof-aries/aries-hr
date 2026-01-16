@@ -102,7 +102,7 @@
   cursor: pointer;
   background: transparent;
   border: none;
-  width: 100%;
+  /* width: 100%; */
   text-align: left;
 }
 
@@ -220,6 +220,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  align-self: center;
 }
 
 .layout-user-info {
@@ -229,8 +230,8 @@
 }
 
 .layout-user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--accent-color, #0787f5);
   display: flex;
@@ -238,7 +239,7 @@
   justify-content: center;
   color: white;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .layout-user-name {
@@ -254,7 +255,9 @@
 
 .layout-notification-button {
   position: relative;
-  padding: 8px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border-radius: 8px;
   background: transparent;
   border: none;
@@ -661,13 +664,12 @@
   .layout-mobile-nav {
     display: flex;
   }
-
 }
 
 @media (max-width: 480px) {
   .layout-content {
     padding: 16px;
-    padding-bottom: 80px;
+    padding-bottom: 25px;
   }
 
   .layout-notification-dropdown {
@@ -675,4 +677,3 @@
     right: 16px;
   }
 }
-

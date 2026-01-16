@@ -200,10 +200,11 @@ export default function IncentiveSlip() {
                   href={item.pdf}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`View incentive slip ${item.month} ${item.year}`}
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -214,7 +215,6 @@ export default function IncentiveSlip() {
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
-                  View
                 </a>
                 <button
                   className="slip-download incentiveSlip-download"
@@ -227,8 +227,8 @@ export default function IncentiveSlip() {
                   aria-label={`Download incentive slip ${item.month} ${item.year}`}
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -238,7 +238,6 @@ export default function IncentiveSlip() {
                   >
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                   </svg>
-                  Download
                 </button>
               </div>
             </article>
