@@ -4,7 +4,6 @@ import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.png";
 import "./Login.css";
 
-
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -18,7 +17,6 @@ export default function Login() {
     setError("");
     setIsSubmitting(true);
 
-    // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const result = login(username, password);
@@ -33,61 +31,40 @@ export default function Login() {
   };
 
   return (
-    <main className="page-root login-root">
-      <div className="login-background-wave"></div>
-      <div className="login-container">
-        <div className="login-content">
-          <img src={logo} alt="HRMS Logo" className="login-logo-top" />
-          <h1 className="login-title">Sign in</h1>
-          <p className="login-subtitle">Please fill in the credentials</p>
+    <div className="login-root">
+      <div className="login-wrapper">
+        <div className="login-header">
+          <div className="login-header-pattern"></div>
+          {/* <img src={logo} alt="HRMS Logo" className="login-logo" /> */}
+          <h1 className="login-brand-text">Aries HRMS</h1>
+        </div>
 
-          <form className="login-form" onSubmit={handleSubmit}>
-            <div className="login-formGroup">
-              <div className="login-input-wrapper">
-                <svg
-                  className="login-input-icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+        <div className="login-container">
+          <div className="login-content">
+            <h1 className="login-title">Login</h1>
+
+            <form className="login-form" onSubmit={handleSubmit}>
+              <div className="login-form-group">
+                <label htmlFor="username" className="login-label">
+                  Email
+                </label>
                 <input
                   id="username"
                   type="text"
                   className="login-input"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Username"
+                  placeholder="vijaybhuva90@gmail.com"
                   required
                   autoComplete="username"
                   disabled={isSubmitting}
                 />
               </div>
-            </div>
 
-            <div className="login-formGroup">
-              <div className="login-input-wrapper">
-                <svg
-                  className="login-input-icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+              <div className="login-form-group">
+                <label htmlFor="password" className="login-label">
+                  Password
+                </label>
                 <input
                   id="password"
                   type="password"
@@ -100,36 +77,10 @@ export default function Login() {
                   disabled={isSubmitting}
                 />
               </div>
-            </div>
 
-            {error && (
-              <div className="login-error" role="alert">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 8v4M12 16h.01" />
-                </svg>
-                <span>{error}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="login-button"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
+              {error && (
+                <div className="login-error" role="alert">
                   <svg
-                    className="login-spinner"
                     width="20"
                     height="20"
                     viewBox="0 0 24 24"
@@ -139,22 +90,47 @@ export default function Login() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v4M12 16h.01" />
                   </svg>
-                  Signing in...
-                </>
-              ) : (
-                "Sign in"
+                  <span>{error}</span>
+                </div>
               )}
-            </button>
-          </form>
 
-          <p className="login-description">
-            Secure access to your HR portal. Contact your administrator if you need assistance.
-          </p>
+              <button
+                type="submit"
+                className="login-button"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <svg
+                      className="login-spinner"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                    Signing in...
+                  </>
+                ) : (
+                  "Login"
+                )}
+              </button>
+            </form>
+
+            <p className="login-description">
+              Secure access to your HR portal. Contact your administrator if you need assistance.
+            </p>
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
-
