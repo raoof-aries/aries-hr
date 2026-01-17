@@ -114,7 +114,7 @@ export default function FeatureList() {
   return (
     <div className="dashboard-container">
       {/* Profile Section */}
-      <div className="dashboard-profile-section">
+      <Link to="/profile" className="dashboard-profile-section">
         <div className="dashboard-profile-avatar">
           <img
             src="https://i.pravatar.cc/300?img=12"
@@ -130,7 +130,7 @@ export default function FeatureList() {
             <span className="dashboard-profile-text">{profileData.yearsInAries} years</span>
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Quick Access Cards */}
       <div className="dashboard-quick-access">

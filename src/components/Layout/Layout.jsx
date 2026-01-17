@@ -98,6 +98,17 @@ const menuItems = [
       </svg>
     ),
   },
+  {
+    id: "profile",
+    title: "Profile",
+    route: "/profile",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    ),
+  },
 ];
 
 export default function Layout({ children }) {
@@ -169,6 +180,7 @@ export default function Layout({ children }) {
       "/leave": "Leave",
       "/calendar": "Calendar",
       "/notifications": "Notifications",
+      "/profile": "Profile",
     };
     // Handle exact pathname match
     const currentPath = location.pathname;
@@ -248,7 +260,7 @@ export default function Layout({ children }) {
             // Home Screen Header: Welcome back with profile image on left, notification on right
             <>
               <div className="layout-header-left">
-                <div className="layout-header-profile">
+                <Link to="/profile" className="layout-header-profile">
                   <img 
                     src="https://i.pravatar.cc/300?img=12" 
                     alt="Profile" 
@@ -258,7 +270,7 @@ export default function Layout({ children }) {
                     <span className="layout-header-greeting-text">Welcome Back,</span>
                     <span className="layout-header-greeting-name">{firstName}!</span>
                   </div>
-                </div>
+                </Link>
               </div>
               <div className="layout-header-right">
                 <div className="layout-notifications" ref={notificationRef}>
