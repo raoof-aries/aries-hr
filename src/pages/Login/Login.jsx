@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import logo from "../../assets/logo.png";
 import "./Login.css";
 
 export default function Login() {
@@ -40,7 +41,10 @@ export default function Login() {
 
       <div className="login-container">
         <header className="login-header">
-          <div className="login-badge">Employee Portal</div>
+          <div className="login-logo-container">
+            <img src={logo} alt="Aries HRMS" className="login-logo" />
+          </div>
+          <div className="login-badge">Aries HRMS</div>
           <h1 className="login-title">Welcome Back</h1>
           <p className="login-subtitle">Sign in to access your HR portal</p>
         </header>
