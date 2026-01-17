@@ -12,6 +12,7 @@ import Calendar from "./pages/Calendar/Calendar";
 import Notifications from "./pages/Notifications/Notifications";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
+import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper";
 
 function LoginRoute() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -137,10 +138,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <AppRoutes />
-      </NotificationProvider>
-    </AuthProvider>
+    <MobileOnlyWrapper>
+      <AuthProvider>
+        <NotificationProvider>
+          <AppRoutes />
+        </NotificationProvider>
+      </AuthProvider>
+    </MobileOnlyWrapper>
   );
 }
