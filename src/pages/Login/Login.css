@@ -57,7 +57,7 @@
   letter-spacing: -0.8px;
   line-height: 1.2;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 
 .login-subtitle {
@@ -67,7 +67,7 @@
   font-weight: 400;
   line-height: 1.47;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 
 .login-form {
@@ -104,7 +104,7 @@
   font-weight: 400;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-family: "Open Sans", sans-serif;
   text-align: left;
 }
 
@@ -149,7 +149,7 @@
   font-size: 15px;
   font-weight: 400;
   animation: shake 0.4s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 
 @keyframes shake {
@@ -183,7 +183,7 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   margin-top: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 
 .login-button:hover:not(:disabled) {
@@ -224,7 +224,7 @@
   font-weight: 400;
   line-height: 1.5;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 
 /* Tablet and Desktop */
