@@ -267,9 +267,9 @@
   height: 44px;
   padding: 0;
   border-radius: 50%;
-  background: #f5f5f7;
+  background: #000000;
   border: none;
-  color: #1d1d1f;
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
@@ -278,10 +278,10 @@
 }
 
 .layout-header-back:hover {
-  background: #e8e8ed;
+  background: #1a1a1a;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: scale(1.05);
-  color: #1d1d1f;
+  color: #ffffff;
 }
 
 .layout-header-back:active {
@@ -290,7 +290,7 @@
 }
 
 .layout-header-back svg {
-  stroke: #1d1d1f;
+  stroke: #ffffff;
   stroke-width: 2;
   width: 20px;
   height: 20px;
@@ -347,9 +347,9 @@
   height: 44px;
   padding: 0;
   border-radius: 50%;
-  background: #f5f5f7;
+  background: #000000;
   border: none;
-  color: #1d1d1f;
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
@@ -360,7 +360,7 @@
 }
 
 .layout-notification-button:hover {
-  background: #e8e8ed;
+  background: #1a1a1a;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: scale(1.05);
 }
@@ -371,7 +371,7 @@
 }
 
 .layout-notification-button svg {
-  stroke: #1d1d1f;
+  stroke: #ffffff;
   stroke-width: 2;
   width: 20px;
   height: 20px;
