@@ -290,18 +290,6 @@ textarea {
   -webkit-backdrop-filter: blur(20px);
 }
 
-.slip-item::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--apple-blue);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
 .slip-itemTop {
   display: flex;
   align-items: center;
@@ -319,10 +307,6 @@ textarea {
   border-color: var(--border-hover);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
-}
-
-.slip-item:hover::before {
-  opacity: 1;
 }
 
 .slip-itemIcon {

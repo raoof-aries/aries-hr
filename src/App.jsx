@@ -1,13 +1,14 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import Login from "./pages/Login/Login";
 import FeatureList from "./pages/FeatureList/FeatureList";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
 import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
-import Attendance from "./pages/Attendance/Attendance";
+import Allowance from "./pages/Allowance/Allowance";
+import Health from "./pages/Health/Health";
 import Leave from "./pages/Leave/Leave";
-import Profile from "./pages/Profile/Profile";
-import Documents from "./pages/Documents/Documents";
+import Calendar from "./pages/Calendar/Calendar";
 import Notifications from "./pages/Notifications/Notifications";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
@@ -81,11 +82,21 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/attendance"
+        path="/allowance"
         element={
           <ProtectedRoute>
             <Layout>
-              <Attendance />
+              <Allowance />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/health"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Health />
             </Layout>
           </ProtectedRoute>
         }
@@ -101,21 +112,11 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/profile"
+        path="/calendar"
         element={
           <ProtectedRoute>
             <Layout>
-              <Profile />
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/documents"
-        element={
-          <ProtectedRoute>
-            <Layout>
-              <Documents />
+              <Calendar />
             </Layout>
           </ProtectedRoute>
         }
@@ -137,7 +138,9 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <NotificationProvider>
+        <AppRoutes />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

@@ -1,4 +1,4 @@
-/* Apple Design System - Incentive Slip Page */
+/* Modern Design System - Incentive Slip Page (Matching Homescreen) */
 .incentiveSlip-container {
   margin: 0 auto;
 }
@@ -6,6 +6,68 @@
 /* Controls */
 .incentiveSlip-controls {
   margin-bottom: 20px;
+}
+
+/* Filter Chips */
+.filter-chips.incentiveSlip-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.filter-chip.incentiveSlip-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #E0F2FF 0%, #B3E5FC 100%);
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2196F3;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  box-shadow: 0 1px 3px rgba(33, 150, 243, 0.1);
+  transition: all 0.2s ease;
+}
+
+.filter-chip-label {
+  line-height: 1.4;
+}
+
+.filter-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: rgba(33, 150, 243, 0.2);
+  border-radius: 50%;
+  color: #2196F3;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filter-chip-remove:hover {
+  background: rgba(33, 150, 243, 0.3);
+  transform: scale(1.1);
+}
+
+.filter-chip-remove:active {
+  transform: scale(0.95);
+}
+
+.filter-chip-remove svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.5;
 }
 
 .incentiveSlip-controlRow {
@@ -31,52 +93,65 @@
 
 .filter-count.incentiveSlip-count {
   margin: 0;
-  color: var(--text-secondary);
+  color: #666666;
   font-size: 17px;
   font-weight: 400;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .filter-countNumber.incentiveSlip-countNumber {
   font-weight: 600;
-  color: var(--apple-blue);
+  color: #2196F3;
   font-size: 20px;
 }
 
+/* Modern Dropdowns and Search */
 .filter-select.incentiveSlip-select,
 .filter-search.incentiveSlip-search {
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: 10px;
-  border: 0.5px solid var(--border-color);
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #000000;
   font-size: 17px;
   font-weight: 400;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23333' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .filter-select.incentiveSlip-select:focus,
 .filter-search.incentiveSlip-search:focus {
   outline: none;
-  border-color: var(--apple-blue);
-  box-shadow: 0 0 0 3px var(--apple-blue-light), var(--shadow-sm);
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .filter-select.incentiveSlip-select option {
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #000000;
+}
+
+.filter-search.incentiveSlip-search {
+  background-image: none;
+  padding-right: 14px;
 }
 
 .filter-search.incentiveSlip-search::placeholder {
-  color: var(--text-tertiary);
+  color: #8e8e93;
 }
 
 /* List */
 .incentiveSlip-list {
   display: grid;
   gap: 12px;
+  padding-bottom: 20px;
 }
 
 .slip-empty.incentiveSlip-empty {
@@ -86,18 +161,16 @@
   justify-content: center;
   gap: 16px;
   padding: 48px 24px;
-  background: var(--bg-primary);
-  border: 1px dashed var(--border-color);
-  border-radius: 12px;
-  color: var(--text-tertiary);
+  background: #ffffff;
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+  color: #8e8e93;
   text-align: center;
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .slip-empty.incentiveSlip-empty svg {
-  color: var(--text-tertiary);
+  color: #8e8e93;
   opacity: 0.5;
 }
 
@@ -105,179 +178,231 @@
   margin: 0;
   font-size: 17px;
   font-weight: 400;
-  color: var(--text-secondary);
+  color: #666666;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Item */
+/* Item - Enhanced Modern Cards */
 .slip-item.incentiveSlip-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: var(--bg-primary);
-  border: 0.5px solid var(--border-color);
-  border-radius: 12px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-sm);
+  gap: 18px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   justify-content: space-between;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.slip-item.incentiveSlip-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2196F3, #42A5F5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.slip-item.incentiveSlip-item:hover::before {
+  opacity: 1;
 }
 
 .incentiveSlip-itemTop {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   width: 100%;
+  justify-content: space-between;
 }
 
 .incentiveSlip-itemLeft {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .slip-item.incentiveSlip-item:hover {
-  border-color: var(--border-hover);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-color: rgba(33, 150, 243, 0.2);
 }
 
-/* Icon tile */
+.slip-item.incentiveSlip-item:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Icon tile - Enhanced with gradient effect */
 .slip-itemIcon.incentiveSlip-itemIcon {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--apple-blue-lighter);
-  border-radius: 10px;
-  color: var(--apple-blue);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 0.5px solid var(--border-color);
+  background: linear-gradient(135deg, #E0F2FF 0%, #B3E5FC 100%);
+  border-radius: 14px;
+  color: #2196F3;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(33, 150, 243, 0.1);
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.1);
 }
 
 .slip-item.incentiveSlip-item:hover .slip-itemIcon.incentiveSlip-itemIcon {
-  transform: scale(1.05);
-  background: var(--apple-blue-light);
-  border-color: var(--apple-blue);
+  transform: scale(1.08) rotate(2deg);
+  background: linear-gradient(135deg, #B3E5FC 0%, #81D4FA 100%);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.2);
+  border-color: rgba(33, 150, 243, 0.3);
 }
 
 .slip-itemTitle.incentiveSlip-itemTitle {
-  margin-bottom: 4px;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.4px;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.3;
 }
 
 .slip-itemMeta.incentiveSlip-itemMeta {
-  font-size: 15px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  color: #666666;
   font-weight: 400;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.4;
+  margin: 0;
 }
 
 .slip-metaValue.incentiveSlip-metaValue {
-  color: var(--text-primary);
+  color: #2196F3;
   font-weight: 600;
 }
 
-/* ACTIONS container */
-.incentiveSlip-itemRight {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-  width: auto;
-  flex: 0 0 auto;
-}
-
-/* Compact action buttons */
-.incentiveSlip-link,
+/* Enhanced Download Button */
 .incentiveSlip-download {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
-  border-radius: 8px;
+  padding: 0;
+  border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
   font-size: 15px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   flex: 0 0 auto;
-  border: none;
+  flex-shrink: 0;
+  flex-grow: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  overflow: visible;
-  min-width: unset;
-  width: 36px;
-  height: 36px;
+  overflow: hidden;
+  min-width: 48px;
+  max-width: 48px;
+  width: 48px;
+  height: 48px;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  background: linear-gradient(135deg, #f8f9fa 0%, #f2f2f7 100%);
+  color: #000000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
 }
 
-.incentiveSlip-link svg,
+.incentiveSlip-download::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
 .incentiveSlip-download svg {
   display: block;
-  width: 18px;
-  height: 18px;
-}
-
-/* view (neutral) */
-.incentiveSlip-link {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 0.5px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-}
-
-.incentiveSlip-link:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-/* primary download */
-.incentiveSlip-download {
-  background: var(--apple-blue);
-  color: white;
-  box-shadow: var(--shadow-sm);
-  border: 0.5px solid rgba(0, 122, 255, 0.12);
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
 }
 
 .incentiveSlip-download:hover {
-  background: var(--apple-blue-hover);
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2), 0 2px 6px rgba(33, 150, 243, 0.15);
+  border-color: rgba(33, 150, 243, 0.3);
+  color: #2196F3;
+}
+
+.incentiveSlip-download:hover::before {
+  opacity: 1;
+}
+
+.incentiveSlip-download:hover svg {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+}
+
+.incentiveSlip-download:active {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 /* Larger screens */
-@media (min-width: 960px) {
+@media (min-width: 640px) {
+  .incentiveSlip-list {
+    gap: 18px;
+  }
+
   .slip-item.incentiveSlip-item {
-    padding: 20px;
+    padding: 22px 24px;
+    border-radius: 24px;
+    gap: 20px;
+  }
+
+  .incentiveSlip-itemTop {
+    gap: 20px;
   }
 
   .slip-itemIcon.incentiveSlip-itemIcon {
-    width: 52px;
-    height: 52px;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
   }
 
   .slip-itemTitle.incentiveSlip-itemTitle {
-    font-size: 17px;
+    font-size: 19px;
   }
 
-  .incentiveSlip-link,
+  .slip-itemMeta.incentiveSlip-itemMeta {
+    font-size: 15px;
+  }
+
   .incentiveSlip-download {
-    width: 40px;
-    height: 40px;
-    padding: 6px;
-    border-radius: 10px;
+    min-width: 52px;
+    max-width: 52px;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 14px;
   }
 
-  .incentiveSlip-link svg,
   .incentiveSlip-download svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
   }
 }
 
@@ -286,34 +411,30 @@
   .slip-item.incentiveSlip-item {
     flex-direction: column;
     align-items: stretch;
-    padding: 16px;
+    padding: 18px;
+    gap: 14px;
   }
 
   .incentiveSlip-itemTop {
     width: 100%;
+    gap: 14px;
   }
 
-  .incentiveSlip-itemRight {
-    width: 100%;
-    margin-top: 12px;
-    display: flex;
-    gap: 10px;
-    justify-content: space-between;
+  .slip-itemIcon.incentiveSlip-itemIcon {
+    width: 52px;
+    height: 52px;
   }
 
-  .incentiveSlip-link,
   .incentiveSlip-download {
-    flex: 1 1 0;
-    width: auto;
-    height: 44px;
-    padding: 0 12px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    min-width: 48px;
+    max-width: 48px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 12px;
+    align-self: flex-end;
   }
 
-  .incentiveSlip-link svg,
   .incentiveSlip-download svg {
     width: 20px;
     height: 20px;

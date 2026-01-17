@@ -86,9 +86,58 @@ export default function SalarySlip() {
     }
   };
 
+  const activeFilters = useMemo(() => {
+    const filters = [];
+    if (selectedMonth !== "All") {
+      filters.push({ type: "month", label: selectedMonth, value: selectedMonth });
+    }
+    if (query.trim()) {
+      filters.push({ type: "search", label: `Search: "${query}"`, value: query });
+    }
+    return filters;
+  }, [selectedMonth, query]);
+
+  const removeFilter = (filterType) => {
+    if (filterType === "month") {
+      setSelectedMonth("All");
+    } else if (filterType === "search") {
+      setQuery("");
+    }
+  };
+
   return (
     <div className="salarySlip-container">
       <section className="salarySlip-controls">
+        {/* Active Filters Chips */}
+        {activeFilters.length > 0 && (
+          <div className="filter-chips salarySlip-filter-chips">
+            {activeFilters.map((filter, index) => (
+              <div key={index} className="filter-chip salarySlip-filter-chip">
+                <span className="filter-chip-label">{filter.label}</span>
+                <button
+                  className="filter-chip-remove"
+                  onClick={() => removeFilter(filter.type)}
+                  aria-label={`Remove ${filter.label} filter`}
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="filter-controlRow salarySlip-controlRow">
           <div className="filter-filtersSection salarySlip-filtersSection">
             <select
@@ -179,7 +228,7 @@ export default function SalarySlip() {
 
                 <div className="slip-itemLeft salarySlip-itemLeft">
                   <div className="slip-itemTitle salarySlip-itemTitle">
-                    {item.month} {item.year}
+                    {item.month}
                   </div>
                   <div className="slip-itemMeta salarySlip-itemMeta">
                     Slip ID:{" "}
@@ -188,30 +237,7 @@ export default function SalarySlip() {
                     </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="slip-itemRight salarySlip-itemRight">
-                <a
-                  className="slip-link salarySlip-link"
-                  href={item.pdf}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`View salary slip ${item.month} ${item.year}`}
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </a>
                 <button
                   className="slip-download salarySlip-download"
                   onClick={() =>
@@ -220,7 +246,7 @@ export default function SalarySlip() {
                       `salary-slip-${item.month}-${item.year}.pdf`
                     )
                   }
-                  aria-label={`Download salary slip ${item.month} ${item.year}`}
+                  aria-label={`Download salary slip ${item.month}`}
                 >
                   <svg
                     width="20"
