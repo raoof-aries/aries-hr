@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.png";
 import "./Login.css";
 
+
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -33,12 +34,6 @@ export default function Login() {
 
   return (
     <main className="page-root login-root">
-      <div className="page-background login-background">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
-
       <div className="login-container">
         <header className="login-header">
           <div className="login-logo-container">
