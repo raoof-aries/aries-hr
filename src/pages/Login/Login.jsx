@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.png";
+import logoWhite from "../../assets/logo-white.png";
 import "./Login.css";
 
 export default function Login() {
@@ -35,8 +36,7 @@ export default function Login() {
       <div className="login-wrapper">
         <div className="login-header">
           <div className="login-header-pattern"></div>
-          {/* <img src={logo} alt="HRMS Logo" className="login-logo" /> */}
-          <h1 className="login-brand-text">Aries HRMS</h1>
+          <img src={logoWhite} alt="HRMS Logo" className="login-logo" />
         </div>
 
         <div className="login-container">
