@@ -1,0 +1,133 @@
+/* Home Screen */
+.dashboard-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 0 16px;
+}
+
+.dashboard-quick-access {
+  margin-top: 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: -38px;
+  position: relative;
+  z-index: 150;
+}
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(circle at top left, #ffffff, #f4faf8);
+  transform: translateY(10px);
+}
+
+.dashboard-card:hover {
+  transform: translateY(0px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-lg);
+}
+
+.dashboard-card:active {
+  transform: scale(0.98) translateY(2px);
+}
+
+.dashboard-card-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-card-content {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.dashboard-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.2px;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.dashboard-card-desc {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+/* Highlight first two primary cards (Salary & Incentive) */
+.dashboard-card--primary {
+  border-width: 1.5px;
+  border-color: var(--apple-blue-light);
+  box-shadow: var(--shadow-lg);
+}
+
+.dashboard-card--primary .dashboard-card-title {
+  color: var(--apple-blue);
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 8px 8px 12px;
+  }
+}
+
+@media (min-width: 640px) {
+  .dashboard-container {
+    padding: 12px 18px 32px;
+  }
+
+  .dashboard-grid {
+    gap: 18px;
+  }
+
+  .dashboard-card {
+    padding: 16px 14px;
+    border-radius: 20px;
+  }
+
+  .dashboard-card-title {
+    font-size: 16px;
+  }
+
+  .dashboard-card-desc {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    gap: 22px;
+  }
+
+  .dashboard-card {
+    border-radius: 22px;
+  }
+}

@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import Login from "./pages/Login/Login";
-import FeatureList from "./pages/FeatureList/FeatureList";
+import Home from "./pages/Home/Home";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
 import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
 import Allowance from "./pages/Allowance/Allowance";
@@ -58,7 +58,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <FeatureList />
+              <Home />
             </Layout>
           </ProtectedRoute>
         }

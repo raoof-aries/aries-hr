@@ -23,14 +23,14 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
-  border: 1px solid rgba(255, 152, 0, 0.2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   font-size: 14px;
   font-weight: 500;
-  color: #FF9800;
+  color: var(--text-secondary);
   font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  box-shadow: 0 1px 3px rgba(255, 152, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
 }
 
@@ -46,9 +46,9 @@
   height: 18px;
   padding: 0;
   border: none;
-  background: rgba(255, 152, 0, 0.2);
+  background: rgba(0, 0, 0, 0.04);
   border-radius: 50%;
-  color: #FF9800;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -56,7 +56,7 @@
 }
 
 .filter-chip-remove:hover {
-  background: rgba(255, 152, 0, 0.3);
+  background: rgba(0, 0, 0, 0.08);
   transform: scale(1.1);
 }
 
@@ -101,7 +101,7 @@
 
 .filter-countNumber.salarySlip-countNumber {
   font-weight: 600;
-  color: #FF9800;
+  color: var(--text-primary);
   font-size: 20px;
 }
 
@@ -129,8 +129,8 @@
 .filter-select.salarySlip-select:focus,
 .filter-search.salarySlip-search:focus {
   outline: none;
-  border-color: #FF9800;
-  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .filter-select.salarySlip-select option {
@@ -204,8 +204,12 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #FF9800, #FFB74D);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04),
+    rgba(0, 0, 0, 0.06)
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -233,7 +237,7 @@
 .slip-item.salarySlip-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
-  border-color: rgba(255, 152, 0, 0.2);
+  border-color: var(--border-hover);
 }
 
 .slip-item.salarySlip-item:active {
@@ -248,20 +252,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FFF3DA 0%, #FFE0B2 100%);
+  background: var(--bg-secondary);
   border-radius: 14px;
-  color: #FF9800;
+  color: var(--text-secondary);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 152, 0, 0.1);
+  border: 1px solid var(--border-color);
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(255, 152, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .slip-item.salarySlip-item:hover .slip-itemIcon.salarySlip-itemIcon {
   transform: scale(1.08) rotate(-2deg);
-  background: linear-gradient(135deg, #FFE0B2 0%, #FFCC80 100%);
-  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.2);
-  border-color: rgba(255, 152, 0, 0.3);
+  background: var(--bg-tertiary);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-hover);
 }
 
 .slip-itemTitle.salarySlip-itemTitle {
@@ -284,7 +288,7 @@
 }
 
 .slip-metaValue.salarySlip-metaValue {
-  color: #FF9800;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -325,7 +329,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.02),
+    rgba(0, 0, 0, 0.04)
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -341,11 +349,11 @@
 }
 
 .salarySlip-download:hover {
-  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  background: linear-gradient(135deg, #f2f2f7 0%, #e4e4ec 100%);
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2), 0 2px 6px rgba(255, 152, 0, 0.15);
-  border-color: rgba(255, 152, 0, 0.3);
-  color: #FF9800;
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
 }
 
 .salarySlip-download:hover::before {

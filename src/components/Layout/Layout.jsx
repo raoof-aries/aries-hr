@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import userProfile from "../../data/userProfile";
 import "./Layout.css";
 
 const menuItems = [
@@ -114,13 +115,14 @@ const menuItems = [
 export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { userName, logout } = useAuth();
+  const { user, userName, logout } = useAuth();
   const { notifications, unreadCount, markAsRead, groupedNotifications, formatTimeAgo } = useNotifications();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const notificationRef = useRef(null);
+  const isHomeScreen = location.pathname === "/";
 
   // Detect mobile screen size
   useEffect(() => {
@@ -156,17 +158,23 @@ export default function Layout({ children }) {
     navigate("/login");
   };
 
-  const displayName = userName || "User";
-  
-  // Extract first name from userName
+  const profileData = user || userProfile;
+  const displayName = (user && user.name) || userName || profileData?.name || "User";
+
+  // Extract first name from user display name
   const getFirstName = () => {
-    if (!userName) return "User";
-    const nameParts = userName.trim().split(/\s+/);
+    if (!displayName) return "User";
+    const nameParts = displayName.trim().split(/\s+/);
     return nameParts[0];
   };
-  
+  const formattedDate = new Intl.DateTimeFormat("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date());
+
   const firstName = getFirstName();
-  const isHomeScreen = location.pathname === "/";
   const profileImageUrl = "https://i.pravatar.cc/300?img=12";
 
   // Get page title based on current route
@@ -253,29 +261,21 @@ export default function Layout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <div className="layout-main">
+      <div className={`layout-main ${isHomeScreen ? "layout-main-home" : "layout-main-page"}`}>
         {/* Top Bar */}
-        <header className="layout-header">
+        <header className={`layout-header ${isHomeScreen ? "layout-header-home" : "layout-header-page"}`}>
           {isHomeScreen ? (
-            // Home Screen Header: Welcome back with profile image on left, notification on right
-            <>
-              <div className="layout-header-left">
-                <Link to="/profile" className="layout-header-profile">
-                  <img 
-                    src="https://i.pravatar.cc/300?img=12" 
-                    alt="Profile" 
-                    className="layout-header-profile-image"
-                  />
-                  <div className="layout-header-greeting">
-                    <span className="layout-header-greeting-text">Welcome Back,</span>
-                    <span className="layout-header-greeting-name">{firstName}!</span>
-                  </div>
-                </Link>
-              </div>
-              <div className="layout-header-right">
+            <div className="home-hero-card">
+              <div className="home-hero-top">
+                <div className="home-hero-greeting">
+                  <span className="home-hero-hello">
+                    Hello, {profileData?.name || firstName}
+                  </span>
+                  <span className="home-hero-date">{formattedDate}</span>
+                </div>
                 <div className="layout-notifications" ref={notificationRef}>
                   <button
-                    className="layout-notification-button"
+                    className="layout-notification-button layout-notification-button--light"
                     onClick={() => {
                       if (isMobile) {
                         navigate("/notifications");
@@ -364,7 +364,25 @@ export default function Layout({ children }) {
                   )}
                 </div>
               </div>
-            </>
+
+              <Link to="/profile" className="home-hero-profile">
+                <div className="home-hero-avatar">
+                  <img 
+                    src={profileImageUrl} 
+                    alt="Profile" 
+                    className="layout-header-profile-image"
+                  />
+                </div>
+                <div className="home-hero-details">
+                  <h2 className="home-hero-name">{profileData?.name}</h2>
+                  <p className="home-hero-role">{profileData?.designation}</p>
+                  <div className="home-hero-meta">
+                    <span className="home-hero-pill">{profileData?.employeeCode}</span>
+                    <span className="home-hero-pill">{profileData?.yearsInAries} yrs</span>
+                  </div>
+                </div>
+              </Link>
+            </div>
           ) : (
             // Other Pages Header: Back icon on left, page title in center, notification on right
             <>
@@ -381,7 +399,7 @@ export default function Layout({ children }) {
               <div className="layout-header-right">
                 <div className="layout-notifications" ref={notificationRef}>
                   <button
-                    className="layout-notification-button"
+                    className="layout-notification-button layout-notification-button--light"
                     onClick={() => {
                       if (isMobile) {
                         navigate("/notifications");
@@ -475,7 +493,23 @@ export default function Layout({ children }) {
         </header>
 
         {/* Page Content */}
-        <main className="layout-content">{children}</main>
+        <main className={`layout-content ${isHomeScreen ? "home-content" : "page-content"}`}>
+          {isHomeScreen ? (
+            <div className="home-shell">
+              <div className="home-accent"></div>
+              <div className="home-body">
+                <div className="home-body-inner">{children}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="page-shell">
+              <div className="page-accent"></div>
+              <div className="page-body">
+                <div className="page-body-inner">{children}</div>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
 
       {/* Mobile Bottom Navbar */}

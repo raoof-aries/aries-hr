@@ -1,25 +1,12 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import "./FeatureList.css";
+import "./Home.css";
 
-export default function FeatureList() {
-  const { userName } = useAuth();
-  const displayName = userName || "User";
-
-  // Profile data (same structure as Profile page)
-  const profileData = {
-    name: "Abdul Raoof",
-    employeeCode: "AG00005985",
-    designation: "Jr. Front end Developer",
-    yearsInAries: "2.02",
-    reportingPerson: "Basil Varghese",
-    hourlyRate: "525.00 INR",
-  };
-
+export default function Home() {
   const quickAccessItems = [
     {
       id: "salary",
       title: "Salary",
+      description: "View your latest salary slip",
       route: "/salary-slip",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -37,6 +24,7 @@ export default function FeatureList() {
     {
       id: "incentive",
       title: "Incentive",
+      description: "Check current incentive slip",
       route: "/incentive-slip",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -49,6 +37,7 @@ export default function FeatureList() {
     {
       id: "allowance",
       title: "Allowance",
+      description: "See your allowance details",
       route: "/allowance",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,6 +53,7 @@ export default function FeatureList() {
     {
       id: "health",
       title: "Health",
+      description: "Manage your health benefits",
       route: "/health",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -76,6 +66,7 @@ export default function FeatureList() {
     {
       id: "leave",
       title: "Leave",
+      description: "Leaves, holidays and balance",
       route: "/leave",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -91,6 +82,7 @@ export default function FeatureList() {
     {
       id: "calendar",
       title: "Calendar",
+      description: "Upcoming events and dates",
       route: "/calendar",
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -113,40 +105,29 @@ export default function FeatureList() {
 
   return (
     <div className="dashboard-container">
-      {/* Profile Section */}
-      <Link to="/profile" className="dashboard-profile-section">
-        <div className="dashboard-profile-avatar">
-          <img
-            src="https://i.pravatar.cc/300?img=12"
-            alt="Profile"
-            className="dashboard-profile-image"
-          />
-        </div>
-        <div className="dashboard-profile-info">
-          <h2 className="dashboard-profile-name">{profileData.name}</h2>
-          <p className="dashboard-profile-designation">{profileData.designation}</p>
-          <div className="dashboard-profile-meta">
-            <span className="dashboard-profile-badge">{profileData.employeeCode}</span>
-            <span className="dashboard-profile-text">{profileData.yearsInAries} years</span>
-          </div>
-        </div>
-      </Link>
-
-      {/* Quick Access Cards */}
       <div className="dashboard-quick-access">
         <div className="dashboard-grid">
           {quickAccessItems.map((item) => (
-            <Link 
-              key={item.id} 
-              to={item.route} 
-              className="dashboard-card"
-              style={{ backgroundColor: item.bgColor }}
+            <Link
+              key={item.id}
+              to={item.route}
+              className={`dashboard-card ${
+                item.id === "salary" || item.id === "incentive"
+                  ? "dashboard-card--primary"
+                  : ""
+              }`}
             >
-              <div className="dashboard-card-icon" style={{ color: item.iconColor }}>
+              <div 
+                className="dashboard-card-icon" 
+                style={{ backgroundColor: item.bgColor, color: item.iconColor }}
+              >
                 {item.icon}
               </div>
               <div className="dashboard-card-content">
                 <h4 className="dashboard-card-title">{item.title}</h4>
+                {item.description && (
+                  <p className="dashboard-card-desc">{item.description}</p>
+                )}
               </div>
             </Link>
           ))}

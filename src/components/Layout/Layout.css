@@ -1,13 +1,13 @@
 .layout-container {
   display: flex;
   min-height: 100vh;
-  background: #fff;
+  background: var(--bg-secondary);
 }
 
 /* Sidebar */
 .layout-sidebar {
   width: 260px;
-  background: rgba(255, 255, 255, 0.72);
+  background: #ffffffd9;
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-right: 0.5px solid var(--border-color);
@@ -54,6 +54,7 @@
   font-weight: 600;
   font-size: 17px;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .layout-logo-profile-image {
@@ -161,10 +162,18 @@
   margin-left: 0;
 }
 
+.layout-main-home {
+  background: var(--bg-secondary);
+}
+
+.layout-main-page {
+  background: var(--bg-secondary);
+}
+
 /* Header */
 .layout-header {
-  background: transparent;
-  padding: 16px 24px;
+  background: var(--apple-blue);
+  padding: 26px 24px 26px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -172,8 +181,24 @@
   top: 0;
   z-index: 100;
   gap: 16px;
-  min-height: 64px;
+  min-height: 96px;
   box-sizing: border-box;
+  color: #eaf5f2;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  /* box-shadow: 0 10px 28px rgba(1, 67, 66, 0.18); */
+}
+
+.layout-header-home {
+  padding-top: 30px;
+  padding-bottom: 28px;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+
+.layout-header-page {
+  padding-top: 20px;
+  padding-bottom: 18px;
 }
 
 .layout-header-logo {
@@ -185,8 +210,8 @@
 .layout-header-title {
   display: block;
   font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 700;
+  color: #ffffff;
   margin: 0;
   flex: 1;
   text-align: center;
@@ -255,53 +280,166 @@
 .layout-header-greeting-text {
   font-size: 14px;
   font-weight: 400;
-  color: var(--text-secondary);
+  color: #d9f2ec;
   line-height: 1.2;
 }
 
 .layout-header-greeting-name {
   font-size: 20px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff;
   line-height: 1.2;
   letter-spacing: -0.3px;
+}
+
+.home-hero-card {
+  width: 100%;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.home-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.home-hero-greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-hero-hello {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f6fffc;
+  letter-spacing: -0.2px;
+}
+
+.home-hero-date {
+  font-size: 13px;
+  font-weight: 400;
+  color: #d9f2ec;
+  opacity: 0.8;
+  letter-spacing: 0.2px;
+}
+
+.home-hero-profile {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  padding: 8px 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: transform 0.2s ease, background 0.2s ease, border 0.2s ease;
+}
+
+.home-hero-profile:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-2px);
+}
+
+.home-hero-avatar {
+  width: 5rem;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+}
+
+.home-hero-avatar .layout-header-profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.home-hero-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.home-hero-name {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+
+.home-hero-role {
+  margin: 0;
+  font-size: 14px;
+  color: #d9f2ec;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+}
+
+.home-hero-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.home-hero-pill {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f6fffc;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .layout-header-back {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   padding: 0;
-  border-radius: 50%;
-  background: #000000;
+  border-radius: 14px;
+  background: transparent;
   border: none;
   color: #ffffff;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6), 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .layout-header-back:hover {
-  background: #1a1a1a;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: scale(1.05);
+  opacity: 0.8;
+  transform: translateY(-1px);
   color: #ffffff;
 }
 
 .layout-header-back:active {
-  transform: scale(0.95);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6), 0 1px 4px rgba(0, 0, 0, 0.1);
+  transform: scale(0.96);
 }
 
 .layout-header-back svg {
   stroke: #ffffff;
   stroke-width: 2;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 .layout-header-right {
@@ -351,11 +489,11 @@
 
 .layout-notification-button {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   padding: 0;
-  border-radius: 50%;
-  background: #000000;
+  border-radius: 14px;
+  background: transparent;
   border: none;
   color: #ffffff;
   cursor: pointer;
@@ -364,25 +502,26 @@
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6), 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.layout-notification-button--light {
+  background: transparent;
 }
 
 .layout-notification-button:hover {
-  background: #1a1a1a;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: scale(1.05);
+  opacity: 0.8;
+  transform: translateY(-1px);
 }
 
 .layout-notification-button:active {
-  transform: scale(0.95);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6), 0 1px 4px rgba(0, 0, 0, 0.1);
+  transform: scale(0.96);
 }
 
 .layout-notification-button svg {
   stroke: #ffffff;
   stroke-width: 2;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   fill: none;
 }
 
@@ -588,11 +727,11 @@
   transform: translateX(-50%);
   width: calc(100% - 32px);
   max-width: 400px;
-  background: #000000;
+  background: #014342;
   border-radius: 24px;
   padding: 12px 16px;
   z-index: 999;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 32px rgba(1, 67, 66, 0.26);
   align-items: center;
   justify-content: space-around;
 }
@@ -604,7 +743,7 @@
   justify-content: center;
   gap: 0;
   padding: 8px 12px;
-  color: #b0b0b0;
+  color: #cfe4df;
   text-decoration: none;
   font-size: 0;
   font-weight: 500;
@@ -636,8 +775,8 @@
 }
 
 .layout-mobile-nav-item:not(.active) svg {
-  color: #b0b0b0;
-  stroke: #b0b0b0;
+  color: #cfe4df;
+  stroke: #cfe4df;
 }
 
 /* Mobile Menu Modal */
@@ -809,10 +948,84 @@
 .layout-content {
   flex: 1;
   padding: 0;
-  background: #fff;
+  background: var(--bg-secondary);
   overflow-y: auto;
 }
 
+.home-content {
+  margin-top: -28px;
+  padding-top: 0;
+  overflow-y: visible;
+}
+
+/* Ensure home uses inner scroller, not the page wrapper */
+.layout-content.home-content {
+  overflow: visible;
+}
+
+.page-content {
+  margin-top: -16px;
+  padding: 0;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.page-shell {
+  position: relative;
+  padding: 0 0 24px 0;
+}
+
+.page-accent {
+  height: 2rem;
+  background: var(--apple-blue);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.page-body {
+  position: relative;
+  margin-top: -44px;
+  background: transparent;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.page-body-inner {
+  background: var(--bg-secondary);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 28px 24px 24px 24px;
+}
+
+/* Home stacked layout */
+.home-shell {
+  position: relative;
+  padding-bottom: 0;
+}
+
+.home-accent {
+  height: 5rem;
+  background: var(--apple-blue);
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  border: 2px solid var(--apple-blue);
+}
+
+.home-body {
+  position: relative;
+  margin-top: -32px;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 0 16px;
+}
+
+.home-body-inner {
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 32px 0 16px 0;
+  /* no inner scroll by default; page scrolls as usual */
+}
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .layout-sidebar {
@@ -828,7 +1041,7 @@
     flex: 1;
     font-size: 18px;
     font-weight: 600;
-    color: #1d1d1f;
+    color: #ffffff;
     text-align: center;
   }
   
@@ -856,11 +1069,18 @@
   .layout-main {
     margin-left: 0;
     padding-bottom: 70px;
+    min-height: auto;
+  }
+
+  /* Home: no extra bottom padding since bottom nav is fixed */
+  .layout-main-home {
+    padding-bottom: 0;
+    min-height: 100vh;
   }
 
   .layout-header {
-    padding: 16px 20px;
-    min-height: 68px;
+    padding: 24px 20px 0rem 20px;
+    min-height: 92px;
   }
 
   /* Show header-left on home screen, hide on other pages */
@@ -876,6 +1096,41 @@
   .layout-content {
     padding: 0;
     padding-bottom: 80px;
+    overflow-y: visible;
+  }
+
+  .page-shell {
+    padding-bottom: 20px;
+  }
+
+  .page-accent {
+    height: 4rem;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+
+  .page-body {
+    margin-top: -36px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+
+  .page-body-inner {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 22px 18px 20px 18px;
+    /* Let content grow with the page on mobile instead of using an inner scroller,
+       so lists (like Salary slips) can extend all the way down the screen and
+       even under the bottom navbar if needed. */
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* On the Home screen, let the header scroll away on mobile
+     so cards never slide under a sticky header area */
+  .layout-header-home {
+    position: static;
+    top: auto;
   }
 
   .layout-user-name {
@@ -893,12 +1148,31 @@
   .layout-content {
     padding-bottom: 90px;
   }
+
+  /* Home: avoid extra bottom whitespace / scroll
+     when there isn't enough content to fill the screen */
+  .layout-content.home-content {
+    padding-bottom: 0;
+  }
+
+  /* Reduce padding on home shell and body for mobile */
+  .home-shell {
+    padding-bottom: 0;
+  }
+
+  .home-body-inner {
+    padding: 32px 0 12px 0;
+  }
 }
 
 @media (max-width: 480px) {
   .layout-content {
-    padding: 16px;
     padding-bottom: 25px;
+  }
+
+  /* Ensure Home still has no extra bottom padding on small phones */
+  .layout-content.home-content {
+    padding-bottom: 0;
   }
 
   .layout-notification-dropdown {
