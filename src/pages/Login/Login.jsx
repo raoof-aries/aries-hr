@@ -36,7 +36,7 @@ export default function Login() {
       <div className="login-wrapper">
         <div className="login-header">
           <div className="login-header-pattern"></div>
-          <img src={logoWhite} alt="HRMS Logo" className="login-logo" />
+          <h1 className="login-header-title">Aries HRMS</h1>
         </div>
 
         <div className="login-container">
@@ -128,6 +128,10 @@ export default function Login() {
             <p className="login-description">
               Secure access to your HR portal. Contact your administrator if you need assistance.
             </p>
+
+            <div className="login-footer-logo">
+              <img src={logo} alt="HRMS Logo" className="login-logo" />
+            </div>
           </div>
         </div>
       </div>

@@ -19,7 +19,7 @@
 .login-header {
   position: relative;
   background: var(--apple-blue);
-  padding: 60px 30px 80px;
+  padding: 80px 30px 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,8 +35,19 @@
   position: relative;
   z-index: 2;
   width: 10rem;
-  height: 10rem;
   object-fit: contain;
+}
+
+.login-header-title {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  color: #ffffff;
+  font-size: 35px;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.05em;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .login-container {
@@ -51,7 +62,7 @@
 }
 
 .login-content {
-  padding: 60px 30px 40px;
+  padding: 60px 30px 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -63,7 +74,6 @@
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .login-form {
@@ -80,7 +90,6 @@
   color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .login-input {
@@ -188,13 +197,19 @@
 }
 
 .login-description {
-  margin: 30px 0 0;
+  margin: 20px 0 0;
   color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 400;
   line-height: 1.5;
   text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.login-footer-logo {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
 }
 
 /* Responsive adjustments */
@@ -206,13 +221,12 @@
   }
 
   .login-header {
-    padding: 50px 20px 70px;
+    padding: 70px 20px 90px;
     flex: 2;
   }
 
   .login-logo {
     width: 140px;
-    height: 140px;
   }
 
   .login-container {
