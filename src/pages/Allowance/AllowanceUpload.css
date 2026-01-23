@@ -1,0 +1,321 @@
+/* Modern Design System - Allowance Upload Page (Matching Homescreen) */
+.allowanceUpload-container {
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.allowanceUpload-header {
+  margin-bottom: 32px;
+}
+
+.allowanceUpload-title {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.5px;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.allowanceUpload-subtitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 400;
+  color: #666666;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.allowanceUpload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.allowanceUpload-dateSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.allowanceUpload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.allowanceUpload-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #000000;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.allowanceUpload-select {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #000000;
+  font-size: 17px;
+  font-weight: 400;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23333' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.allowanceUpload-select:focus {
+  outline: none;
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.allowanceUpload-select option {
+  background: #ffffff;
+  color: #000000;
+}
+
+.allowanceUpload-uploadsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.allowanceUpload-uploadItem {
+  position: relative;
+}
+
+.allowanceUpload-uploadLabel {
+  display: block;
+  cursor: pointer;
+}
+
+.allowanceUpload-uploadTitle {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 12px;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.allowanceUpload-uploadArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  border: 2px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 16px;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  min-height: 160px;
+}
+
+.allowanceUpload-uploadLabel:hover .allowanceUpload-uploadArea {
+  border-color: var(--border-hover);
+  background: var(--bg-secondary);
+}
+
+.allowanceUpload-uploadArea svg {
+  color: #8e8e93;
+  transition: color 0.3s ease;
+}
+
+.allowanceUpload-uploadLabel:hover .allowanceUpload-uploadArea svg {
+  color: var(--text-primary);
+}
+
+.allowanceUpload-uploadText {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000000;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.allowanceUpload-uploadHint {
+  font-size: 14px;
+  font-weight: 400;
+  color: #8e8e93;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.allowanceUpload-fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  background: var(--bg-secondary);
+  transition: all 0.3s ease;
+}
+
+.allowanceUpload-fileInfo svg {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.allowanceUpload-fileName {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: #000000;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.allowanceUpload-removeFile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.allowanceUpload-removeFile:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.1);
+}
+
+.allowanceUpload-removeFile:active {
+  transform: scale(0.95);
+}
+
+.allowanceUpload-fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.allowanceUpload-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.allowanceUpload-cancelButton,
+.allowanceUpload-submitButton {
+  flex: 1;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.allowanceUpload-cancelButton {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.allowanceUpload-cancelButton:hover {
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.allowanceUpload-cancelButton:active {
+  transform: translateY(0);
+}
+
+.allowanceUpload-submitButton {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f2f2f7 100%);
+  color: #000000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.allowanceUpload-submitButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f2f2f7 0%, #e4e4ec 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-hover);
+}
+
+.allowanceUpload-submitButton:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.allowanceUpload-submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Larger screens */
+@media (min-width: 640px) {
+  /* Already set to 1fr 1fr in base styles */
+
+  .allowanceUpload-uploadArea {
+    padding: 48px 24px;
+    min-height: 180px;
+  }
+
+  .allowanceUpload-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .allowanceUpload-cancelButton,
+  .allowanceUpload-submitButton {
+    flex: 0 1 auto;
+    min-width: 120px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 639px) {
+  .allowanceUpload-title {
+    font-size: 24px;
+  }
+
+  .allowanceUpload-subtitle {
+    font-size: 15px;
+  }
+
+  .allowanceUpload-uploadArea {
+    padding: 32px 16px;
+    min-height: 140px;
+  }
+
+  .allowanceUpload-uploadText {
+    font-size: 15px;
+  }
+
+  .allowanceUpload-uploadHint {
+    font-size: 13px;
+  }
+
+  .allowanceUpload-actions {
+    flex-direction: column;
+  }
+}

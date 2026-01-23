@@ -1,0 +1,88 @@
+{
+  "allowances": [
+    {
+      "id": "2026-01-father",
+      "year": 2026,
+      "month": "January",
+      "type": "Father Allowance",
+      "pdf": "https://www.orimi.com/pdf-test.pdf"
+    },
+    {
+      "id": "2026-01-mother",
+      "year": 2026,
+      "month": "January",
+      "type": "Mother Allowance",
+      "pdf": "https://pdfobject.com/pdf/sample.pdf"
+    },
+    {
+      "id": "2026-01-spouse",
+      "year": 2026,
+      "month": "January",
+      "type": "Spouse Allowance",
+      "pdf": "https://example-files.online-convert.com/document/pdf/example.pdf"
+    },
+    {
+      "id": "2026-02-father",
+      "year": 2026,
+      "month": "February",
+      "type": "Father Allowance",
+      "pdf": "https://www.w3.org/WAI/WCAG22/working-examples/pdf-links/links.pdf"
+    },
+    {
+      "id": "2026-02-mother",
+      "year": 2026,
+      "month": "February",
+      "type": "Mother Allowance",
+      "pdf": "https://www.rd.usda.gov/sites/default/files/pdf-sample_0.pdf"
+    },
+    {
+      "id": "2026-02-spouse",
+      "year": 2026,
+      "month": "February",
+      "type": "Spouse Allowance",
+      "pdf": "https://www.orimi.com/pdf-test.pdf"
+    },
+    {
+      "id": "2026-03-father",
+      "year": 2026,
+      "month": "March",
+      "type": "Father Allowance",
+      "pdf": "https://pdfobject.com/pdf/sample.pdf"
+    },
+    {
+      "id": "2026-03-mother",
+      "year": 2026,
+      "month": "March",
+      "type": "Mother Allowance",
+      "pdf": "https://example-files.online-convert.com/document/pdf/example.pdf"
+    },
+    {
+      "id": "2026-03-spouse",
+      "year": 2026,
+      "month": "March",
+      "type": "Spouse Allowance",
+      "pdf": "https://www.w3.org/WAI/WCAG22/working-examples/pdf-links/links.pdf"
+    },
+    {
+      "id": "2025-12-father",
+      "year": 2025,
+      "month": "December",
+      "type": "Father Allowance",
+      "pdf": "https://www.rd.usda.gov/sites/default/files/pdf-sample_0.pdf"
+    },
+    {
+      "id": "2025-12-mother",
+      "year": 2025,
+      "month": "December",
+      "type": "Mother Allowance",
+      "pdf": "https://www.orimi.com/pdf-test.pdf"
+    },
+    {
+      "id": "2025-12-spouse",
+      "year": 2025,
+      "month": "December",
+      "type": "Spouse Allowance",
+      "pdf": "https://pdfobject.com/pdf/sample.pdf"
+    }
+  ]
+}

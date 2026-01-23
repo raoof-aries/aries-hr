@@ -6,6 +6,7 @@ import Home from "./pages/Home/Home";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
 import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
 import Allowance from "./pages/Allowance/Allowance";
+import AllowanceUpload from "./pages/Allowance/AllowanceUpload";
 import Health from "./pages/Health/Health";
 import Leave from "./pages/Leave/Leave";
 import Calendar from "./pages/Calendar/Calendar";
@@ -89,6 +90,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <Allowance />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/allowance/upload"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <AllowanceUpload />
             </Layout>
           </ProtectedRoute>
         }
