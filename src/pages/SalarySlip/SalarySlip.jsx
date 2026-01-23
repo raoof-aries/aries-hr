@@ -34,6 +34,7 @@ export default function SalarySlip() {
   );
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [query, setQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     setSelectedMonth("All");
@@ -86,87 +87,13 @@ export default function SalarySlip() {
     }
   };
 
-  const activeFilters = useMemo(() => {
-    const filters = [];
-    if (selectedMonth !== "All") {
-      filters.push({ type: "month", label: selectedMonth, value: selectedMonth });
-    }
-    if (query.trim()) {
-      filters.push({ type: "search", label: `Search: "${query}"`, value: query });
-    }
-    return filters;
-  }, [selectedMonth, query]);
-
-  const removeFilter = (filterType) => {
-    if (filterType === "month") {
-      setSelectedMonth("All");
-    } else if (filterType === "search") {
-      setQuery("");
-    }
-  };
 
   return (
     <div className="salarySlip-container">
       <section className="salarySlip-controls">
-        {/* Active Filters Chips */}
-        {activeFilters.length > 0 && (
-          <div className="filter-chips salarySlip-filter-chips">
-            {activeFilters.map((filter, index) => (
-              <div key={index} className="filter-chip salarySlip-filter-chip">
-                <span className="filter-chip-label">{filter.label}</span>
-                <button
-                  className="filter-chip-remove"
-                  onClick={() => removeFilter(filter.type)}
-                  aria-label={`Remove ${filter.label} filter`}
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         <div className="filter-controlRow salarySlip-controlRow">
-          <div className="filter-filtersSection salarySlip-filtersSection">
-            <select
-              className="filter-select salarySlip-select"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              aria-label="Select year"
-            >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="filter-select salarySlip-select"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              aria-label="Select month"
-            >
-              <option value="All">All months</option>
-              {monthsForYear.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-
+          {/* Search and Filter Icon Row */}
+          <div className="salarySlip-searchFilterRow">
             <input
               type="search"
               placeholder="Search month, file or id..."
@@ -175,8 +102,60 @@ export default function SalarySlip() {
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search salary slips"
             />
+            <button
+              className="salarySlip-filterToggleButton"
+              onClick={() => setShowFilters(!showFilters)}
+              aria-label="Toggle filters"
+              aria-expanded={showFilters}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </button>
           </div>
 
+          {/* Filter Dropdowns - Shown when filter icon is clicked */}
+          {showFilters && (
+            <div className="salarySlip-filtersDropdown">
+              <select
+                className="filter-select salarySlip-select"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                aria-label="Select year"
+              >
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="filter-select salarySlip-select"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                aria-label="Select month"
+              >
+                <option value="All">All months</option>
+                {monthsForYear.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Count Section */}
           <div className="filter-countSection salarySlip-countSection">
             <p className="filter-count salarySlip-count">
               <span className="filter-countNumber salarySlip-countNumber">
