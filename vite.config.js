@@ -21,4 +21,9 @@ export default defineConfig({
       },
     }),
   ],
+  // Allow `--host` and external devices to reach the dev server
+  server: {
+    host: true, // equivalent to 0.0.0.0
+    port: 5173,
+  },
 });
