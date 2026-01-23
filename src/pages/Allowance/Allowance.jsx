@@ -141,6 +141,29 @@ export default function Allowance() {
               aria-label="Search allowances"
             />
             <button
+              className="allowance-filterToggleButton"
+              onClick={() => setShowFilters(!showFilters)}
+              aria-label="Toggle filters"
+              aria-expanded={showFilters}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </button>
+          </div>
+
+          {/* Upload Button Row */}
+          <div className="allowance-uploadRow">
+            <button
               className="allowance-uploadButton"
               onClick={() => navigate("/allowance/upload")}
               aria-label="Upload allowance"
@@ -159,25 +182,7 @@ export default function Allowance() {
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
-            </button>
-            <button
-              className="allowance-filterToggleButton"
-              onClick={() => setShowFilters(!showFilters)}
-              aria-label="Toggle filters"
-              aria-expanded={showFilters}
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-              </svg>
+              <span>Upload</span>
             </button>
           </div>
 
