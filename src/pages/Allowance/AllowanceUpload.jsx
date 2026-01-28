@@ -219,7 +219,8 @@ export default function AllowanceUpload() {
               <input
                 id={`file-${type.key}`}
                 type="file"
-                accept=".pdf,.doc,.docx"
+                accept=".pdf,.doc,.docx,image/*"
+                capture="environment"
                 className="allowanceUpload-fileInput"
                 onChange={(e) => handleFileChange(type.key, e)}
                 aria-label={`Upload ${type.label}`}
