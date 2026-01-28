@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
-import userProfile from "../../data/userProfile";
 import "./Layout.css";
 
 const menuItems = [
@@ -121,8 +120,22 @@ export default function Layout({ children }) {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [userProfile, setUserProfile] = useState(null);
   const notificationRef = useRef(null);
   const isHomeScreen = location.pathname === "/";
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("/data/userProfile.json");
+        const data = await response.json();
+        setUserProfile(data);
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+      }
+    };
+    fetchUserProfile();
+  }, []);
 
   // Detect mobile screen size
   useEffect(() => {

@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from "react";
-import incentiveData from "../../data/incentiveSlips.json";
 import "./IncentiveSlip.css";
 
 const MONTHS = [
@@ -24,19 +23,42 @@ function monthIndex(monthName) {
 
 export default function IncentiveSlip() {
   const currentYear = new Date().getFullYear();
+  const [incentiveData, setIncentiveData] = useState({ incentiveSlips: [] });
+  const [isLoading, setIsLoading] = useState(true);
+
   const years = useMemo(() => {
     const yrs = Array.from(
       new Set(incentiveData.incentiveSlips.map((s) => s.year))
     );
     return yrs.sort((a, b) => b - a);
-  }, []);
+  }, [incentiveData]);
 
-  const [selectedYear, setSelectedYear] = useState(
-    years.includes(currentYear) ? currentYear : years[0] || currentYear
-  );
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/data/incentiveSlips.json");
+        const data = await response.json();
+        setIncentiveData(data);
+        const yrs = Array.from(new Set(data.incentiveSlips.map((s) => s.year)));
+        const sortedYears = yrs.sort((a, b) => b - a);
+        if (sortedYears.includes(currentYear)) {
+          setSelectedYear(currentYear);
+        } else if (sortedYears.length > 0) {
+          setSelectedYear(sortedYears[0]);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error loading incentive slips:", error);
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [currentYear]);
 
   useEffect(() => {
     setSelectedMonth("All");
@@ -91,6 +113,14 @@ export default function IncentiveSlip() {
     }
   };
 
+
+  if (isLoading) {
+    return (
+      <div className="incentiveSlip-container">
+        <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="incentiveSlip-container">

@@ -1,11 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import userProfile from "../../data/userProfile";
 import "./Profile.css";
 
 export default function Profile() {
   const { user } = useAuth();
+  const [userProfile, setUserProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("/data/userProfile.json");
+        const data = await response.json();
+        setUserProfile(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+        setIsLoading(false);
+      }
+    };
+    fetchUserProfile();
+  }, []);
+
   const profileData = user || userProfile;
+
+  if (isLoading || !profileData) {
+    return (
+      <div className="profile-container">
+        <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-container">

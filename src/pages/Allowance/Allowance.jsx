@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import allowanceData from "../../data/allowances.json";
 import "./Allowance.css";
 
 const MONTHS = [
@@ -34,20 +33,45 @@ export default function Allowance() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const currentMonth = MONTHS[new Date().getMonth()];
+  const [allowanceData, setAllowanceData] = useState({ allowances: [] });
+  const [isLoading, setIsLoading] = useState(true);
+
   const years = useMemo(() => {
     const yrs = Array.from(
       new Set(allowanceData.allowances.map((s) => s.year))
     );
     return yrs.sort((a, b) => b - a);
-  }, []);
+  }, [allowanceData]);
 
   const [selectedYear, setSelectedYear] = useState(
-    years.includes(currentYear) ? currentYear : years[0] || currentYear
+    currentYear
   );
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedType, setSelectedType] = useState("All Types");
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/data/allowances.json");
+        const data = await response.json();
+        setAllowanceData(data);
+        const yrs = Array.from(new Set(data.allowances.map((s) => s.year)));
+        const sortedYears = yrs.sort((a, b) => b - a);
+        if (sortedYears.includes(currentYear)) {
+          setSelectedYear(currentYear);
+        } else if (sortedYears.length > 0) {
+          setSelectedYear(sortedYears[0]);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error loading allowances:", error);
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [currentYear]);
 
   useEffect(() => {
     // Reset to current month when year changes, if current year is selected
@@ -125,6 +149,14 @@ export default function Allowance() {
       window.open(pdfUrl, "_blank");
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="allowance-container">
+        <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="allowance-container">

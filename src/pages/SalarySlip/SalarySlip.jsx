@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from "react";
-import salaryData from "../../data/salarySlips.json";
 import "./SalarySlip.css";
 
 const MONTHS = [
@@ -24,17 +23,40 @@ function monthIndex(monthName) {
 
 export default function SalarySlip() {
   const currentYear = new Date().getFullYear();
+  const [salaryData, setSalaryData] = useState({ salarySlips: [] });
+  const [isLoading, setIsLoading] = useState(true);
+
   const years = useMemo(() => {
     const yrs = Array.from(new Set(salaryData.salarySlips.map((s) => s.year)));
     return yrs.sort((a, b) => b - a);
-  }, []);
+  }, [salaryData]);
 
-  const [selectedYear, setSelectedYear] = useState(
-    years.includes(currentYear) ? currentYear : years[0] || currentYear
-  );
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/data/salarySlips.json");
+        const data = await response.json();
+        setSalaryData(data);
+        const yrs = Array.from(new Set(data.salarySlips.map((s) => s.year)));
+        const sortedYears = yrs.sort((a, b) => b - a);
+        if (sortedYears.includes(currentYear)) {
+          setSelectedYear(currentYear);
+        } else if (sortedYears.length > 0) {
+          setSelectedYear(sortedYears[0]);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error loading salary slips:", error);
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [currentYear]);
 
   useEffect(() => {
     setSelectedMonth("All");
@@ -87,6 +109,14 @@ export default function SalarySlip() {
     }
   };
 
+
+  if (isLoading) {
+    return (
+      <div className="salarySlip-container">
+        <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="salarySlip-container">
