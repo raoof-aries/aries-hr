@@ -211,7 +211,7 @@ export default function AllowanceUpload() {
                       Click to upload or drag and drop
                     </span>
                     <span className="allowanceUpload-uploadHint">
-                      PDF, DOC, DOCX (Max 10MB)
+                      PDF, DOC, DOCX or Images (Max 10MB)
                     </span>
                   </div>
                 )}
@@ -220,7 +220,6 @@ export default function AllowanceUpload() {
                 id={`file-${type.key}`}
                 type="file"
                 accept=".pdf,.doc,.docx,image/*"
-                capture="environment"
                 className="allowanceUpload-fileInput"
                 onChange={(e) => handleFileChange(type.key, e)}
                 aria-label={`Upload ${type.label}`}
