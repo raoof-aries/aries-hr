@@ -1148,7 +1148,9 @@
   }
   
   .layout-content {
-    padding-bottom: 90px;
+    /* Leave space for the floating bottom navbar plus a bit extra
+       so the last item in a list can scroll fully above the navbar. */
+    padding-bottom: calc(90px + 2rem);
   }
 
   /* Home: avoid extra bottom whitespace / scroll
@@ -1168,13 +1170,12 @@
 }
 
 @media (max-width: 480px) {
-  .layout-content {
-    padding-bottom: 25px;
-  }
-
-  /* Ensure Home still has no extra bottom padding on small phones */
+  /* On very small phones, increase bottom padding further so
+     the final row of content (cards, lists, etc.) is clearly
+     visible above the navbar. */
+  .layout-content,
   .layout-content.home-content {
-    padding-bottom: 0;
+    padding-bottom: calc(90px + 2.5rem);
   }
 
   .layout-notification-dropdown {
