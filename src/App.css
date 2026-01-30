@@ -50,31 +50,31 @@ textarea {
 
 /* Apple Design System - Color Variables */
 :root {
-  /* Primary Green Palette */
-  --apple-blue: #014342;
-  --apple-blue-hover: #015c50;
-  --apple-blue-light: rgba(1, 67, 66, 0.1);
-  --apple-blue-lighter: rgba(1, 67, 66, 0.05);
+  /* Primary Blue Palette */
+  --apple-blue: #014364;
+  --apple-blue-hover: #015a80;
+  --apple-blue-light: rgba(1, 67, 100, 0.1);
+  --apple-blue-lighter: rgba(1, 67, 100, 0.05);
 
   /* Text Colors */
-  --text-primary: #001a17;
-  --text-secondary: #2f4f4b;
-  --text-tertiary: #6c8a86;
+  --text-primary: #0a1628;
+  --text-secondary: #2f4a5c;
+  --text-tertiary: #6c8494;
 
   /* Background Colors */
   --bg-primary: #ffffff;
-  --bg-secondary: #f1f6f5;
-  --bg-tertiary: #e1ebe9;
+  --bg-secondary: #f1f5f8;
+  --bg-tertiary: #e1e8ed;
 
   /* Border Colors */
-  --border-color: rgba(1, 67, 66, 0.12);
-  --border-hover: rgba(1, 67, 66, 0.18);
+  --border-color: rgba(1, 67, 100, 0.12);
+  --border-hover: rgba(1, 67, 100, 0.18);
 
   /* Subtle Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 26, 23, 0.08), 0 1px 2px rgba(0, 26, 23, 0.04);
-  --shadow-md: 0 2px 8px rgba(1, 67, 66, 0.12), 0 1px 4px rgba(1, 67, 66, 0.06);
-  --shadow-lg: 0 4px 16px rgba(1, 67, 66, 0.14), 0 2px 8px rgba(1, 67, 66, 0.08);
-  --shadow-xl: 0 8px 24px rgba(1, 67, 66, 0.16), 0 4px 12px rgba(1, 67, 66, 0.1);
+  --shadow-sm: 0 1px 3px rgba(10, 22, 40, 0.08), 0 1px 2px rgba(10, 22, 40, 0.04);
+  --shadow-md: 0 2px 8px rgba(1, 67, 100, 0.12), 0 1px 4px rgba(1, 67, 100, 0.06);
+  --shadow-lg: 0 4px 16px rgba(1, 67, 100, 0.14), 0 2px 8px rgba(1, 67, 100, 0.08);
+  --shadow-xl: 0 8px 24px rgba(1, 67, 100, 0.16), 0 4px 12px rgba(1, 67, 100, 0.1);
 
   /* Legacy support */
   --accent-color: var(--apple-blue);
