@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { getDataUrl } from "../utils/dataUrl";
 
 const AuthContext = createContext(null);
 
@@ -13,7 +14,8 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("/data/userProfile.json");
+        const response = await fetch(getDataUrl("data/userProfile.json"));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setUserProfile(data);
       } catch (error) {

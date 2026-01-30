@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { getDataUrl } from "../../utils/dataUrl";
 import "./Profile.css";
 
 export default function Profile() {
@@ -10,7 +11,8 @@ export default function Profile() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("/data/userProfile.json");
+        const response = await fetch(getDataUrl("data/userProfile.json"));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setUserProfile(data);
         setIsLoading(false);

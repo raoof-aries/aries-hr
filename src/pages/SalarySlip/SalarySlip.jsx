@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { getDataUrl } from "../../utils/dataUrl";
 import "./SalarySlip.css";
 
 const MONTHS = [
@@ -25,6 +26,7 @@ export default function SalarySlip() {
   const currentYear = new Date().getFullYear();
   const [salaryData, setSalaryData] = useState({ salarySlips: [] });
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   const years = useMemo(() => {
     const yrs = Array.from(new Set(salaryData.salarySlips.map((s) => s.year)));
@@ -38,8 +40,10 @@ export default function SalarySlip() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoadError(null);
       try {
-        const response = await fetch("/data/salarySlips.json");
+        const response = await fetch(getDataUrl("data/salarySlips.json"));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setSalaryData(data);
         const yrs = Array.from(new Set(data.salarySlips.map((s) => s.year)));
@@ -52,6 +56,7 @@ export default function SalarySlip() {
         setIsLoading(false);
       } catch (error) {
         console.error("Error loading salary slips:", error);
+        setLoadError(error.message || "Failed to load data");
         setIsLoading(false);
       }
     };
@@ -67,7 +72,7 @@ export default function SalarySlip() {
       .filter((s) => s.year === selectedYear)
       .map((s) => s.month)
       .filter((v, i, a) => a.indexOf(v) === i);
-  }, [selectedYear]);
+  }, [salaryData, selectedYear]);
 
   const filtered = useMemo(() => {
     let items = salaryData.salarySlips.filter((s) => s.year === selectedYear);
@@ -88,7 +93,7 @@ export default function SalarySlip() {
 
     items.sort((a, b) => monthIndex(b.month) - monthIndex(a.month));
     return items;
-  }, [selectedYear, selectedMonth, query]);
+  }, [salaryData, selectedYear, selectedMonth, query]);
 
   const handleDownload = async (pdfUrl, fileName) => {
     try {
@@ -114,6 +119,29 @@ export default function SalarySlip() {
     return (
       <div className="salarySlip-container">
         <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="salarySlip-container">
+        <div
+          style={{
+            padding: "2rem",
+            textAlign: "center",
+            maxWidth: "24rem",
+            margin: "2rem auto",
+          }}
+        >
+          <p style={{ color: "var(--color-error, #c00)", marginBottom: "0.5rem" }}>
+            Failed to load salary slips
+          </p>
+          <p style={{ fontSize: "0.9rem", color: "#666" }}>{loadError}</p>
+          <p style={{ fontSize: "0.85rem", marginTop: "1rem", color: "#666" }}>
+            Run the app with <code>npm run dev</code>; opening the built file in the browser will not load JSON data.
+          </p>
+        </div>
       </div>
     );
   }

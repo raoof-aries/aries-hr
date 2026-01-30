@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getDataUrl } from "../../utils/dataUrl";
 import "./Allowance.css";
 
 const MONTHS = [
@@ -54,7 +55,8 @@ export default function Allowance() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/data/allowances.json");
+        const response = await fetch(getDataUrl("data/allowances.json"));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setAllowanceData(data);
         const yrs = Array.from(new Set(data.allowances.map((s) => s.year)));
@@ -94,7 +96,7 @@ export default function Allowance() {
       .filter((s) => s.year === selectedYear)
       .map((s) => s.month)
       .filter((v, i, a) => a.indexOf(v) === i);
-  }, [selectedYear]);
+  }, [allowanceData, selectedYear]);
 
   const filtered = useMemo(() => {
     let items = allowanceData.allowances.filter(
@@ -129,7 +131,7 @@ export default function Allowance() {
       );
     });
     return items;
-  }, [selectedYear, selectedMonth, selectedType, query]);
+  }, [allowanceData, selectedYear, selectedMonth, selectedType, query]);
 
   const handleDownload = async (pdfUrl, fileName) => {
     try {

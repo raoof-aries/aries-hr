@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { getDataUrl } from "../../utils/dataUrl";
 import "./IncentiveSlip.css";
 
 const MONTHS = [
@@ -41,7 +42,8 @@ export default function IncentiveSlip() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/data/incentiveSlips.json");
+        const response = await fetch(getDataUrl("data/incentiveSlips.json"));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setIncentiveData(data);
         const yrs = Array.from(new Set(data.incentiveSlips.map((s) => s.year)));
@@ -69,7 +71,7 @@ export default function IncentiveSlip() {
       .filter((s) => s.year === selectedYear)
       .map((s) => s.month)
       .filter((v, i, a) => a.indexOf(v) === i);
-  }, [selectedYear]);
+  }, [incentiveData, selectedYear]);
 
   const filtered = useMemo(() => {
     let items = incentiveData.incentiveSlips.filter(
@@ -92,7 +94,7 @@ export default function IncentiveSlip() {
 
     items.sort((a, b) => monthIndex(b.month) - monthIndex(a.month));
     return items;
-  }, [selectedYear, selectedMonth, query]);
+  }, [incentiveData, selectedYear, selectedMonth, query]);
 
   const handleDownload = async (pdfUrl, fileName) => {
     try {

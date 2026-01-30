@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { getDataUrl } from "../../utils/dataUrl";
 import "./Layout.css";
 
 const menuItems = [
@@ -127,7 +128,8 @@ export default function Layout({ children }) {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("/data/userProfile.json");
+        const response = await fetch(getDataUrl("data/userProfile.json"));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setUserProfile(data);
       } catch (error) {
