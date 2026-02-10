@@ -38,10 +38,20 @@
   transform: translateY(10px);
 }
 
-.dashboard-card:hover {
-  transform: translateY(0px);
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-lg);
+/* Only apply hover effects on devices that truly support hover (mouse/trackpad) */
+@media (hover: hover) {
+  .dashboard-card:hover {
+    transform: translateY(0px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* On touch-only devices, remove the translateY offset since hover can't reveal it */
+@media (hover: none) {
+  .dashboard-card {
+    transform: translateY(0);
+  }
 }
 
 .dashboard-card:active {

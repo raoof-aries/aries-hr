@@ -94,42 +94,45 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.featureCard-root:hover {
-  transform: translateY(-2px);
-  background: var(--bg-primary);
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md);
-}
+/* Only apply hover effects on devices that truly support hover (mouse/trackpad) */
+@media (hover: hover) {
+  .featureCard-root:hover {
+    transform: translateY(-2px);
+    background: var(--bg-primary);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+  }
 
-.featureCard-root:hover .featureCard-glow {
-  opacity: 1;
-}
+  .featureCard-root:hover .featureCard-glow {
+    opacity: 1;
+  }
 
-.featureCard-root:hover::before {
-  transform: scaleX(1);
-}
+  .featureCard-root:hover::before {
+    transform: scaleX(1);
+  }
 
-.featureCard-root:hover .featureCard-icon {
-  background: var(--apple-blue-light);
-  transform: scale(1.05);
-  border-color: var(--apple-blue);
-  box-shadow: 0 2px 8px var(--apple-blue-lighter);
-}
+  .featureCard-root:hover .featureCard-icon {
+    background: var(--apple-blue-light);
+    transform: scale(1.05);
+    border-color: var(--apple-blue);
+    box-shadow: 0 2px 8px var(--apple-blue-lighter);
+  }
 
-.featureCard-root:hover .featureCard-content h3 {
-  color: var(--text-primary);
-  transform: translateX(2px);
-}
+  .featureCard-root:hover .featureCard-content h3 {
+    color: var(--text-primary);
+    transform: translateX(2px);
+  }
 
-.featureCard-root:hover .featureCard-content p {
-  color: var(--text-secondary);
-}
+  .featureCard-root:hover .featureCard-content p {
+    color: var(--text-secondary);
+  }
 
-.featureCard-root:hover .featureCard-arrow {
-  background: var(--bg-tertiary);
-  border-color: var(--border-hover);
-  color: var(--apple-blue);
-  transform: translateX(2px);
+  .featureCard-root:hover .featureCard-arrow {
+    background: var(--bg-tertiary);
+    border-color: var(--border-hover);
+    color: var(--apple-blue);
+    transform: translateX(2px);
+  }
 }
 
 .featureCard-root:active {

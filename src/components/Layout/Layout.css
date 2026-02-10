@@ -1200,3 +1200,17 @@
     display: none;
   }
 }
+
+/* PWA Standalone mode: dock the bottom nav flush at the bottom
+   instead of floating, since there's no browser chrome below. */
+@media (display-mode: standalone) {
+  .layout-mobile-nav {
+    bottom: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+}
