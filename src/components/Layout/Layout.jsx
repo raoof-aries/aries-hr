@@ -199,6 +199,7 @@ export default function Layout({ children }) {
       "/salary-slip": "Salary",
       "/incentive-slip": "Incentive",
       "/allowance": "Allowance",
+      "/allowance/upload": "Upload Allowance",
       "/health": "Health",
       "/leave": "Leave",
       "/calendar": "Calendar",

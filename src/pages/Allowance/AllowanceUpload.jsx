@@ -85,13 +85,6 @@ export default function AllowanceUpload() {
 
   return (
     <div className="allowanceUpload-container">
-      <div className="allowanceUpload-header">
-        <h1 className="allowanceUpload-title">Upload Allowance</h1>
-        <p className="allowanceUpload-subtitle">
-          Select year and month, then upload allowance files
-        </p>
-      </div>
-
       <form className="allowanceUpload-form" onSubmit={handleSubmit}>
         <div className="allowanceUpload-dateSection">
           <div className="allowanceUpload-field">
