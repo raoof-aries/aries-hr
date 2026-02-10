@@ -1165,10 +1165,9 @@
     padding-bottom: calc(90px + 1rem);
   }
 
-  /* Home: avoid extra bottom whitespace / scroll
-     when there isn't enough content to fill the screen */
+  /* Home: enough bottom padding so last row of cards clears the floating navbar */
   .layout-content.home-content {
-    padding-bottom: 0;
+    padding-bottom: calc(90px + 2.5rem);
   }
 
   /* Reduce padding on home shell and body for mobile */
@@ -1201,16 +1200,3 @@
   }
 }
 
-/* PWA Standalone mode: dock the bottom nav flush at the bottom
-   instead of floating, since there's no browser chrome below. */
-@media (display-mode: standalone) {
-  .layout-mobile-nav {
-    bottom: 0;
-    left: 0;
-    transform: none;
-    width: 100%;
-    max-width: 100%;
-    border-radius: 24px 24px 0 0;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  }
-}
