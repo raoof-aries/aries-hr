@@ -52,6 +52,18 @@ textarea {
 
 /* Apple Design System - Color Variables */
 :root {
+  /* Typography Scale */
+  --fs-caption: 12px;      /* timestamps, hints, smallest text */
+  --fs-small: 13px;        /* secondary meta, badges, dates */
+  --fs-body-sm: 14px;      /* form inputs, descriptions */
+  --fs-body: 15px;         /* default body, card titles, nav items */
+  --fs-body-lg: 16px;      /* larger body, section labels */
+  --fs-heading-sm: 18px;   /* mobile headings, small section titles */
+  --fs-heading: 20px;      /* page titles, hero elements */
+  --fs-heading-lg: 22px;   /* desktop section titles */
+  --fs-display-sm: 24px;   /* profile name, large headings */
+  --fs-display: 28px;      /* placeholder page headings */
+
   /* Primary Green Palette */
   --apple-blue: #014342;
   --apple-blue-hover: #015c50;
@@ -196,14 +208,14 @@ textarea {
 .filter-count {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 17px;
+  font-size: var(--fs-body);
   font-weight: 400;
 }
 
 .filter-countNumber {
   font-weight: 600;
   color: var(--apple-blue);
-  font-size: 20px;
+  font-size: var(--fs-heading);
 }
 
 .filter-select,
@@ -213,7 +225,7 @@ textarea {
   border: 0.5px solid var(--border-color);
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 17px;
+  font-size: var(--fs-body);
   font-weight: 400;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sm);
@@ -270,7 +282,7 @@ textarea {
 
 .slip-empty p {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--fs-body);
   font-weight: 400;
   color: var(--text-secondary);
 }
@@ -334,7 +346,7 @@ textarea {
 
 .slip-itemTitle {
   margin-bottom: 4px;
-  font-size: 17px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.3px;
@@ -342,7 +354,7 @@ textarea {
 }
 
 .slip-itemMeta {
-  font-size: 15px;
+  font-size: var(--fs-body);
   color: var(--text-secondary);
   line-height: 1.5;
   font-weight: 400;
@@ -370,7 +382,7 @@ textarea {
   border-radius: 10px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--fs-body);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   flex: 1;

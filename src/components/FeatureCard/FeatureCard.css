@@ -64,7 +64,7 @@
 
 .featureCard-content h3 {
   margin: 0 0 4px 0;
-  font-size: 17px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.3px;
@@ -73,7 +73,7 @@
 
 .featureCard-content p {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--fs-body);
   color: var(--text-secondary);
   line-height: 1.5;
   font-weight: 400;
@@ -158,12 +158,12 @@
   }
 
   .featureCard-content h3 {
-    font-size: 20px;
+    font-size: var(--fs-heading);
     margin-bottom: 6px;
   }
 
   .featureCard-content p {
-    font-size: 17px;
+    font-size: var(--fs-body);
   }
 
   .featureCard-arrow {
@@ -184,6 +184,6 @@
   }
 
   .featureCard-content h3 {
-    font-size: 22px;
+    font-size: var(--fs-heading-lg);
   }
 }

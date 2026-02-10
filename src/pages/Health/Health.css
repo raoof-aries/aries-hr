@@ -9,13 +9,13 @@
 }
 
 .dummy-page h1 {
-  font-size: 28px;
+  font-size: var(--fs-display);
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 12px;
 }
 
 .dummy-page p {
-  font-size: 16px;
+  font-size: var(--fs-body-lg);
   color: var(--text-secondary);
 }

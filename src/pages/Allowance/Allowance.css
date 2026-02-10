@@ -26,7 +26,7 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  font-size: 14px;
+  font-size: var(--fs-body-sm);
   font-weight: 500;
   color: var(--text-secondary);
   font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -135,7 +135,7 @@
   width: 100%;
   height: 48px;
   -webkit-tap-highlight-color: transparent;
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 500;
   white-space: nowrap;
   font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -164,7 +164,7 @@
 .filter-count.allowance-count {
   margin: 0;
   color: #666666;
-  font-size: 14px;
+  font-size: var(--fs-body-sm);
   font-weight: 400;
   font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -172,7 +172,7 @@
 .filter-countNumber.allowance-countNumber {
   font-weight: 500;
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: var(--fs-body-lg);
 }
 
 /* Modern Dropdowns and Search */
@@ -183,7 +183,7 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: #ffffff;
   color: #000000;
-  font-size: 14px;
+  font-size: var(--fs-body-sm);
   font-weight: 400;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -252,7 +252,7 @@
 
 .slip-empty.allowance-empty p {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--fs-body);
   font-weight: 400;
   color: #666666;
   font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -354,7 +354,7 @@
 
 .slip-itemTitle.allowance-itemTitle {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: #000000;
   letter-spacing: -0.3px;
@@ -365,7 +365,7 @@
 }
 
 .slip-itemMeta.allowance-itemMeta {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   color: #666666;
   font-weight: 400;
   font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -389,7 +389,7 @@
   border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--fs-body);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   flex: 0 0 auto;
@@ -485,11 +485,11 @@
   }
 
   .slip-itemTitle.allowance-itemTitle {
-    font-size: 18px;
+    font-size: var(--fs-heading-sm);
   }
 
   .slip-itemMeta.allowance-itemMeta {
-    font-size: 14px;
+    font-size: var(--fs-body-sm);
   }
 
   .allowance-download {

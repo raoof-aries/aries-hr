@@ -52,7 +52,7 @@
 
 .mobile-only-description {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--fs-body);
   font-weight: 400;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
@@ -68,7 +68,7 @@
 
 .mobile-only-footer-text {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

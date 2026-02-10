@@ -77,7 +77,7 @@
 }
 
 .dashboard-card-title {
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
@@ -87,7 +87,7 @@
 
 .dashboard-card-desc {
   margin-top: 4px;
-  font-size: 13px;
+  font-size: var(--fs-small);
   line-height: 1.4;
   color: var(--text-secondary);
 }
@@ -124,11 +124,11 @@
   }
 
   .dashboard-card-title {
-    font-size: 16px;
+    font-size: var(--fs-body-lg);
   }
 
   .dashboard-card-desc {
-    font-size: 14px;
+    font-size: var(--fs-body-sm);
   }
 }
 

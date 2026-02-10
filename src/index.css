@@ -47,7 +47,7 @@ button {
   border-radius: 10px;
   border: none;
   padding: 0;
-  font-size: 17px;
+  font-size: var(--fs-body);
   font-weight: 600;
   font-family: inherit;
   background-color: transparent;

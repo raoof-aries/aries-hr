@@ -25,10 +25,10 @@
 
 .notifications-header h2 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: var(--fs-heading-sm);
+  font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .notifications-mark-all-read {
@@ -37,7 +37,7 @@
   background: transparent;
   border: none;
   color: var(--apple-blue);
-  font-size: 15px;
+  font-size: var(--fs-small);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -49,7 +49,7 @@
 
 .notification-group-header {
   padding: 12px 0 8px 0;
-  font-size: 13px;
+  font-size: var(--fs-small);
   font-weight: 600;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -126,23 +126,23 @@
 }
 
 .notification-title {
-  margin: 0 0 4px 0;
-  font-size: 17px;
+  margin: 0 0 3px 0;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.2px;
 }
 
 .notification-message {
-  margin: 0 0 6px 0;
-  font-size: 15px;
+  margin: 0 0 4px 0;
+  font-size: var(--fs-small);
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.4;
   font-weight: 400;
 }
 
 .notification-time {
-  font-size: 13px;
+  font-size: var(--fs-caption);
   color: var(--text-tertiary);
   font-weight: 400;
 }
@@ -160,7 +160,7 @@
 }
 
 .notifications-empty p {
-  font-size: 17px;
+  font-size: var(--fs-body-sm);
   font-weight: 400;
   margin: 0;
   color: var(--text-secondary);
@@ -173,7 +173,7 @@
   }
 
   .notifications-header h2 {
-    font-size: 20px;
+    font-size: var(--fs-body-lg);
   }
 
   .notification-group-header {
@@ -196,11 +196,11 @@
   }
 
   .notification-title {
-    font-size: 17px;
+    font-size: var(--fs-body-sm);
   }
 
   .notification-message {
-    font-size: 15px;
+    font-size: var(--fs-caption);
   }
 
   .notifications-empty {
