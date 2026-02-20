@@ -272,6 +272,7 @@ export default function Layout({ children }) {
       "/calendar": "Calendar",
       "/notifications": "Notifications",
       "/profile": "Profile",
+      "/effism-locking": "Effism Locking",
     };
     // Handle exact pathname match
     const currentPath = location.pathname;
@@ -387,17 +388,11 @@ export default function Layout({ children }) {
                   </span>
                   <span className="home-hero-date">{formattedDate}</span>
                 </div>
-                <div className="layout-notifications" ref={notificationRef}>
+                <div className="home-hero-actions">
                   <button
-                    className="layout-notification-button layout-notification-button--light"
-                    onClick={() => {
-                      if (isMobile) {
-                        navigate("/notifications");
-                      } else {
-                        setNotificationOpen(!notificationOpen);
-                      }
-                    }}
-                    aria-label="Notifications"
+                    className="layout-notification-button layout-notification-button--light layout-home-lock-button"
+                    onClick={() => navigate("/effism-locking")}
+                    aria-label="Effism Locking"
                   >
                     <svg
                       width="20"
@@ -409,116 +404,143 @@ export default function Layout({ children }) {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                      <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+                      <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
                     </svg>
-                    {unreadCount > 0 && (
-                      <span
-                        className="layout-notification-badge"
-                        aria-label={`${unreadCount} unread notifications`}
-                      ></span>
-                    )}
                   </button>
-                  {!isMobile && notificationOpen && (
-                    <div className="layout-notification-dropdown">
-                      <div className="layout-notification-header">
-                        <h3>Notifications</h3>
-                        <button
-                          className="layout-notification-close"
-                          onClick={() => setNotificationOpen(false)}
-                          aria-label="Close notifications"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                  <div className="layout-notifications" ref={notificationRef}>
+                    <button
+                      className="layout-notification-button layout-notification-button--light"
+                      onClick={() => {
+                        if (isMobile) {
+                          navigate("/notifications");
+                        } else {
+                          setNotificationOpen(!notificationOpen);
+                        }
+                      }}
+                      aria-label="Notifications"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                      </svg>
+                      {unreadCount > 0 && (
+                        <span
+                          className="layout-notification-badge"
+                          aria-label={`${unreadCount} unread notifications`}
+                        ></span>
+                      )}
+                    </button>
+                    {!isMobile && notificationOpen && (
+                      <div className="layout-notification-dropdown">
+                        <div className="layout-notification-header">
+                          <h3>Notifications</h3>
+                          <button
+                            className="layout-notification-close"
+                            onClick={() => setNotificationOpen(false)}
+                            aria-label="Close notifications"
                           >
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-                      </div>
-                      <div className="layout-notification-list">
-                        {notifications.length > 0 ? (
-                          <>
-                            {today.length > 0 && (
-                              <>
-                                <div className="layout-notification-group-header">
-                                  Today
-                                </div>
-                                {today.map((notif) => (
-                                  <div
-                                    key={notif.id}
-                                    className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                    onClick={() => markAsRead(notif.id)}
-                                  >
-                                    <div className="layout-notification-icon">
-                                      {notif.icon}
-                                    </div>
-                                    <div className="layout-notification-content">
-                                      <p className="layout-notification-title">
-                                        {notif.title}
-                                      </p>
-                                      <p className="layout-notification-message">
-                                        {notif.message}
-                                      </p>
-                                      <span className="layout-notification-time">
-                                        {formatTimeAgo(notif.timestamp)}
-                                      </span>
-                                    </div>
-                                    {!notif.read && (
-                                      <div className="layout-notification-unread-dot"></div>
-                                    )}
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="layout-notification-list">
+                          {notifications.length > 0 ? (
+                            <>
+                              {today.length > 0 && (
+                                <>
+                                  <div className="layout-notification-group-header">
+                                    Today
                                   </div>
-                                ))}
-                              </>
-                            )}
-                            {older.length > 0 && (
-                              <>
-                                <div className="layout-notification-group-header">
-                                  Older
-                                </div>
-                                {older.map((notif) => (
-                                  <div
-                                    key={notif.id}
-                                    className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                    onClick={() => markAsRead(notif.id)}
-                                  >
-                                    <div className="layout-notification-icon">
-                                      {notif.icon}
+                                  {today.map((notif) => (
+                                    <div
+                                      key={notif.id}
+                                      className={`layout-notification-item ${notif.read ? "read" : ""}`}
+                                      onClick={() => markAsRead(notif.id)}
+                                    >
+                                      <div className="layout-notification-icon">
+                                        {notif.icon}
+                                      </div>
+                                      <div className="layout-notification-content">
+                                        <p className="layout-notification-title">
+                                          {notif.title}
+                                        </p>
+                                        <p className="layout-notification-message">
+                                          {notif.message}
+                                        </p>
+                                        <span className="layout-notification-time">
+                                          {formatTimeAgo(notif.timestamp)}
+                                        </span>
+                                      </div>
+                                      {!notif.read && (
+                                        <div className="layout-notification-unread-dot"></div>
+                                      )}
                                     </div>
-                                    <div className="layout-notification-content">
-                                      <p className="layout-notification-title">
-                                        {notif.title}
-                                      </p>
-                                      <p className="layout-notification-message">
-                                        {notif.message}
-                                      </p>
-                                      <span className="layout-notification-time">
-                                        {formatTimeAgo(notif.timestamp)}
-                                      </span>
-                                    </div>
-                                    {!notif.read && (
-                                      <div className="layout-notification-unread-dot"></div>
-                                    )}
+                                  ))}
+                                </>
+                              )}
+                              {older.length > 0 && (
+                                <>
+                                  <div className="layout-notification-group-header">
+                                    Older
                                   </div>
-                                ))}
-                              </>
-                            )}
-                          </>
-                        ) : (
-                          <div className="layout-notification-empty">
-                            No notifications
-                          </div>
-                        )}
+                                  {older.map((notif) => (
+                                    <div
+                                      key={notif.id}
+                                      className={`layout-notification-item ${notif.read ? "read" : ""}`}
+                                      onClick={() => markAsRead(notif.id)}
+                                    >
+                                      <div className="layout-notification-icon">
+                                        {notif.icon}
+                                      </div>
+                                      <div className="layout-notification-content">
+                                        <p className="layout-notification-title">
+                                          {notif.title}
+                                        </p>
+                                        <p className="layout-notification-message">
+                                          {notif.message}
+                                        </p>
+                                        <span className="layout-notification-time">
+                                          {formatTimeAgo(notif.timestamp)}
+                                        </span>
+                                      </div>
+                                      {!notif.read && (
+                                        <div className="layout-notification-unread-dot"></div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <div className="layout-notification-empty">
+                              No notifications
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
 
