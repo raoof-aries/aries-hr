@@ -31,5 +31,14 @@ export default defineConfig({
     host: true, // equivalent to 0.0.0.0
     port: 5175,
     strictPort: true,
+    proxy: {
+      "/arieshrms-api": {
+        target: "https://www.efftime.com/webservices/arieshrms/",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (requestPath) =>
+          requestPath.replace(/^\/arieshrms-api/, ""),
+      },
+    },
   },
 });

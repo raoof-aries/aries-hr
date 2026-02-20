@@ -15,32 +15,13 @@ import Profile from "./pages/Profile/Profile";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
 import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper";
+import AuthGateLoader from "./components/AuthGateLoader/AuthGateLoader";
 
 function LoginRoute() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)",
-        }}
-      >
-        <div
-          style={{
-            color: "rgba(255, 255, 255, 0.8)",
-            fontSize: "1rem",
-            fontWeight: 500,
-          }}
-        >
-          Loading...
-        </div>
-      </div>
-    );
+    return <AuthGateLoader />;
   }
 
   if (isAuthenticated) {

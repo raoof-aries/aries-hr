@@ -1,67 +1,230 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { getDataUrl } from "../utils/dataUrl";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { getRuntimeConfig } from "../utils/runtimeConfig";
 
 const AuthContext = createContext(null);
+const TOKEN_STORAGE_KEY = "authToken";
+const USER_STORAGE_KEY = "authUser";
+const USERNAME_STORAGE_KEY = "userName";
+
+function parseJwtPayload(token) {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(
+      base64.length + ((4 - (base64.length % 4)) % 4),
+      "=",
+    );
+    const json = decodeURIComponent(
+      atob(padded)
+        .split("")
+        .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join(""),
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+function isJwtExpired(token) {
+  const payload = parseJwtPayload(token);
+  if (!payload?.exp) return false;
+  return Date.now() >= payload.exp * 1000;
+}
+
+function formatDateValue(value) {
+  if (!value || value === "0000-00-00") return "-";
+  return value;
+}
+
+function yearsSince(dateString) {
+  if (!dateString || dateString === "0000-00-00") return "-";
+  const start = new Date(dateString);
+  if (Number.isNaN(start.getTime())) return "-";
+  const years = Math.max(0, (Date.now() - start.getTime()) / 31557600000);
+  return years.toFixed(1);
+}
+
+function normalizeUser(apiUser = {}) {
+  const name =
+    apiUser.full_name || apiUser.display_name || apiUser.username || "User";
+
+  return {
+    ...apiUser,
+    name,
+    employeeCode: apiUser.employee_code || "-",
+    designation: apiUser.designation || "-",
+    reportingPerson:
+      apiUser.reporting_person ||
+      apiUser.reportingPerson ||
+      (apiUser.parent_id ? `#${apiUser.parent_id}` : "-"),
+    hourlyRate: apiUser.hourly_rate
+      ? `${apiUser.hourly_rate} ${apiUser.currency || ""}`.trim()
+      : "-",
+    dateOfBirth: formatDateValue(apiUser.dob),
+    company: apiUser.company || apiUser.emp_company_id || "-",
+    division: apiUser.division || apiUser.emp_division_id || "-",
+    subDivision: apiUser.subDivision || apiUser.emp_subdivision_id || "-",
+    jobType: apiUser.jobType || apiUser.emp_type || "-",
+    jobCategory: apiUser.jobCategory || apiUser.job_category || "-",
+    reportingTime: apiUser.reportingTime || apiUser.reporting_time || "-",
+    dateOfJoining: formatDateValue(apiUser.doj),
+    groupJoiningDate: formatDateValue(apiUser.gdoj),
+    yearsInAries: apiUser.yearsInAries || yearsSince(apiUser.doj),
+    qualificationIndex: apiUser.qualificationIndex || "-",
+    outsideExperience: apiUser.outsideExperience || {
+      total: "-",
+      relevant: "-",
+    },
+    profileImageUrl: apiUser.profile_img_url || apiUser.profileImageUrl || "",
+  };
+}
+
+function clearStoredSession() {
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
+  localStorage.removeItem(USER_STORAGE_KEY);
+  localStorage.removeItem(USERNAME_STORAGE_KEY);
+}
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
+  const [token, setToken] = useState("");
 
-  // Load userProfile from public folder
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+
+    if (storedToken && storedUser && !isJwtExpired(storedToken)) {
       try {
-        const response = await fetch(getDataUrl("data/userProfile.json"));
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        setUserProfile(data);
+        const parsedUser = JSON.parse(storedUser);
+        setIsAuthenticated(true);
+        setToken(storedToken);
+        setUser(parsedUser);
+        setUserName(parsedUser?.name || "");
       } catch (error) {
-        console.error("Error loading user profile:", error);
+        console.error("Invalid stored user session:", error);
+        clearStoredSession();
       }
-    };
-    fetchUserProfile();
+    } else if (storedToken || storedUser) {
+      clearStoredSession();
+    }
+
+    setIsLoading(false);
   }, []);
 
-  // Check for existing session on mount
-  useEffect(() => {
-    if (!userProfile) return;
-    
-    const storedAuth = localStorage.getItem("isAuthenticated");
-    const storedUserName = localStorage.getItem("userName");
-    if (storedAuth === "true") {
-      setIsAuthenticated(true);
-      setUser(userProfile);
-      setUserName(storedUserName || userProfile.name);
-    }
-    setIsLoading(false);
-  }, [userProfile]);
+  const login = async (username, password) => {
+    try {
+      const { apiBaseUrl } = await getRuntimeConfig();
+      if (!apiBaseUrl) {
+        return {
+          success: false,
+          error: "API base URL missing. Update public/config/app-config.json.",
+        };
+      }
 
-  const login = (username, password) => {
-    // Dummy credentials for now
-    // TODO: Replace with actual API call to PHP backend
-    if (!userProfile) {
-      return { success: false, error: "User profile not loaded" };
-    }
-    if (username === "admin" && password === "password") {
+      const baseUrl = apiBaseUrl.replace(/\/+$/, "");
+      const loginUrls = [`${baseUrl}?action=login`];
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      const isAbsoluteApi = /^https?:\/\//i.test(baseUrl);
+
+      if (isLocalhost && isAbsoluteApi) {
+        loginUrls.push("/arieshrms-api?action=login");
+      }
+
+      const form = new URLSearchParams();
+      form.set("username", username);
+      form.set("password", password);
+
+      let response = null;
+      let payload = null;
+      let networkError = null;
+
+      for (const loginUrl of loginUrls) {
+        try {
+          response = await fetch(loginUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: form.toString(),
+          });
+
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          networkError = null;
+          break;
+        } catch (error) {
+          networkError = error;
+          response = null;
+          payload = null;
+        }
+      }
+
+      if (!response) {
+        return {
+          success: false,
+          error:
+            "Cannot reach login API from browser (network/CORS). If running locally, restart dev server so proxy is active.",
+          details: networkError?.message || "",
+        };
+      }
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: payload?.message || `Login failed (HTTP ${response.status})`,
+        };
+      }
+
+      const isSuccess = payload?.status === true || payload?.status === "true";
+      if (!isSuccess) {
+        return {
+          success: false,
+          error: payload?.message || "Invalid username or password",
+        };
+      }
+
+      if (!payload?.token || !payload?.data) {
+        return {
+          success: false,
+          error: "Login response is missing token or user details",
+        };
+      }
+
+      const normalizedUser = normalizeUser(payload.data);
       setIsAuthenticated(true);
-      setUser(userProfile);
-      setUserName(userProfile.name);
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userName", userProfile.name);
+      setToken(payload.token);
+      setUser(normalizedUser);
+      setUserName(normalizedUser.name);
+      localStorage.setItem(TOKEN_STORAGE_KEY, payload.token);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(normalizedUser));
+      localStorage.setItem(USERNAME_STORAGE_KEY, normalizedUser.name);
       return { success: true };
+    } catch (error) {
+      console.error("Login API error:", error);
+      return {
+        success: false,
+        error: "Unable to connect to server. Please try again.",
+      };
     }
-    return { success: false, error: "Invalid username or password" };
   };
 
   const logout = () => {
     setIsAuthenticated(false);
+    setToken("");
     setUser(null);
     setUserName("");
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userName");
+    clearStoredSession();
   };
 
   const value = {
@@ -69,6 +232,7 @@ export function AuthProvider({ children }) {
     isLoading,
     userName,
     user,
+    token,
     login,
     logout,
   };

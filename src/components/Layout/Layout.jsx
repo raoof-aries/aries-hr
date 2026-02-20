@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
-import { getDataUrl } from "../../utils/dataUrl";
 import "./Layout.css";
 
 const menuItems = [
@@ -199,23 +198,8 @@ export default function Layout({ children }) {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [userProfile, setUserProfile] = useState(null);
   const notificationRef = useRef(null);
   const isHomeScreen = location.pathname === "/";
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch(getDataUrl("data/userProfile.json"));
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        setUserProfile(data);
-      } catch (error) {
-        console.error("Error loading user profile:", error);
-      }
-    };
-    fetchUserProfile();
-  }, []);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -254,9 +238,8 @@ export default function Layout({ children }) {
     navigate("/login");
   };
 
-  const profileData = user || userProfile;
-  const displayName =
-    (user && user.name) || userName || profileData?.name || "User";
+  const profileData = user || {};
+  const displayName = profileData?.name || userName || "User";
 
   // Extract first name from user display name
   const getFirstName = () => {
@@ -273,7 +256,8 @@ export default function Layout({ children }) {
 
   const firstName = getFirstName();
   const profileImageUrl =
-    "https://www.effism.com/images/employee/68e893e4879ca.jpg";
+    profileData?.profileImageUrl ||
+    "https://www.effism.com/images/employee/user.png";
 
   // Get page title based on current route
   const getPageTitle = () => {
@@ -399,7 +383,7 @@ export default function Layout({ children }) {
               <div className="home-hero-top">
                 <div className="home-hero-greeting">
                   <span className="home-hero-hello">
-                    Hello, {profileData?.name || firstName}
+                    Hello, {displayName || firstName}
                   </span>
                   <span className="home-hero-date">{formattedDate}</span>
                 </div>
@@ -547,14 +531,14 @@ export default function Layout({ children }) {
                   />
                 </div>
                 <div className="home-hero-details">
-                  <h2 className="home-hero-name">{profileData?.name}</h2>
-                  <p className="home-hero-role">{profileData?.designation}</p>
+                  <h2 className="home-hero-name">{displayName}</h2>
+                  <p className="home-hero-role">{profileData?.designation || "-"}</p>
                   <div className="home-hero-meta">
                     <span className="home-hero-pill">
-                      {profileData?.employeeCode}
+                      {profileData?.employeeCode || profileData?.employee_code || "-"}
                     </span>
                     <span className="home-hero-pill">
-                      {profileData?.yearsInAries} yrs
+                      {profileData?.yearsInAries || "-"} yrs
                     </span>
                   </div>
                 </div>

@@ -1,0 +1,22 @@
+.auth-gate-loader {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+}
+
+.auth-gate-loader__spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid var(--apple-blue-lighter);
+  border-top-color: var(--apple-blue);
+  animation: auth-gate-loader-spin 0.8s linear infinite;
+}
+
+@keyframes auth-gate-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

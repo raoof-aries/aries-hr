@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.png";
-import logoWhite from "../../assets/logo-white.png";
 import "./Login.css";
 
 export default function Login() {
@@ -18,9 +17,7 @@ export default function Login() {
     setError("");
     setIsSubmitting(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const result = login(username, password);
+    const result = await login(username.trim(), password);
 
     if (result.success) {
       navigate("/");
@@ -46,7 +43,7 @@ export default function Login() {
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="login-form-group">
                 <label htmlFor="username" className="login-label">
-                  Email
+                  Username
                 </label>
                 <input
                   id="username"
@@ -54,7 +51,7 @@ export default function Login() {
                   className="login-input"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="vijaybhuva90@gmail.com"
+                  placeholder="Username"
                   required
                   autoComplete="username"
                   disabled={isSubmitting}

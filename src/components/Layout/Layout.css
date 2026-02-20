@@ -378,6 +378,7 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  justify-content: center;
 }
 
 .home-hero-name {
@@ -1200,4 +1201,3 @@
     display: none;
   }
 }
-
