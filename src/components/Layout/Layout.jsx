@@ -571,7 +571,7 @@ export default function Layout({ children }) {
             <>
               <button
                 className="layout-header-back"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/")}
                 aria-label="Go back"
               >
                 <svg
