@@ -1,4 +1,4 @@
-/* .effismLocking-container {
+.effismLocking-container {
   margin: 0 auto;
 }
 
@@ -164,6 +164,16 @@
   color: #64748b;
 }
 
+.effismLocking-lockedActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.effismLocking-unlock {
+  min-width: 140px;
+}
+
 @media (max-width: 768px) {
   .effismLocking-form {
     padding: 16px 12px;
@@ -190,4 +200,8 @@
   .effismLocking-submit {
     width: 100%;
   }
-} */
+
+  .effismLocking-lockedActions .effismLocking-submit {
+    width: auto;
+  }
+}

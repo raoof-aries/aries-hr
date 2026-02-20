@@ -55,6 +55,11 @@ export default function EffismLocking() {
     setIsSubmitting(false);
   };
 
+  const handleUnlock = () => {
+    setLockResponse(0);
+    localStorage.setItem(LOCK_RESPONSE_KEY, "0");
+  };
+
   return (
     <div className="effismLocking-container">
       <div className="effismLocking-card">
@@ -77,6 +82,15 @@ export default function EffismLocking() {
             </div>
             <h3>Effism Locked</h3>
             <p>Your profile lock request is active.</p>
+            <div className="effismLocking-lockedActions">
+              <button
+                className="effismLocking-submit effismLocking-unlock"
+                type="button"
+                onClick={handleUnlock}
+              >
+                Unlock
+              </button>
+            </div>
           </div>
         ) : (
           <form className="effismLocking-form" onSubmit={handleSubmit}>
