@@ -1,4 +1,3 @@
-import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import AuthGateLoader from "../AuthGateLoader/AuthGateLoader";
@@ -16,5 +15,3 @@ export default function ProtectedRoute({ children }) {
 
   return children;
 }
-
-
