@@ -9,6 +9,18 @@ export default function Profile() {
     total: "-",
     relevant: "-",
   };
+  const formatDateToDdMmYyyy = (value) => {
+    if (!value) return "-";
+
+    const text = String(value).trim();
+    const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+      const [, yyyy, mm, dd] = isoMatch;
+      return `${dd}-${mm}-${yyyy}`;
+    }
+
+    return text;
+  };
 
   if (!profileData) {
     return (
@@ -62,7 +74,9 @@ export default function Profile() {
           <div className="section-grid">
             <div className="info-item">
               <span className="info-label">Date of Birth</span>
-              <span className="info-value">{profileData.dateOfBirth || "-"}</span>
+              <span className="info-value">
+                {formatDateToDdMmYyyy(profileData.dateOfBirth)}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Gender</span>
