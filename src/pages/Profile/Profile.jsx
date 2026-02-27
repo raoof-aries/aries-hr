@@ -43,7 +43,9 @@ export default function Profile() {
         <div className="profile-quick-stats">
           <div className="stat-item">
             <span className="stat-label">Reporting To</span>
-            <span className="stat-value">{profileData.reportingPerson || "-"}</span>
+            <span className="stat-value">
+              {profileData.parent_name || profileData.reportingPerson || "-"}
+            </span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Hourly Rate</span>
@@ -77,33 +79,43 @@ export default function Profile() {
           <div className="section-grid">
             <div className="info-item">
               <span className="info-label">Company</span>
-              <span className="info-value">{profileData.company || "-"}</span>
+              <span className="info-value">
+                {profileData.emp_company_name || profileData.company || "-"}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Division</span>
-              <span className="info-value">{profileData.division || "-"}</span>
+              <span className="info-value">
+                {profileData.emp_division_name || profileData.division || "-"}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Sub Division</span>
-              <span className="info-value">{profileData.subDivision || "-"}</span>
+              <span className="info-value">
+                {profileData.emp_subdivision_name || profileData.subDivision || "-"}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Job Type</span>
               <span className="info-value">
-                <span className="badge badge-blue">{profileData.jobType || "-"}</span>
+                <span className="badge badge-blue">
+                  {profileData.emp_type_name || profileData.jobType || "-"}
+                </span>
               </span>
             </div>
             <div className="info-item">
               <span className="info-label">Job Category</span>
               <span className="info-value">
                 <span className="badge badge-green">
-                  {profileData.jobCategory || "-"}
+                  {profileData.job_category_name || profileData.jobCategory || "-"}
                 </span>
               </span>
             </div>
             <div className="info-item">
-              <span className="info-label">Reporting Time</span>
-              <span className="info-value">{profileData.reportingTime || "-"}</span>
+              <span className="info-label">Work Location</span>
+              <span className="info-value">
+                {profileData.work_location || profileData.reportingTime || "-"}
+              </span>
             </div>
           </div>
         </div>
