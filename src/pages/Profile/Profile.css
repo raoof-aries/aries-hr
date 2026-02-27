@@ -44,14 +44,14 @@
   right: 2px;
   width: 16px;
   height: 16px;
-  background: #34C759;
+  background: #34c759;
   border: 2px solid white;
   border-radius: 50%;
 }
 
 .profile-header-info {
-  flex: 1;
-  min-width: 200px;
+  flex: 1 1 220px;
+  min-width: 0;
 }
 
 .profile-name {
@@ -60,6 +60,10 @@
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.5px;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .profile-designation {
@@ -206,7 +210,7 @@
 }
 
 .badge-green {
-  background: #34C759;
+  background: #34c759;
   color: white;
 }
 
@@ -228,10 +232,16 @@
   .profile-header-info {
     text-align: center;
     width: 100%;
+    flex: 0 0 auto;
   }
 
   .profile-name {
     font-size: var(--fs-heading-lg);
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .profile-designation {
@@ -252,26 +262,34 @@
   }
 
   .profile-quick-stats {
-    flex-direction: row;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     margin-left: 0;
-    gap: 12px;
+    gap: 10px;
   }
 
   .stat-item {
-    text-align: center;
-    padding: 12px;
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    align-items: start;
+    text-align: left;
+    padding: 10px 12px;
     background: var(--bg-secondary);
-    border-radius: 10px;
-    flex: 1;
+    border-radius: 12px;
+    border: 0.5px solid var(--border-color);
+    min-height: auto;
+    gap: 10px;
   }
 
   .stat-label {
     font-size: var(--fs-caption);
+    margin-top: 2px;
   }
 
   .stat-value {
     font-size: var(--fs-body);
+    overflow-wrap: anywhere;
   }
 
   .profile-content {
