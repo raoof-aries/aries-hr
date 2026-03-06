@@ -126,15 +126,14 @@ export function AuthProvider({ children }) {
         };
       }
 
-      const baseUrl = apiBaseUrl.replace(/\/+$/, "");
-      const loginUrls = [`${baseUrl}?action=login`];
+      const loginUrls = [`${apiBaseUrl}?action=login`];
       const isLocalhost =
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1";
-      const isAbsoluteApi = /^https?:\/\//i.test(baseUrl);
+      const isAbsoluteApi = /^https?:\/\//i.test(apiBaseUrl);
 
       if (isLocalhost && isAbsoluteApi) {
-        loginUrls.push("/arieshrms-api?action=login");
+        loginUrls.push("?action=login");
       }
 
       const form = new URLSearchParams();

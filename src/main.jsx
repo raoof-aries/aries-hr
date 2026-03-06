@@ -5,7 +5,7 @@ import App from "./App";
 import "./App.css";
 
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
+  <BrowserRouter basename="/hrms">
     <App />
   </BrowserRouter>
 );
