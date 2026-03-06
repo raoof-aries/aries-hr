@@ -13,6 +13,7 @@ import Calendar from "./pages/Calendar/Calendar";
 import Notifications from "./pages/Notifications/Notifications";
 import Profile from "./pages/Profile/Profile";
 import EffismLocking from "./pages/EffismLocking/EffismLocking";
+import BreakTimeLog from "./pages/BreakTimeLog/BreakTimeLog";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
 import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper";
@@ -142,6 +143,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <EffismLocking />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/break-time-log"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <BreakTimeLog />
             </Layout>
           </ProtectedRoute>
         }
