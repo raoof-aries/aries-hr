@@ -1,7 +1,50 @@
 {
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/hrms/",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
-      "source": "/((?!data/).*)",
+      "source": "/hrms/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/hrms/icons/(.*)",
+      "destination": "/icons/$1"
+    },
+    {
+      "source": "/hrms/data/(.*)",
+      "destination": "/data/$1"
+    },
+    {
+      "source": "/hrms/config/(.*)",
+      "destination": "/config/$1"
+    },
+    {
+      "source": "/hrms/logo.png",
+      "destination": "/logo.png"
+    },
+    {
+      "source": "/hrms/manifest.webmanifest",
+      "destination": "/manifest.webmanifest"
+    },
+    {
+      "source": "/hrms/registerSW.js",
+      "destination": "/registerSW.js"
+    },
+    {
+      "source": "/hrms/sw.js",
+      "destination": "/sw.js"
+    },
+    {
+      "source": "/hrms/workbox-(.*).js",
+      "destination": "/workbox-$1.js"
+    },
+    {
+      "source": "/hrms/(.*)",
       "destination": "/index.html"
     }
   ]
