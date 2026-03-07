@@ -1,3 +1,4 @@
 {
-  "apiBaseUrl": "https://www.efftime.com/webservices/arieshrms/"
+  "apiBaseUrl": "https://www.efftime.com/webservices/arieshrms/",
+  "CONFIG_QR_CODE": "TESTQR123"
 }
