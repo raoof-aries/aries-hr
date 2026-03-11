@@ -3,17 +3,9 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import Login from "./pages/Login/Login";
 import Home from "./pages/Home/Home";
-import SalarySlip from "./pages/SalarySlip/SalarySlip";
-import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
-import Allowance from "./pages/Allowance/Allowance";
-import AllowanceUpload from "./pages/Allowance/AllowanceUpload";
-import Health from "./pages/Health/Health";
-import Leave from "./pages/Leave/Leave";
-import Calendar from "./pages/Calendar/Calendar";
-import Notifications from "./pages/Notifications/Notifications";
 import Profile from "./pages/Profile/Profile";
-import EffismLocking from "./pages/EffismLocking/EffismLocking";
 import BreakTimeLog from "./pages/BreakTimeLog/BreakTimeLog";
+import FeatureUnderDevelopment from "./pages/FeatureUnderDevelopment/FeatureUnderDevelopment";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
 import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper";
@@ -52,7 +44,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <SalarySlip />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
@@ -62,7 +54,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <IncentiveSlip />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
@@ -72,7 +64,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <Allowance />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
@@ -82,7 +74,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <AllowanceUpload />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
@@ -92,7 +84,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <Health />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
@@ -102,7 +94,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <Leave />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
@@ -112,7 +104,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <Calendar />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
@@ -122,7 +114,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <Notifications />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
@@ -142,7 +134,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <EffismLocking />
+              <FeatureUnderDevelopment />
             </Layout>
           </ProtectedRoute>
         }
