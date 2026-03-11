@@ -4,6 +4,20 @@ import "./Home.css";
 export default function Home() {
   const quickAccessItems = [
     {
+      id: "break",
+      title: "Break",
+      description: "Open your break time log",
+      route: "/break-time-log",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <polyline points="12 7 12 12 15 15"></polyline>
+        </svg>
+      ),
+      bgColor: "#EAF4FF",
+      iconColor: "#1E88E5",
+    },
+    {
       id: "salary",
       title: "Salary",
       description: "View your latest salary slip",

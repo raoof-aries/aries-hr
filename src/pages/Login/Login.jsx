@@ -9,6 +9,7 @@ export default function Login() {
   const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,17 +63,58 @@ export default function Login() {
                 <label htmlFor="password" className="login-label">
                   Password
                 </label>
-                <input
-                  id="password"
-                  type="password"
-                  className="login-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  required
-                  autoComplete="current-password"
-                  disabled={isSubmitting}
-                />
+                <div className="login-password-field">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className="login-input login-password-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    required
+                    autoComplete="current-password"
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="button"
+                    className="login-password-toggle"
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    disabled={isSubmitting}
+                  >
+                    {showPassword ? (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
+                        <circle cx="12" cy="12" r="2.5"></circle>
+                        <path d="M4 20 20 4"></path>
+                      </svg>
+                    ) : (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
+                        <circle cx="12" cy="12" r="2.5"></circle>
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {error && (
