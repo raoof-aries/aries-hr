@@ -8,8 +8,7 @@ import {
   resolveBreakTimeUserId,
 } from "../../services/breakTimeLogService";
 import {
-  getConfiguredBreakTimeQrCode,
-  validateBreakTimeQrCode,
+  validateBreakTimeQrCodeWithApi,
 } from "../../services/breakTimeQrService";
 import { useAuth } from "../../context/AuthContext";
 import "./BreakTimeLog.css";
@@ -90,11 +89,10 @@ export default function BreakTimeLog() {
   };
 
   const handleQrDetected = useCallback(async (decodedValue) => {
-    const configuredQrCode = await getConfiguredBreakTimeQrCode();
-    const isValid = validateBreakTimeQrCode(decodedValue, configuredQrCode);
+    const result = await validateBreakTimeQrCodeWithApi(decodedValue);
 
-    if (!isValid) {
-      setScannerError("Invalid QR Code");
+    if (!result.success) {
+      setScannerError(result.message || "Invalid QR Code");
       return false;
     }
 

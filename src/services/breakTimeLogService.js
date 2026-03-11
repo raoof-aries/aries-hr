@@ -94,7 +94,7 @@ export function createBreakTimeLog({
     meta: {
       approval_status: "logged",
       location_verified: false,
-      qr_source: "single-config",
+      qr_source: "validateQR-api",
     },
   };
 

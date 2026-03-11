@@ -2,7 +2,6 @@ import { getDataUrl } from "./dataUrl";
 
 const DEFAULT_CONFIG = {
   apiBaseUrl: "",
-  CONFIG_QR_CODE: "",
 };
 
 let configPromise = null;
