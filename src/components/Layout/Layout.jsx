@@ -386,7 +386,7 @@ export default function Layout({ children }) {
               <div className="home-hero-top">
                 <div className="home-hero-greeting">
                   <span className="home-hero-hello">
-                    Hi, {displayName || firstName}
+                    Hello, {displayName || firstName}
                   </span>
                   <span className="home-hero-date">{formattedDate}</span>
                 </div>
