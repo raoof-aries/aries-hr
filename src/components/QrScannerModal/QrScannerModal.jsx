@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import jsQR from "jsqr";
 import "./QrScannerModal.css";
 
+const CAMERA_DEVICE_STORAGE_KEY = "aries-hr.camera-device-id";
+
 async function listVideoInputs() {
   if (!navigator.mediaDevices?.enumerateDevices) {
     return [];
@@ -16,8 +18,41 @@ async function listVideoInputs() {
   }
 }
 
-async function requestCameraStream() {
-  const constraintsList = [
+function getStoredPreferredCameraId() {
+  try {
+    return window.localStorage.getItem(CAMERA_DEVICE_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function storePreferredCameraId(deviceId) {
+  if (!deviceId) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(CAMERA_DEVICE_STORAGE_KEY, deviceId);
+  } catch {
+    // Ignore storage failures; camera access should still work.
+  }
+}
+
+function buildConstraintsList(preferredDeviceId) {
+  const constraintsList = [];
+
+  if (preferredDeviceId) {
+    constraintsList.push({
+      audio: false,
+      video: {
+        deviceId: {
+          exact: preferredDeviceId,
+        },
+      },
+    });
+  }
+
+  constraintsList.push(
     {
       audio: false,
       video: {
@@ -36,7 +71,13 @@ async function requestCameraStream() {
       audio: false,
       video: true,
     },
-  ];
+  );
+
+  return constraintsList;
+}
+
+async function requestCameraStream(preferredDeviceId = "") {
+  const constraintsList = buildConstraintsList(preferredDeviceId);
 
   let lastError = null;
 
@@ -50,6 +91,10 @@ async function requestCameraStream() {
   }
 
   throw lastError || new Error("Unable to access a camera stream.");
+}
+
+function getPrimaryVideoTrack(stream) {
+  return stream?.getVideoTracks?.()[0] || null;
 }
 
 function wait(duration) {
@@ -171,6 +216,8 @@ export default function QrScannerModal({
       return;
     }
 
+    const preferredDeviceId = getStoredPreferredCameraId();
+
     try {
       setIsStartingCamera(true);
       setCameraError("");
@@ -183,16 +230,13 @@ export default function QrScannerModal({
         await wait(250);
       }
 
-      const videoInputs = await listVideoInputs();
-      if (videoInputs.length === 0) {
-        setCameraError(
-          "No camera device was found. Connect a camera or open this page on a phone with a working camera.",
-        );
-        setScannerPhase("error");
-        return;
-      }
+      const stream = await requestCameraStream(preferredDeviceId);
+      const videoTrack = getPrimaryVideoTrack(stream);
+      const activeDeviceId = videoTrack?.getSettings?.().deviceId || "";
 
-      const stream = await requestCameraStream();
+      if (activeDeviceId) {
+        storePreferredCameraId(activeDeviceId);
+      }
 
       streamRef.current = stream;
 
@@ -206,6 +250,7 @@ export default function QrScannerModal({
 
       video.srcObject = stream;
       await video.play();
+      setPermissionState("granted");
       setScannerPhase("scanning");
       animationFrameRef.current = requestAnimationFrame(scanFrame);
     } catch (error) {
@@ -241,8 +286,15 @@ export default function QrScannerModal({
         failureName === "OverconstrainedError" ||
         failureName === "ConstraintNotSatisfiedError"
       ) {
-        nextErrorMessage =
-          "A preferred camera was not available, and no fallback camera could be opened.";
+        nextErrorMessage = preferredDeviceId
+          ? "The last-used camera is no longer available. Try opening the camera again so the browser can switch to another camera."
+          : "A preferred camera was not available, and no fallback camera could be opened.";
+      } else if (failureName === "NotReadableError" || failureName === "AbortError") {
+        const videoInputs = await listVideoInputs();
+        if (videoInputs.length === 0) {
+          nextErrorMessage =
+            "No camera device was found. Connect a camera or open this page on a phone with a working camera.";
+        }
       }
 
       setCameraError(nextErrorMessage);
@@ -284,7 +336,7 @@ export default function QrScannerModal({
         }
 
         setPermissionState("prompt");
-        await startCamera();
+        setScannerPhase("ready");
         return;
       }
 
@@ -314,14 +366,19 @@ export default function QrScannerModal({
           return;
         }
 
-        await startCamera();
+        if (permissionStatus.state === "granted") {
+          await startCamera();
+          return;
+        }
+
+        setScannerPhase("ready");
       } catch {
         if (!isMounted) {
           return;
         }
 
         setPermissionState("prompt");
-        await startCamera();
+        setScannerPhase("ready");
       }
     };
 
@@ -412,6 +469,8 @@ export default function QrScannerModal({
                     ? "Opening camera access. If your browser shows a native permission popup, choose Allow to continue."
                     : permissionState === "denied"
                       ? "Camera was already blocked for this site. Enable it in the browser site settings, then come back here."
+                      : scannerPhase === "ready"
+                        ? "Tap the button below to open the browser's camera permission prompt. This is more reliable than requesting camera access automatically on page load."
                       : "Trying to open the camera directly. If it does not start, use the button below."}
                 </p>
                 <button
@@ -422,7 +481,9 @@ export default function QrScannerModal({
                 >
                   {isStartingCamera
                     ? "Opening Camera..."
-                    : "Retry Camera Access"}
+                    : scannerPhase === "ready"
+                      ? "Open Camera"
+                      : "Retry Camera Access"}
                 </button>
               </div>
             )}
@@ -434,6 +495,8 @@ export default function QrScannerModal({
                 ? "Hold your phone steady and keep the full QR visible."
                 : scannerPhase === "requesting"
                   ? "Waiting for the browser's native camera permission popup."
+                  : scannerPhase === "ready"
+                    ? "Open the camera from this dialog so the permission request happens from a direct user action."
                   : "The popup appears only when the browser is allowed to ask for camera access on this site."}
             </p>
             {(cameraError || errorMessage) && (
@@ -442,13 +505,15 @@ export default function QrScannerModal({
               </div>
             )}
             {scannerPhase !== "scanning" && (
-                <button
-                  type="button"
-                  className="breakTimeModalSecondaryButton"
-                  onClick={handleRetryCamera}
-                  disabled={isStartingCamera}
-                >
-                Retry Camera Access
+              <button
+                type="button"
+                className="breakTimeModalSecondaryButton"
+                onClick={handleRetryCamera}
+                disabled={isStartingCamera}
+              >
+                {scannerPhase === "ready"
+                  ? "Open Camera"
+                  : "Retry Camera Access"}
               </button>
             )}
             <button
