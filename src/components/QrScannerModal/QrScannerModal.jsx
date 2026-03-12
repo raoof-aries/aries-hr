@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import jsQR from "jsqr";
 import "./QrScannerModal.css";
@@ -87,75 +87,6 @@ export default function QrScannerModal({
 
   useEffect(() => stopScanner, []);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
-
-    let isMounted = true;
-    let permissionStatus = null;
-
-    const syncPermissionState = async () => {
-      if (!window.isSecureContext) {
-        if (isMounted) {
-          setPermissionState("unsupported");
-          setCameraError(
-            "Camera permission popup only works on HTTPS or localhost. Open this app in a secure URL to use scanning.",
-          );
-          setScannerPhase("error");
-        }
-        return;
-      }
-
-      if (!navigator.permissions?.query) {
-        if (isMounted) {
-          setPermissionState("prompt");
-        }
-        return;
-      }
-
-      try {
-        permissionStatus = await navigator.permissions.query({
-          name: "camera",
-        });
-
-        if (!isMounted) {
-          return;
-        }
-
-        setPermissionState(permissionStatus.state);
-        if (permissionStatus.state === "denied") {
-          setCameraError(
-            "Camera permission is blocked for this site. The browser will not show the popup again until you enable camera access in site settings.",
-          );
-          setScannerPhase("error");
-        }
-
-        permissionStatus.onchange = () => {
-          setPermissionState(permissionStatus.state);
-          if (permissionStatus.state !== "denied") {
-            setCameraError("");
-          }
-        };
-      } catch {
-        if (isMounted) {
-          setPermissionState("prompt");
-        }
-      }
-    };
-
-    setCameraError("");
-    setScannerPhase("idle");
-    syncPermissionState();
-
-    return () => {
-      isMounted = false;
-      if (permissionStatus) {
-        permissionStatus.onchange = null;
-      }
-    };
-  }, [isOpen]);
-
   const handleClose = () => {
     stopScanner();
     onClose();
@@ -200,7 +131,7 @@ export default function QrScannerModal({
     animationFrameRef.current = requestAnimationFrame(scanFrame);
   };
 
-  const handleRequestCameraAccess = async () => {
+  const startCamera = useCallback(async () => {
     if (!window.isSecureContext) {
       setPermissionState("unsupported");
       setCameraError(
@@ -288,7 +219,89 @@ export default function QrScannerModal({
     } finally {
       setIsStartingCamera(false);
     }
-  };
+  }, [permissionState]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    let isMounted = true;
+    let permissionStatus = null;
+
+    const initializeScanner = async () => {
+      setCameraError("");
+      setScannerPhase("idle");
+
+      if (!window.isSecureContext) {
+        if (!isMounted) {
+          return;
+        }
+
+        setPermissionState("unsupported");
+        setCameraError(
+          "Camera permission popup only works on HTTPS or localhost. Open this app in a secure URL to use scanning.",
+        );
+        setScannerPhase("error");
+        return;
+      }
+
+      if (!navigator.permissions?.query) {
+        if (!isMounted) {
+          return;
+        }
+
+        setPermissionState("prompt");
+        await startCamera();
+        return;
+      }
+
+      try {
+        permissionStatus = await navigator.permissions.query({
+          name: "camera",
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        setPermissionState(permissionStatus.state);
+
+        permissionStatus.onchange = () => {
+          setPermissionState(permissionStatus.state);
+          if (permissionStatus.state !== "denied") {
+            setCameraError("");
+          }
+        };
+
+        if (permissionStatus.state === "denied") {
+          setCameraError(
+            "Camera permission is blocked for this site. Please enable camera access in the browser site settings, then try again.",
+          );
+          setScannerPhase("error");
+          return;
+        }
+
+        await startCamera();
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setPermissionState("prompt");
+        await startCamera();
+      }
+    };
+
+    initializeScanner();
+
+    return () => {
+      isMounted = false;
+      if (permissionStatus) {
+        permissionStatus.onchange = null;
+      }
+    };
+  }, [isOpen, startCamera]);
 
   if (!isOpen) {
     return null;
@@ -363,19 +376,21 @@ export default function QrScannerModal({
                 </div>
                 <h3 className="qrScannerPermissionTitle">Allow Camera Access</h3>
                 <p className="qrScannerPermissionText">
-                  {permissionState === "denied"
-                    ? "Camera was already blocked for this site. Enable it in the browser site settings, then come back here."
-                    : "Tap the button below, then choose Allow in the native browser popup to start scanning."}
+                  {scannerPhase === "requesting"
+                    ? "Opening camera access. If your browser shows a native permission popup, choose Allow to continue."
+                    : permissionState === "denied"
+                      ? "Camera was already blocked for this site. Enable it in the browser site settings, then come back here."
+                      : "Trying to open the camera directly. If it does not start, use the button below."}
                 </p>
                 <button
                   type="button"
                   className="breakTimeModalPrimaryButton qrScannerPermissionButton"
-                  onClick={handleRequestCameraAccess}
+                  onClick={startCamera}
                   disabled={isStartingCamera}
                 >
                   {isStartingCamera
-                    ? "Waiting For Permission..."
-                    : "Allow Camera Access"}
+                    ? "Opening Camera..."
+                    : "Retry Camera Access"}
                 </button>
               </div>
             )}
@@ -398,7 +413,7 @@ export default function QrScannerModal({
               <button
                 type="button"
                 className="breakTimeModalSecondaryButton"
-                onClick={handleRequestCameraAccess}
+                onClick={startCamera}
                 disabled={isStartingCamera}
               >
                 Retry Camera Access
