@@ -52,6 +52,12 @@ async function requestCameraStream() {
   throw lastError || new Error("Unable to access a camera stream.");
 }
 
+function wait(duration) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, duration);
+  });
+}
+
 export default function QrScannerModal({
   isOpen,
   errorMessage,
@@ -63,6 +69,7 @@ export default function QrScannerModal({
   const animationFrameRef = useRef(0);
   const canvasRef = useRef(null);
   const isHandlingDetectionRef = useRef(false);
+  const permissionStateRef = useRef("prompt");
   const [scannerPhase, setScannerPhase] = useState("idle");
   const [permissionState, setPermissionState] = useState("prompt");
   const [cameraError, setCameraError] = useState("");
@@ -81,15 +88,24 @@ export default function QrScannerModal({
 
     const video = videoRef.current;
     if (video) {
+      video.pause();
       video.srcObject = null;
     }
   };
 
   useEffect(() => stopScanner, []);
 
+  useEffect(() => {
+    permissionStateRef.current = permissionState;
+  }, [permissionState]);
+
   const handleClose = () => {
     stopScanner();
     onClose();
+  };
+
+  const handleRetryCamera = () => {
+    void startCamera();
   };
 
   const scanFrame = async () => {
@@ -131,7 +147,7 @@ export default function QrScannerModal({
     animationFrameRef.current = requestAnimationFrame(scanFrame);
   };
 
-  const startCamera = useCallback(async () => {
+  const startCamera = useCallback(async (attempt = 0) => {
     if (!window.isSecureContext) {
       setPermissionState("unsupported");
       setCameraError(
@@ -147,7 +163,7 @@ export default function QrScannerModal({
       return;
     }
 
-    if (permissionState === "denied") {
+    if (permissionStateRef.current === "denied") {
       setCameraError(
         "Camera permission is blocked for this site. Please enable camera access in the browser site settings, then try again.",
       );
@@ -160,7 +176,12 @@ export default function QrScannerModal({
       setCameraError("");
       setScannerPhase("requesting");
       isHandlingDetectionRef.current = false;
+      const hadActiveStream = Boolean(streamRef.current || videoRef.current?.srcObject);
       stopScanner();
+
+      if (hadActiveStream) {
+        await wait(250);
+      }
 
       const videoInputs = await listVideoInputs();
       if (videoInputs.length === 0) {
@@ -177,6 +198,7 @@ export default function QrScannerModal({
 
       const video = videoRef.current;
       if (!video) {
+        stream.getTracks().forEach((track) => track.stop());
         setCameraError("Unable to start the camera preview.");
         setScannerPhase("error");
         return;
@@ -190,6 +212,16 @@ export default function QrScannerModal({
       console.error("Unable to start QR scanner:", error);
       const failureName = error?.name || "";
       let nextErrorMessage = "Unable to request camera access right now. Please try again.";
+
+      if (
+        (failureName === "NotReadableError" ||
+          failureName === "AbortError" ||
+          failureName === "TrackStartError") &&
+        attempt < 2
+      ) {
+        await wait(350 * (attempt + 1));
+        return startCamera(attempt + 1);
+      }
 
       if (failureName === "NotAllowedError" || failureName === "PermissionDeniedError") {
         setPermissionState("denied");
@@ -219,7 +251,7 @@ export default function QrScannerModal({
     } finally {
       setIsStartingCamera(false);
     }
-  }, [permissionState]);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -385,7 +417,7 @@ export default function QrScannerModal({
                 <button
                   type="button"
                   className="breakTimeModalPrimaryButton qrScannerPermissionButton"
-                  onClick={startCamera}
+                  onClick={handleRetryCamera}
                   disabled={isStartingCamera}
                 >
                   {isStartingCamera
@@ -410,12 +442,12 @@ export default function QrScannerModal({
               </div>
             )}
             {scannerPhase !== "scanning" && (
-              <button
-                type="button"
-                className="breakTimeModalSecondaryButton"
-                onClick={startCamera}
-                disabled={isStartingCamera}
-              >
+                <button
+                  type="button"
+                  className="breakTimeModalSecondaryButton"
+                  onClick={handleRetryCamera}
+                  disabled={isStartingCamera}
+                >
                 Retry Camera Access
               </button>
             )}
