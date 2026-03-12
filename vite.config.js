@@ -12,6 +12,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      injectRegister: null,
       registerType: "autoUpdate",
       manifest: {
         name: "HR Portal",
