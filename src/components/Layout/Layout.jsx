@@ -386,7 +386,7 @@ export default function Layout({ children }) {
               <div className="home-hero-top">
                 <div className="home-hero-greeting">
                   <span className="home-hero-hello">
-                    Hello, {displayName || firstName}
+                    Hi, {displayName || firstName}
                   </span>
                   <span className="home-hero-date">{formattedDate}</span>
                 </div>
@@ -539,10 +539,14 @@ export default function Layout({ children }) {
                 </div>
                 <div className="home-hero-details">
                   <h2 className="home-hero-name">{displayName}</h2>
-                  <p className="home-hero-role">{profileData?.designation || "-"}</p>
+                  <p className="home-hero-role">
+                    {profileData?.designation || "-"}
+                  </p>
                   <div className="home-hero-meta">
                     <span className="home-hero-pill">
-                      {profileData?.employeeCode || profileData?.employee_code || "-"}
+                      {profileData?.employeeCode ||
+                        profileData?.employee_code ||
+                        "-"}
                     </span>
                     <span className="home-hero-pill">
                       {profileData?.yearsInAries || "-"} yrs
