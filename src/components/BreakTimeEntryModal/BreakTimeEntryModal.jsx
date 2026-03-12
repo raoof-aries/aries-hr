@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { getDataUrl } from "../../utils/dataUrl";
 import "./BreakTimeEntryModal.css";
 
-const BREAK_OUT_REASONS = [
+const DEFAULT_BREAK_OUT_REASONS = [
   "Breakfast",
   "Lunch",
   "Client Visit",
   "Personal",
-  "Other",
 ];
+const OTHER_REASON = "Other";
+
+function normalizeBreakOutReasons(payload) {
+  const reasons = Array.isArray(payload?.breakOutReasons)
+    ? payload.breakOutReasons
+    : [];
+
+  return reasons
+    .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
+    .filter((reason) => reason && reason !== OTHER_REASON);
+}
 
 export default function BreakTimeEntryModal({
   actionType,
@@ -17,9 +28,61 @@ export default function BreakTimeEntryModal({
   onClose,
   onSubmit,
 }) {
-  const [reason, setReason] = useState(BREAK_OUT_REASONS[0]);
+  const [availableReasons, setAvailableReasons] = useState(
+    DEFAULT_BREAK_OUT_REASONS,
+  );
+  const [reason, setReason] = useState(DEFAULT_BREAK_OUT_REASONS[0]);
   const [customReason, setCustomReason] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const breakOutReasons = [...availableReasons, OTHER_REASON];
+
+  useEffect(() => {
+    if (!isOpen || actionType !== "out") {
+      return undefined;
+    }
+
+    let isCancelled = false;
+
+    const loadBreakOutReasons = async () => {
+      try {
+        const response = await fetch(getDataUrl("config/break-time-options.json"), {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+        const nextReasons = normalizeBreakOutReasons(payload);
+
+        if (!isCancelled && nextReasons.length > 0) {
+          setAvailableReasons(nextReasons);
+        }
+      } catch (error) {
+        console.error("Unable to load break time options:", error);
+
+        if (!isCancelled) {
+          setAvailableReasons(DEFAULT_BREAK_OUT_REASONS);
+        }
+      }
+    };
+
+    loadBreakOutReasons();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [actionType, isOpen]);
+
+  useEffect(() => {
+    const validReasons = new Set([...availableReasons, OTHER_REASON]);
+
+    if (!validReasons.has(reason)) {
+      setReason(availableReasons[0] || OTHER_REASON);
+      setCustomReason("");
+    }
+  }, [availableReasons, reason]);
 
   if (!isOpen || actionType !== "out") {
     return null;
@@ -29,7 +92,7 @@ export default function BreakTimeEntryModal({
     event.preventDefault();
 
     const normalizedReason =
-      reason === "Other" ? customReason.trim() : reason.trim();
+      reason === OTHER_REASON ? customReason.trim() : reason.trim();
 
     if (!normalizedReason) {
       setErrorMessage("Reason is required.");
@@ -102,14 +165,14 @@ export default function BreakTimeEntryModal({
               }}
               required
             >
-              {BREAK_OUT_REASONS.map((option) => (
+              {breakOutReasons.map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>
               ))}
             </select>
 
-            {reason === "Other" && (
+            {reason === OTHER_REASON && (
               <input
                 id="break-time-custom-reason"
                 className="breakTimeEntryControl"
