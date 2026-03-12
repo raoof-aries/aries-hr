@@ -2,6 +2,13 @@ import { getRuntimeConfig } from "../utils/runtimeConfig";
 
 const TOKEN_STORAGE_KEY = "authToken";
 
+function normalizeActionType(buttonValue) {
+  const normalizedValue = `${buttonValue || ""}`.trim().toLowerCase();
+  return normalizedValue === "in" || normalizedValue === "out"
+    ? normalizedValue
+    : "";
+}
+
 export async function validateBreakTimeQrCodeWithApi(scannedValue) {
   const qrValue = `${scannedValue || ""}`.trim();
 
@@ -22,7 +29,7 @@ export async function validateBreakTimeQrCodeWithApi(scannedValue) {
 
   const validateUrls = [`${apiBaseUrl}?action=validateQR`];
 
-  const form = new URLSearchParams();
+  const form = new FormData();
   form.set("qr_value", qrValue);
   const authToken = localStorage.getItem(TOKEN_STORAGE_KEY) || "";
 
@@ -35,14 +42,13 @@ export async function validateBreakTimeQrCodeWithApi(scannedValue) {
       response = await fetch(validateUrl, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
           ...(authToken
             ? {
                 Authorization: `Bearer ${authToken}`,
               }
             : {}),
         },
-        body: form.toString(),
+        body: form,
       });
 
       try {
@@ -77,10 +83,22 @@ export async function validateBreakTimeQrCodeWithApi(scannedValue) {
   }
 
   const isSuccess = payload?.status === true || payload?.status === "true";
+  const actionType = normalizeActionType(payload?.button);
+
+  if (isSuccess && !actionType) {
+    return {
+      success: false,
+      message: "QR validation succeeded, but no valid IN/OUT action was returned.",
+      payload,
+    };
+  }
 
   return {
     success: isSuccess,
     message: payload?.message || (isSuccess ? "QR code is valid." : "Invalid QR Code"),
+    actionType,
+    logId: payload?.log_id ?? null,
+    qrValue,
     payload,
   };
 }

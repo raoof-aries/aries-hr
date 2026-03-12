@@ -4,7 +4,7 @@
 }
 
 .breakTimeLogActionCard,
-.breakTimeLogListCard {
+.breakTimeLogFeedbackCard {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 20px;
@@ -13,6 +13,8 @@
 }
 
 .breakTimeLogActionCard {
+  display: grid;
+  gap: 18px;
   padding: 18px;
 }
 
@@ -24,14 +26,12 @@
   flex-wrap: wrap;
 }
 
-.breakTimeLogToolbarCopy h2,
-.breakTimeLogSectionHeader h2 {
+.breakTimeLogToolbarCopy h2 {
   font-size: var(--fs-heading-sm);
   color: var(--text-primary);
 }
 
-.breakTimeLogToolbarCopy p,
-.breakTimeLogSectionHeader p {
+.breakTimeLogToolbarCopy p {
   margin-top: 4px;
   font-size: var(--fs-body-sm);
   line-height: 1.5;
@@ -51,213 +51,87 @@
   box-shadow: var(--shadow-sm);
 }
 
-.breakTimeLogPrimaryButton:hover {
+.breakTimeLogPrimaryButton:hover:not(:disabled) {
   background: var(--apple-blue-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
-.breakTimeLogFeedback {
-  padding: 12px 14px;
-  border-radius: 14px;
-  font-size: var(--fs-body-sm);
-  font-weight: 600;
-  box-shadow: var(--shadow-sm);
+.breakTimeLogPrimaryButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.breakTimeLogFeedback.success {
-  background: rgba(5, 150, 105, 0.1);
-  color: #047857;
+.breakTimeLogFeedbackCard {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
 }
 
-.breakTimeLogFeedback.error {
+.breakTimeLogFeedbackCard.success {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.18);
+}
+
+.breakTimeLogFeedbackCard.error {
   background: rgba(239, 68, 68, 0.08);
-  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.18);
 }
 
-.breakTimeLogSectionHeader {
+.breakTimeLogFeedbackHeader {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 18px 0;
-  flex-wrap: wrap;
-}
-
-.breakTimeLogDateField {
-  display: grid;
-  gap: 6px;
-  min-width: 180px;
-}
-
-.breakTimeLogDateField label {
-  font-size: var(--fs-body-sm);
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.breakTimeLogDateField input {
-  box-sizing: border-box;
-  width: 100%;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 11px 14px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: var(--fs-body);
-  box-shadow: var(--shadow-sm);
-}
-
-.breakTimeLogDateField input:focus {
-  outline: none;
-  border-color: var(--apple-blue);
-  box-shadow: 0 0 0 3px var(--apple-blue-light), var(--shadow-sm);
-}
-
-.breakTimeLogList {
-  display: grid;
-  gap: 14px;
-  padding: 18px;
-}
-
-.breakTimeLogEmptyState {
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  padding: 48px 20px;
-  background: #fcfefd;
-  border: 1px dashed var(--border-color);
-  border-radius: 16px;
-  color: var(--text-secondary);
-  text-align: center;
-}
-
-.breakTimeLogItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 16px;
-  background: #fcfefd;
-  border: 1px solid var(--border-color);
-  border-radius: 18px;
-  box-shadow: var(--shadow-sm);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.breakTimeLogItem:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-hover);
-}
-
-.breakTimeLogItemIcon {
-  width: 48px;
-  height: 48px;
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: var(--apple-blue-lighter);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  color: var(--apple-blue);
-  flex-shrink: 0;
-}
-
-.breakTimeLogItemContent {
-  flex: 1;
-  min-width: 0;
-}
-
-.breakTimeLogItemTop {
-  display: flex;
-  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.breakTimeLogItemTop h3 {
-  font-size: var(--fs-body);
-  color: var(--text-primary);
-}
-
-.breakTimeLogItemTop p {
-  margin-top: 4px;
-  font-size: var(--fs-small);
-  color: var(--text-secondary);
-}
-
-.breakTimeLogBadge {
+.breakTimeLogFeedbackBadge {
   display: inline-flex;
   align-items: center;
   padding: 6px 10px;
   border-radius: 999px;
-  background: var(--apple-blue-lighter);
-  color: var(--apple-blue);
   font-size: var(--fs-small);
   font-weight: 700;
 }
 
-.breakTimeLogMetaGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+.breakTimeLogFeedbackCard.success .breakTimeLogFeedbackBadge {
+  background: rgba(5, 150, 105, 0.14);
+  color: #047857;
 }
 
-.breakTimeLogMetaItem {
-  display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-  background: var(--bg-primary);
-  border: 1px solid rgba(1, 67, 66, 0.08);
-  border-radius: 14px;
+.breakTimeLogFeedbackCard.error .breakTimeLogFeedbackBadge {
+  background: rgba(239, 68, 68, 0.14);
+  color: #b91c1c;
 }
 
-.breakTimeLogMetaItem span {
-  font-size: var(--fs-small);
-  color: var(--text-tertiary);
+.breakTimeLogFeedbackTime {
+  font-size: var(--fs-heading-sm);
+  color: var(--text-primary);
 }
 
-.breakTimeLogMetaItem strong {
+.breakTimeLogFeedbackMessage {
   font-size: var(--fs-body);
+  font-weight: 600;
   color: var(--text-primary);
 }
 
 @media (max-width: 640px) {
   .breakTimeLogActionCard,
-  .breakTimeLogListCard {
+  .breakTimeLogFeedbackCard {
     border-radius: 18px;
   }
 
   .breakTimeLogActionCard,
-  .breakTimeLogSectionHeader,
-  .breakTimeLogList {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-
-  .breakTimeLogActionCard {
-    padding-top: 14px;
-    padding-bottom: 14px;
+  .breakTimeLogFeedbackCard {
+    padding: 14px;
   }
 
   .breakTimeLogPrimaryButton {
     width: 100%;
   }
 
-  .breakTimeLogDateField {
-    width: 100%;
-  }
-
-  .breakTimeLogItem {
-    flex-direction: column;
-  }
-
-  .breakTimeLogMetaGrid {
-    grid-template-columns: 1fr;
+  .breakTimeLogFeedbackHeader {
+    align-items: flex-start;
   }
 }

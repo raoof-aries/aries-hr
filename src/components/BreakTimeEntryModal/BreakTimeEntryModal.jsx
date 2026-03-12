@@ -1,79 +1,49 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
-import { getLocalTimeValue } from "../../services/breakTimeLogService";
 import "./BreakTimeEntryModal.css";
 
-const LOG_TYPES = [
-  {
-    value: "out",
-    label: "Out Time",
-    description: "Use this when you are stepping away.",
-  },
-  {
-    value: "in",
-    label: "In Time",
-    description: "Use this when you are returning.",
-  },
+const BREAK_OUT_REASONS = [
+  "Breakfast",
+  "Lunch",
+  "Client Visit",
+  "Personal",
+  "Other",
 ];
 
-const BREAK_REASONS = ["Lunch", "Personal Work", "Client Visit", "Other"];
-
-function getInitialState() {
-  return {
-    logType: "out",
-    reason: BREAK_REASONS[0],
-    addCustomTime: false,
-    customTime: getLocalTimeValue(),
-  };
-}
-
 export default function BreakTimeEntryModal({
+  actionType,
   isOpen,
   isSubmitting,
   onClose,
   onSubmit,
 }) {
-  const [formState, setFormState] = useState(getInitialState);
+  const [reason, setReason] = useState(BREAK_OUT_REASONS[0]);
+  const [customReason, setCustomReason] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const selectedLogType = useMemo(
-    () => LOG_TYPES.find((item) => item.value === formState.logType),
-    [formState.logType],
-  );
-
-  if (!isOpen) {
+  if (!isOpen || actionType !== "out") {
     return null;
   }
-
-  const handleFieldChange = (event) => {
-    const { name, value, type, checked } = event.target;
-    setFormState((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (formState.logType === "out" && !formState.reason.trim()) {
+    const normalizedReason =
+      reason === "Other" ? customReason.trim() : reason.trim();
+
+    if (!normalizedReason) {
       setErrorMessage("Reason is required.");
       return;
     }
 
-    if (formState.addCustomTime && !formState.customTime) {
-      setErrorMessage("Custom time is required when enabled.");
-      return;
-    }
-
     setErrorMessage("");
-
-    await onSubmit({
-      logType: formState.logType,
-      reason: formState.logType === "out" ? formState.reason : "",
-      customTimeUsed: formState.addCustomTime,
-      customTime: formState.addCustomTime ? formState.customTime : "",
+    const result = await onSubmit({
+      reason: normalizedReason,
     });
+
+    if (!result?.success) {
+      setErrorMessage(result?.message || "Unable to submit break out.");
+    }
   };
 
   const modalContent = (
@@ -84,9 +54,9 @@ export default function BreakTimeEntryModal({
       >
         <div className="breakTimeModalHeader">
           <div>
-            <h2 className="breakTimeModalTitle">Log Break Time</h2>
+            <h2 className="breakTimeModalTitle">Break OUT</h2>
             <p className="breakTimeModalSubtitle">
-              QR verified. Choose how you want this entry recorded.
+              Enter a short reason to record your break out time.
             </p>
           </div>
           <button
@@ -112,89 +82,52 @@ export default function BreakTimeEntryModal({
         </div>
 
         <form className="breakTimeEntryForm" onSubmit={handleSubmit}>
-          <div className="breakTimeEntryTypeGrid">
-            {LOG_TYPES.map((option) => {
-              const isSelected = formState.logType === option.value;
-              return (
-                <label
-                  key={option.value}
-                  className={`breakTimeEntryTypeOption ${isSelected ? "active" : ""}`}
-                >
-                  <input
-                    type="radio"
-                    name="logType"
-                    value={option.value}
-                    checked={isSelected}
-                    onChange={handleFieldChange}
-                  />
-                  <span className="breakTimeEntryTypeLabel">{option.label}</span>
-                  <span className="breakTimeEntryTypeDescription">
-                    {option.description}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-
           <div className="breakTimeEntryRow">
-            <label className="breakTimeEntryFieldLabel">
-              <span>Add Custom Time</span>
-              <input
-                type="checkbox"
-                name="addCustomTime"
-                checked={formState.addCustomTime}
-                onChange={handleFieldChange}
-              />
+            <label
+              className="breakTimeEntryStandaloneLabel"
+              htmlFor="break-time-reason"
+            >
+              Reason
             </label>
-            <p className="breakTimeEntryHint">
-              When this is off, the current system time will be recorded.
-            </p>
-          </div>
+            <select
+              id="break-time-reason"
+              className="breakTimeEntryControl"
+              name="reason"
+              value={reason}
+              onChange={(event) => {
+                setReason(event.target.value);
+                if (errorMessage) {
+                  setErrorMessage("");
+                }
+              }}
+              required
+            >
+              {BREAK_OUT_REASONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
 
-          {formState.addCustomTime && (
-            <div className="breakTimeEntryRow">
-              <label
-                className="breakTimeEntryStandaloneLabel"
-                htmlFor="break-time-custom-time"
-              >
-                Custom {selectedLogType?.label}
-              </label>
+            {reason === "Other" && (
               <input
-                id="break-time-custom-time"
+                id="break-time-custom-reason"
                 className="breakTimeEntryControl"
-                type="time"
-                name="customTime"
-                value={formState.customTime}
-                onChange={handleFieldChange}
+                type="text"
+                name="customReason"
+                value={customReason}
+                onChange={(event) => {
+                  setCustomReason(event.target.value);
+                  if (errorMessage) {
+                    setErrorMessage("");
+                  }
+                }}
+                maxLength="250"
+                placeholder="Type your reason"
                 required
               />
-            </div>
-          )}
-
-          {formState.logType === "out" && (
-            <div className="breakTimeEntryRow">
-              <label
-                className="breakTimeEntryStandaloneLabel"
-                htmlFor="break-time-reason"
-              >
-                Reason
-              </label>
-              <select
-                id="break-time-reason"
-                className="breakTimeEntryControl"
-                name="reason"
-                value={formState.reason}
-                onChange={handleFieldChange}
-                required
-              >
-                {BREAK_REASONS.map((reason) => (
-                  <option key={reason} value={reason}>
-                    {reason}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+            )}
+          </div>
 
           {errorMessage && (
             <div className="breakTimeModalMessage breakTimeModalMessageError">
