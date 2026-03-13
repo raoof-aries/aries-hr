@@ -125,7 +125,7 @@ export default function Profile() {
               </span>
             </div>
             <div className="info-item">
-              <span className="info-label">Job Category</span>
+              <span className="info-label">Work Category</span>
               <span className="info-value">
                 <span className="badge badge-green">
                   {profileData.work_category_name || "-"}
