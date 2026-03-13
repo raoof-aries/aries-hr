@@ -59,12 +59,7 @@ function normalizeUser(apiUser = {}) {
     division: apiUser.division || apiUser.emp_division_id || "-",
     subDivision: apiUser.subDivision || apiUser.emp_subdivision_id || "-",
     jobType: apiUser.jobType || apiUser.emp_type || "-",
-    jobCategory:
-      apiUser.work_category_name ||
-      apiUser.jobCategory ||
-      apiUser.job_category_name ||
-      apiUser.job_category ||
-      "-",
+    jobCategory: apiUser.work_category_name || "-",
     reportingTime: apiUser.reportingTime || apiUser.reporting_time || "-",
     dateOfJoining: formatDateValue(apiUser.doj),
     groupJoiningDate: formatDateValue(apiUser.gdoj),

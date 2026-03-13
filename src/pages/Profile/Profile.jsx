@@ -34,7 +34,10 @@ export default function Profile() {
       <div className="profile-header">
         <div className="avatar-wrapper">
           <img
-            src={profileData.profileImageUrl || "https://www.effism.com/images/employee/user.png"}
+            src={
+              profileData.profileImageUrl ||
+              "https://www.effism.com/images/employee/user.png"
+            }
             alt="Profile"
             className="profile-avatar"
           />
@@ -42,10 +45,16 @@ export default function Profile() {
         </div>
         <div className="profile-header-info">
           <h1 className="profile-name">{profileData.name || "-"}</h1>
-          <p className="profile-designation">{profileData.designation || "-"}</p>
+          <p className="profile-designation">
+            {profileData.designation || "-"}
+          </p>
           <div className="profile-meta">
-            <span className="meta-badge">{profileData.employeeCode || "-"}</span>
-            <span className="meta-text">{profileData.years_in_aries || "-"} years</span>
+            <span className="meta-badge">
+              {profileData.employeeCode || "-"}
+            </span>
+            <span className="meta-text">
+              {profileData.years_in_aries || "-"} years
+            </span>
           </div>
         </div>
         <div className="profile-quick-stats">
@@ -102,7 +111,9 @@ export default function Profile() {
             <div className="info-item">
               <span className="info-label">Sub Division</span>
               <span className="info-value">
-                {profileData.emp_subdivision_name || profileData.subDivision || "-"}
+                {profileData.emp_subdivision_name ||
+                  profileData.subDivision ||
+                  "-"}
               </span>
             </div>
             <div className="info-item">
@@ -117,7 +128,7 @@ export default function Profile() {
               <span className="info-label">Job Category</span>
               <span className="info-value">
                 <span className="badge badge-green">
-                  {profileData.work_category_name || profileData.jobCategory || "-"}
+                  {profileData.work_category_name || "-"}
                 </span>
               </span>
             </div>
