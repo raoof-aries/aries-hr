@@ -365,16 +365,32 @@
 }
 
 .home-hero-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
 }
 
 .home-hero-actions {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 1px;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 26px rgba(2, 57, 57, 0.16);
+}
+
+.home-hero-actions .layout-notification-button {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+}
+
+.home-hero-actions .layout-notification-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: none;
 }
 
 .layout-home-lock-button {
@@ -388,12 +404,13 @@
 .home-hero-greeting {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  min-width: 0;
 }
 
 .home-hero-hello {
   font-size: var(--fs-heading-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: #f6fffc;
   letter-spacing: -0.2px;
 }
@@ -404,6 +421,7 @@
   color: #d9f2ec;
   opacity: 0.8;
   letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .home-hero-profile {
@@ -456,7 +474,7 @@
 .home-hero-name {
   margin: 0;
   font-size: var(--fs-heading);
-  font-weight: 700;
+  font-weight: 600;
   color: #ffffff;
   letter-spacing: -0.2px;
 }
@@ -1263,6 +1281,20 @@
 }
 
 @media (max-width: 480px) {
+  .home-hero-top {
+    gap: 10px;
+  }
+
+  .home-hero-actions {
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .home-hero-actions .layout-notification-button {
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+
   /* On very small phones, increase bottom padding further so
      the final row of content (cards, lists, etc.) is clearly
      visible above the navbar. */

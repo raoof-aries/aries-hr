@@ -204,6 +204,7 @@ export default function Layout({ children }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(() => new Date());
   const notificationRef = useRef(null);
   const pullStartYRef = useRef(0);
   const isPullTrackingRef = useRef(false);
@@ -360,6 +361,20 @@ export default function Layout({ children }) {
     };
   }, []);
 
+  useEffect(() => {
+    const syncClock = () => {
+      setCurrentDateTime(new Date());
+    };
+
+    syncClock();
+
+    const intervalId = window.setInterval(syncClock, 60 * 1000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   const { today, older } = groupedNotifications();
 
   const handleLogout = () => {
@@ -376,14 +391,24 @@ export default function Layout({ children }) {
     const nameParts = displayName.trim().split(/\s+/);
     return nameParts[0];
   };
+
+  const getGreetingByTime = (date) => {
+    const hours = date.getHours();
+
+    if (hours < 12) return "Good morning";
+    if (hours < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
   const formattedDate = new Intl.DateTimeFormat("en-GB", {
     weekday: "long",
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(new Date());
+  }).format(currentDateTime);
 
   const firstName = getFirstName();
+  const greeting = getGreetingByTime(currentDateTime);
   const profileImageUrl =
     profileData?.profileImageUrl ||
     "https://www.effism.com/images/employee/user.png";
@@ -534,9 +559,7 @@ export default function Layout({ children }) {
             <div className="home-hero-card">
               <div className="home-hero-top">
                 <div className="home-hero-greeting">
-                  <span className="home-hero-hello">
-                    Hello, {displayName || firstName}
-                  </span>
+                  <span className="home-hero-hello">Hi, {greeting}</span>
                   <span className="home-hero-date">{formattedDate}</span>
                 </div>
                 <div className="home-hero-actions">
