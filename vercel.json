@@ -42,6 +42,11 @@
       "source": "/",
       "destination": "/hrms/",
       "permanent": false
+    },
+    {
+      "source": "/hrms",
+      "destination": "/hrms/",
+      "permanent": false
     }
   ],
   "rewrites": [
@@ -80,6 +85,10 @@
     {
       "source": "/hrms/workbox-(.*).js",
       "destination": "/workbox-$1.js"
+    },
+    {
+      "source": "/hrms",
+      "destination": "/index.html"
     },
     {
       "source": "/hrms/(.*)",
