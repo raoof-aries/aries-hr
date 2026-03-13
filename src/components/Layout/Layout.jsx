@@ -721,7 +721,7 @@ export default function Layout({ children }) {
                         "-"}
                     </span>
                     <span className="home-hero-pill">
-                      {profileData?.yearsInAries || "-"} yrs
+                      {profileData?.years_in_aries || "-"} yrs
                     </span>
                   </div>
                 </div>

@@ -38,14 +38,6 @@ function formatDateValue(value) {
   return value;
 }
 
-function yearsSince(dateString) {
-  if (!dateString || dateString === "0000-00-00") return "-";
-  const start = new Date(dateString);
-  if (Number.isNaN(start.getTime())) return "-";
-  const years = Math.max(0, (Date.now() - start.getTime()) / 31557600000);
-  return years.toFixed(1);
-}
-
 function normalizeUser(apiUser = {}) {
   const name =
     apiUser.full_name || apiUser.display_name || apiUser.username || "User";
@@ -67,11 +59,15 @@ function normalizeUser(apiUser = {}) {
     division: apiUser.division || apiUser.emp_division_id || "-",
     subDivision: apiUser.subDivision || apiUser.emp_subdivision_id || "-",
     jobType: apiUser.jobType || apiUser.emp_type || "-",
-    jobCategory: apiUser.jobCategory || apiUser.job_category || "-",
+    jobCategory:
+      apiUser.work_category_name ||
+      apiUser.jobCategory ||
+      apiUser.job_category_name ||
+      apiUser.job_category ||
+      "-",
     reportingTime: apiUser.reportingTime || apiUser.reporting_time || "-",
     dateOfJoining: formatDateValue(apiUser.doj),
     groupJoiningDate: formatDateValue(apiUser.gdoj),
-    yearsInAries: apiUser.yearsInAries || yearsSince(apiUser.doj),
     qualificationIndex: apiUser.qualificationIndex || "-",
     outsideExperience: apiUser.outsideExperience || {
       total: "-",
@@ -101,10 +97,12 @@ export function AuthProvider({ children }) {
     if (storedToken && storedUser && !isJwtExpired(storedToken)) {
       try {
         const parsedUser = JSON.parse(storedUser);
+        const normalizedUser = normalizeUser(parsedUser);
         setIsAuthenticated(true);
         setToken(storedToken);
-        setUser(parsedUser);
-        setUserName(parsedUser?.name || "");
+        setUser(normalizedUser);
+        setUserName(normalizedUser?.name || "");
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(normalizedUser));
       } catch (error) {
         console.error("Invalid stored user session:", error);
         clearStoredSession();

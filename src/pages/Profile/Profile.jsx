@@ -5,10 +5,6 @@ import "./Profile.css";
 export default function Profile() {
   const { user } = useAuth();
   const profileData = user;
-  const outsideExperience = profileData?.outsideExperience || {
-    total: "-",
-    relevant: "-",
-  };
   const formatDateToDdMmYyyy = (value) => {
     if (!value) return "-";
 
@@ -49,7 +45,7 @@ export default function Profile() {
           <p className="profile-designation">{profileData.designation || "-"}</p>
           <div className="profile-meta">
             <span className="meta-badge">{profileData.employeeCode || "-"}</span>
-            <span className="meta-text">{profileData.yearsInAries || "-"} years</span>
+            <span className="meta-text">{profileData.years_in_aries || "-"} years</span>
           </div>
         </div>
         <div className="profile-quick-stats">
@@ -71,7 +67,7 @@ export default function Profile() {
         {/* Personal Information Section */}
         <div className="content-section">
           <h2 className="section-title">Personal Information</h2>
-          <div className="section-grid">
+          <div className="section-grid-two">
             <div className="info-item">
               <span className="info-label">Date of Birth</span>
               <span className="info-value">
@@ -121,7 +117,7 @@ export default function Profile() {
               <span className="info-label">Job Category</span>
               <span className="info-value">
                 <span className="badge badge-green">
-                  {profileData.job_category_name || profileData.jobCategory || "-"}
+                  {profileData.work_category_name || profileData.jobCategory || "-"}
                 </span>
               </span>
             </div>
@@ -139,37 +135,17 @@ export default function Profile() {
         {/* Employment Timeline Section */}
         <div className="content-section">
           <h2 className="section-title">Employment Timeline</h2>
-          <div className="section-grid">
+          <div className="section-grid-two">
             <div className="info-item">
               <span className="info-label">Date of Joining</span>
-              <span className="info-value">{profileData.dateOfJoining || "-"}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Group Joining Date</span>
-              <span className="info-value">{profileData.groupJoiningDate || "-"}</span>
+              <span className="info-value">
+                {formatDateToDdMmYyyy(profileData.groupJoiningDate)}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Years in Aries</span>
               <span className="info-value highlight">
-                {profileData.yearsInAries || "-"} years
-              </span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Qualification Index</span>
-              <span className="info-value highlight">
-                {profileData.qualificationIndex || "-"}
-              </span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Total Outside Experience</span>
-              <span className="info-value">
-                {outsideExperience.total || "-"} years
-              </span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Relevant Experience</span>
-              <span className="info-value">
-                {outsideExperience.relevant || "-"} years
+                {profileData.years_in_aries || "-"} years
               </span>
             </div>
           </div>
