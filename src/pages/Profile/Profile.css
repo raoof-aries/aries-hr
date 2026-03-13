@@ -324,6 +324,10 @@
     grid-column: span 2;
   }
 
+  .work-details-grid .info-item:first-child {
+    grid-column: span 1;
+  }
+
   .info-item {
     gap: 4px;
   }

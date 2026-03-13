@@ -95,11 +95,17 @@ export default function Profile() {
         {/* Work Details Section */}
         <div className="content-section">
           <h2 className="section-title">Work Details</h2>
-          <div className="section-grid">
+          <div className="section-grid work-details-grid">
             <div className="info-item">
               <span className="info-label">Company</span>
               <span className="info-value">
                 {profileData.emp_company_name || profileData.company || "-"}
+              </span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Work Location</span>
+              <span className="info-value">
+                {profileData.work_location || profileData.reportingTime || "-"}
               </span>
             </div>
             <div className="info-item">
@@ -130,12 +136,6 @@ export default function Profile() {
                 <span className="badge badge-green">
                   {profileData.work_category_name || "-"}
                 </span>
-              </span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Work Location</span>
-              <span className="info-value">
-                {profileData.work_location || profileData.reportingTime || "-"}
               </span>
             </div>
           </div>
