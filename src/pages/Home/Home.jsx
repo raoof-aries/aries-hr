@@ -5,7 +5,7 @@ export default function Home() {
   const quickAccessItems = [
     {
       id: "break",
-      title: "Time Log",
+      title: "Break",
       description: "Open your break time log",
       route: "/break-time-log",
       icon: (
