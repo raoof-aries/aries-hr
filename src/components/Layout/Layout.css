@@ -1,6 +1,8 @@
 .layout-container {
   display: flex;
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
   background: var(--bg-secondary);
 }
 
@@ -155,7 +157,17 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
   transition: margin-left 0.3s ease;
+}
+
+.layout-main--pulling {
+  transform: translateY(var(--pull-offset, 0px));
+  transition: transform 0.18s ease-out;
+}
+
+.layout-main--refreshing {
+  transition-duration: 0.24s;
 }
 
 .layout-sidebar.closed ~ .layout-main {
@@ -168,6 +180,57 @@
 
 .layout-main-page {
   background: var(--bg-secondary);
+}
+
+.layout-pull-refresh {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  left: 50%;
+  z-index: 180;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #f6fffc;
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.layout-pull-refresh-spinner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-top-color: #ffffff;
+  border-right-color: rgba(255, 255, 255, 0.42);
+  opacity: 1;
+  transform: rotate(-35deg);
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.layout-pull-refresh.is-armed .layout-pull-refresh-spinner {
+  border-color: rgba(255, 255, 255, 0.24);
+  border-top-color: #ffffff;
+  border-right-color: rgba(255, 255, 255, 0.6);
+  transform: rotate(0deg);
+}
+
+.layout-pull-refresh.is-refreshing .layout-pull-refresh-spinner {
+  animation: layoutPullRefreshSpin 0.8s linear infinite;
+}
+
+@keyframes layoutPullRefreshSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Header */
@@ -1052,12 +1115,20 @@
 }
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  .layout-container {
+    background: var(--apple-blue);
+  }
+
   .layout-sidebar {
     display: none;
   }
 
   .layout-header-logo {
     display: none !important;
+  }
+
+  .layout-pull-refresh {
+    display: inline-flex;
   }
 
   .layout-header-title {

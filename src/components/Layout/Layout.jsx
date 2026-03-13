@@ -5,6 +5,9 @@ import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import "./Layout.css";
 
+const PULL_REFRESH_THRESHOLD = 54;
+const MAX_PULL_DISTANCE = 78;
+
 const menuItems = [
   {
     id: "dashboard",
@@ -199,7 +202,13 @@ export default function Layout({ children }) {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
   const notificationRef = useRef(null);
+  const pullStartYRef = useRef(0);
+  const isPullTrackingRef = useRef(false);
+  const pullDistanceRef = useRef(0);
+  const refreshTimeoutRef = useRef(null);
   const isHomeScreen = location.pathname === "/";
 
   // Detect mobile screen size
@@ -232,6 +241,125 @@ export default function Layout({ children }) {
     };
   }, [notificationOpen]);
 
+  useEffect(() => {
+    if (!isMobile) {
+      setPullDistance(0);
+      setIsPullRefreshing(false);
+      pullDistanceRef.current = 0;
+      isPullTrackingRef.current = false;
+      return undefined;
+    }
+
+    const getScrollTop = () =>
+      Math.max(
+        window.scrollY,
+        document.documentElement.scrollTop,
+        document.body.scrollTop,
+      );
+
+    const shouldIgnorePull = (target) => {
+      if (!(target instanceof Element)) {
+        return true;
+      }
+
+      return Boolean(
+        target.closest(
+          "input, textarea, select, option, [contenteditable='true'], .layout-mobile-menu, .layout-notification-dropdown, [data-disable-pull-refresh]",
+        ),
+      );
+    };
+
+    const resetPull = () => {
+      isPullTrackingRef.current = false;
+      pullStartYRef.current = 0;
+      pullDistanceRef.current = 0;
+      setPullDistance(0);
+    };
+
+    const triggerRefresh = () => {
+      setIsPullRefreshing(true);
+      setPullDistance(PULL_REFRESH_THRESHOLD);
+      refreshTimeoutRef.current = window.setTimeout(() => {
+        window.location.reload();
+      }, 320);
+    };
+
+    const handleTouchStart = (event) => {
+      if (isPullRefreshing || event.touches.length !== 1) {
+        return;
+      }
+
+      if (mobileMenuOpen || notificationOpen || getScrollTop() > 0) {
+        return;
+      }
+
+      if (shouldIgnorePull(event.target)) {
+        return;
+      }
+
+      pullStartYRef.current = event.touches[0].clientY;
+      isPullTrackingRef.current = true;
+    };
+
+    const handleTouchMove = (event) => {
+      if (!isPullTrackingRef.current || isPullRefreshing) {
+        return;
+      }
+
+      const deltaY = event.touches[0].clientY - pullStartYRef.current;
+
+      if (deltaY <= 0) {
+        resetPull();
+        return;
+      }
+
+      if (getScrollTop() > 0) {
+        resetPull();
+        return;
+      }
+
+      const dampedDistance = Math.min(MAX_PULL_DISTANCE, deltaY * 0.26);
+      pullDistanceRef.current = dampedDistance;
+      setPullDistance(dampedDistance);
+      event.preventDefault();
+    };
+
+    const handleTouchEnd = () => {
+      if (!isPullTrackingRef.current || isPullRefreshing) {
+        return;
+      }
+
+      isPullTrackingRef.current = false;
+
+      if (pullDistanceRef.current >= PULL_REFRESH_THRESHOLD) {
+        triggerRefresh();
+        return;
+      }
+
+      resetPull();
+    };
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("touchcancel", resetPull);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", resetPull);
+    };
+  }, [isMobile, isPullRefreshing, mobileMenuOpen, notificationOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimeoutRef.current) {
+        window.clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const { today, older } = groupedNotifications();
 
   const handleLogout = () => {
@@ -259,6 +387,14 @@ export default function Layout({ children }) {
   const profileImageUrl =
     profileData?.profileImageUrl ||
     "https://www.effism.com/images/employee/user.png";
+  const effectivePullDistance = isPullRefreshing
+    ? PULL_REFRESH_THRESHOLD
+    : pullDistance;
+  const pullProgress = Math.min(
+    effectivePullDistance / PULL_REFRESH_THRESHOLD,
+    1,
+  );
+  const pullIndicatorOffset = Math.min(16, effectivePullDistance * 0.5 - 22);
 
   // Get page title based on current route
   const getPageTitle = () => {
@@ -373,10 +509,23 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
+      <div
+        className={`layout-pull-refresh ${pullProgress >= 1 ? "is-armed" : ""} ${isPullRefreshing ? "is-refreshing" : ""}`}
+        aria-hidden={!isMobile}
+        style={{
+          opacity: isMobile ? Math.max(pullProgress, 0) : 0,
+          transform: `translate(-50%, ${pullIndicatorOffset}px) scale(${0.4 + pullProgress * 0.6})`,
+        }}
+      >
+        <div className="layout-pull-refresh-spinner" />
+      </div>
+
       {/* Main Content */}
       <div
-        className={`layout-main ${isHomeScreen ? "layout-main-home" : "layout-main-page"}`}
+        className={`layout-main ${isHomeScreen ? "layout-main-home" : "layout-main-page"} ${effectivePullDistance > 0 ? "layout-main--pulling" : ""} ${isPullRefreshing ? "layout-main--refreshing" : ""}`}
+        style={{ "--pull-offset": `${effectivePullDistance}px` }}
       >
+
         {/* Top Bar */}
         <header
           className={`layout-header ${isHomeScreen ? "layout-header-home" : "layout-header-page"}`}
