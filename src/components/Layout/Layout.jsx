@@ -7,6 +7,7 @@ import "./Layout.css";
 
 const PULL_REFRESH_THRESHOLD = 54;
 const MAX_PULL_DISTANCE = 78;
+const MOBILE_BREAKPOINT = 599;
 
 async function hardRefreshPage() {
   if ("serviceWorker" in navigator) {
@@ -215,7 +216,9 @@ export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(
+    window.innerWidth <= MOBILE_BREAKPOINT,
+  );
   const [pullDistance, setPullDistance] = useState(0);
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(() => new Date());
@@ -229,7 +232,7 @@ export default function Layout({ children }) {
   // Detect mobile screen size
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= MOBILE_BREAKPOINT);
     };
 
     window.addEventListener("resize", handleResize);
@@ -461,7 +464,7 @@ export default function Layout({ children }) {
       {/* Sidebar */}
       <aside className={`layout-sidebar ${sidebarOpen ? "open" : "closed"}`}>
         <div className="layout-sidebar-header">
-          <div className="layout-logo">
+          <Link to="/profile" className="layout-logo" aria-label="Open profile">
             <div className="layout-logo-icon">
               <img
                 src={profileImageUrl}
@@ -470,7 +473,7 @@ export default function Layout({ children }) {
               />
             </div>
             <span className="layout-logo-text">Aries HRMS</span>
-          </div>
+          </Link>
           <button
             className="layout-sidebar-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}

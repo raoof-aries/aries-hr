@@ -108,6 +108,21 @@ textarea {
   --accent-lighter: var(--apple-blue-lighter);
 }
 
+@media (min-width: 600px) and (max-width: 1080px) {
+  :root {
+    --fs-caption: 11px;
+    --fs-small: 12px;
+    --fs-body-sm: 13px;
+    --fs-body: 14px;
+    --fs-body-lg: 15px;
+    --fs-heading-sm: 16px;
+    --fs-heading: 18px;
+    --fs-heading-lg: 20px;
+    --fs-display-sm: 22px;
+    --fs-display: 24px;
+  }
+}
+
 /* Shared page background & blobs */
 
 .page-background {
@@ -518,7 +533,7 @@ textarea {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   html,
   body {
     background-color: var(--apple-blue);
