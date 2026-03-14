@@ -25,6 +25,7 @@ export default function Home() {
       ),
       bgColor: "#EAF4FF",
       iconColor: "#1E88E5",
+      shadowColor: "rgba(30, 136, 229, 0.18)",
     },
     {
       id: "salary",
@@ -52,6 +53,7 @@ export default function Home() {
       ),
       bgColor: "#FFF3DA",
       iconColor: "#FF9800",
+      shadowColor: "rgba(255, 152, 0, 0.2)",
     },
     {
       id: "incentive",
@@ -74,6 +76,7 @@ export default function Home() {
       ),
       bgColor: "#E0F2FF",
       iconColor: "#2196F3",
+      shadowColor: "rgba(33, 150, 243, 0.18)",
     },
     {
       id: "allowance",
@@ -99,6 +102,7 @@ export default function Home() {
       ),
       bgColor: "#E8F5E9",
       iconColor: "#4CAF50",
+      shadowColor: "rgba(76, 175, 80, 0.18)",
     },
     {
       id: "health",
@@ -121,6 +125,7 @@ export default function Home() {
       ),
       bgColor: "#FFEBEE",
       iconColor: "#F44336",
+      shadowColor: "rgba(244, 67, 54, 0.18)",
     },
     {
       id: "leave",
@@ -146,6 +151,7 @@ export default function Home() {
       ),
       bgColor: "#FFF3E0",
       iconColor: "#FF9800",
+      shadowColor: "rgba(255, 152, 0, 0.18)",
     },
     {
       id: "calendar",
@@ -177,6 +183,7 @@ export default function Home() {
       ),
       bgColor: "#E1F5FE",
       iconColor: "#00BCD4",
+      shadowColor: "rgba(0, 188, 212, 0.18)",
     },
   ];
 
@@ -184,7 +191,7 @@ export default function Home() {
     <div className="dashboard-container">
       <div className="dashboard-quick-access">
         <div className="dashboard-grid">
-          {quickAccessItems.map((item) => (
+          {quickAccessItems.map((item, index) => (
             <Link
               key={item.id}
               to={item.route}
@@ -193,12 +200,35 @@ export default function Home() {
                   ? "dashboard-card--primary"
                   : ""
               }`}
+              style={{
+                "--card-accent": item.iconColor,
+                "--card-soft": item.bgColor,
+                "--card-shadow": item.shadowColor,
+                "--card-order": index,
+              }}
             >
-              <div
-                className="dashboard-card-icon"
-                style={{ backgroundColor: item.bgColor, color: item.iconColor }}
-              >
-                {item.icon}
+              <div className="dashboard-card-top">
+                <div
+                  className="dashboard-card-icon"
+                  style={{ backgroundColor: item.bgColor, color: item.iconColor }}
+                >
+                  {item.icon}
+                </div>
+                <span className="dashboard-card-arrow" aria-hidden="true">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M7 17 17 7"></path>
+                    <path d="M8 7h9v9"></path>
+                  </svg>
+                </span>
               </div>
               <div className="dashboard-card-content">
                 <h4 className="dashboard-card-title">{item.title}</h4>
