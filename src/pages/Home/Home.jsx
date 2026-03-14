@@ -195,14 +195,11 @@ export default function Home() {
             <Link
               key={item.id}
               to={item.route}
-              className={`dashboard-card ${
-                item.id === "salary" || item.id === "incentive"
-                  ? "dashboard-card--primary"
-                  : ""
-              }`}
+              className="dashboard-card"
               style={{
                 "--card-accent": item.iconColor,
                 "--card-soft": item.bgColor,
+                "--card-icon-bg": item.bgColor,
                 "--card-shadow": item.shadowColor,
                 "--card-order": index,
               }}
@@ -210,14 +207,14 @@ export default function Home() {
               <div className="dashboard-card-top">
                 <div
                   className="dashboard-card-icon"
-                  style={{ backgroundColor: item.bgColor, color: item.iconColor }}
+                  style={{ color: item.iconColor }}
                 >
                   {item.icon}
                 </div>
                 <span className="dashboard-card-arrow" aria-hidden="true">
                   <svg
-                    width="16"
-                    height="16"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -225,8 +222,7 @@ export default function Home() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="M7 17 17 7"></path>
-                    <path d="M8 7h9v9"></path>
+                    <path d="m9 18 6-6-6-6"></path>
                   </svg>
                 </span>
               </div>
