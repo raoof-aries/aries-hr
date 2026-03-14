@@ -1647,19 +1647,20 @@
   }
 
   .layout-header-page .layout-header-title {
-    font-size: var(--fs-body-lg);
+    font-size: 1.2rem;
+    font-weight: 600;
   }
 
   .layout-header-page .layout-header-back,
   .layout-header-page .layout-notification-button {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
   }
 
   .layout-header-page .layout-header-back svg,
   .layout-header-page .layout-notification-button svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
   }
 
   /* Show header-left on home screen, hide on other pages */
