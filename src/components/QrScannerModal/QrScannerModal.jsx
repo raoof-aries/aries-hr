@@ -336,7 +336,7 @@ export default function QrScannerModal({
         }
 
         setPermissionState("prompt");
-        setScannerPhase("ready");
+        await startCamera();
         return;
       }
 
@@ -371,14 +371,14 @@ export default function QrScannerModal({
           return;
         }
 
-        setScannerPhase("ready");
+        await startCamera();
       } catch {
         if (!isMounted) {
           return;
         }
 
         setPermissionState("prompt");
-        setScannerPhase("ready");
+        await startCamera();
       }
     };
 

@@ -1640,6 +1640,28 @@
     min-height: 92px;
   }
 
+  .layout-header-page {
+    padding: 14px 18px 10px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+    min-height: 72px;
+  }
+
+  .layout-header-page .layout-header-title {
+    font-size: var(--fs-body-lg);
+  }
+
+  .layout-header-page .layout-header-back,
+  .layout-header-page .layout-notification-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .layout-header-page .layout-header-back svg,
+  .layout-header-page .layout-notification-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
   /* Show header-left on home screen, hide on other pages */
   .layout-header-left {
     display: flex;
