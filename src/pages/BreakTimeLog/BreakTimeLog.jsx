@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import BreakTimeFeedbackModal from "../../components/BreakTimeFeedbackModal/BreakTimeFeedbackModal";
 import BreakTimeEntryModal from "../../components/BreakTimeEntryModal/BreakTimeEntryModal";
 import QrScannerModal from "../../components/QrScannerModal/QrScannerModal";
 import {
@@ -8,12 +9,13 @@ import {
 import { validateBreakTimeQrCodeWithApi } from "../../services/breakTimeQrService";
 import "./BreakTimeLog.css";
 
-function getStatusTone(type) {
-  return type === "success" ? "success" : "error";
-}
-
-function getActionLabel(actionType) {
-  return actionType === "out" ? "OUT" : "IN";
+function buildSubmissionFeedback(actionType, result) {
+  return {
+    type: "success",
+    actionType,
+    message: result.message,
+    recordedTime: formatBreakApiTime(result.recordedAt),
+  };
 }
 
 export default function BreakTimeLog() {
@@ -23,17 +25,6 @@ export default function BreakTimeLog() {
   const [scannerError, setScannerError] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [pendingSubmission, setPendingSubmission] = useState(null);
-
-  const showSubmissionFeedback = useCallback((actionType, result) => {
-    const recordedTime = formatBreakApiTime(result.recordedAt);
-
-    setFeedback({
-      type: "success",
-      actionType,
-      message: result.message,
-      recordedTime,
-    });
-  }, []);
 
   const handleOpenScanner = () => {
     if (isSubmitting) {
@@ -61,8 +52,6 @@ export default function BreakTimeLog() {
         if (!result.success) {
           return result;
         }
-
-        showSubmissionFeedback(actionType, result);
         return result;
       } catch (error) {
         console.error("Unable to submit break time:", error);
@@ -74,7 +63,7 @@ export default function BreakTimeLog() {
         setIsSubmitting(false);
       }
     },
-    [showSubmissionFeedback],
+    [],
   );
 
   const handleQrDetected = useCallback(
@@ -92,9 +81,9 @@ export default function BreakTimeLog() {
 
       setScannerError("");
       setFeedback(null);
-      setIsScannerOpen(false);
 
       if (result.actionType === "in") {
+        setIsScannerOpen(false);
         const submissionResult = await handleSubmitAction({
           actionType: "in",
           qrValue: result.qrValue,
@@ -104,13 +93,19 @@ export default function BreakTimeLog() {
         if (!submissionResult.success) {
           setFeedback({
             type: "error",
+            actionType: "in",
             message: submissionResult.message || "Unable to record break in.",
           });
+        }
+
+        if (submissionResult.success) {
+          setFeedback(buildSubmissionFeedback("in", submissionResult));
         }
 
         return true;
       }
 
+      setIsScannerOpen(false);
       setPendingSubmission({
         actionType: result.actionType,
         qrValue: result.qrValue,
@@ -140,6 +135,7 @@ export default function BreakTimeLog() {
     if (result.success) {
       setIsEntryModalOpen(false);
       setPendingSubmission(null);
+      setFeedback(buildSubmissionFeedback(pendingSubmission.actionType, result));
     }
 
     return result;
@@ -239,26 +235,6 @@ export default function BreakTimeLog() {
         </div>
       </section>
 
-      {feedback && (
-        <section
-          className={`breakTimeLogFeedbackCard ${getStatusTone(feedback.type)}`}
-        >
-          <div className="breakTimeLogFeedbackHeader">
-            <span className="breakTimeLogFeedbackBadge">
-              {feedback.type === "success"
-                ? `Break ${getActionLabel(feedback.actionType)}`
-                : "Submission Error"}
-            </span>
-            {feedback.recordedTime && (
-              <strong className="breakTimeLogFeedbackTime">
-                {feedback.recordedTime}
-              </strong>
-            )}
-          </div>
-          <p className="breakTimeLogFeedbackMessage">{feedback.message}</p>
-        </section>
-      )}
-
       {isScannerOpen && (
         <QrScannerModal
           isOpen={isScannerOpen}
@@ -277,6 +253,12 @@ export default function BreakTimeLog() {
           onSubmit={handleCreateOutLog}
         />
       )}
+
+      <BreakTimeFeedbackModal
+        feedback={feedback}
+        isOpen={Boolean(feedback)}
+        onClose={() => setFeedback(null)}
+      />
     </div>
   );
 }
