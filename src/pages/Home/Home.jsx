@@ -23,9 +23,9 @@ export default function Home() {
           <polyline points="12 7 12 12 15 15"></polyline>
         </svg>
       ),
-      bgColor: "#EAF4FF",
-      iconColor: "#1E88E5",
-      shadowColor: "rgba(30, 136, 229, 0.18)",
+      bgColor: "#E6F3EF",
+      iconColor: "#0F7A67",
+      shadowColor: "rgba(1, 67, 66, 0.14)",
     },
     {
       id: "salary",
@@ -51,9 +51,9 @@ export default function Home() {
           <path d="M17 18h.01"></path>
         </svg>
       ),
-      bgColor: "#FFF3DA",
-      iconColor: "#FF9800",
-      shadowColor: "rgba(255, 152, 0, 0.2)",
+      bgColor: "#EEF7F2",
+      iconColor: "#166D5F",
+      shadowColor: "rgba(1, 67, 66, 0.12)",
     },
     {
       id: "incentive",
@@ -74,9 +74,9 @@ export default function Home() {
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
         </svg>
       ),
-      bgColor: "#E0F2FF",
-      iconColor: "#2196F3",
-      shadowColor: "rgba(33, 150, 243, 0.18)",
+      bgColor: "#E3F4EE",
+      iconColor: "#12725F",
+      shadowColor: "rgba(1, 67, 66, 0.13)",
     },
     {
       id: "allowance",
@@ -100,9 +100,9 @@ export default function Home() {
           <path d="M9 15h6"></path>
         </svg>
       ),
-      bgColor: "#E8F5E9",
-      iconColor: "#4CAF50",
-      shadowColor: "rgba(76, 175, 80, 0.18)",
+      bgColor: "#F0F8F4",
+      iconColor: "#23876C",
+      shadowColor: "rgba(1, 67, 66, 0.11)",
     },
     {
       id: "health",
@@ -123,9 +123,9 @@ export default function Home() {
           <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"></path>
         </svg>
       ),
-      bgColor: "#FFEBEE",
-      iconColor: "#F44336",
-      shadowColor: "rgba(244, 67, 54, 0.18)",
+      bgColor: "#EAF5F0",
+      iconColor: "#2B7B67",
+      shadowColor: "rgba(1, 67, 66, 0.12)",
     },
     {
       id: "leave",
@@ -149,9 +149,9 @@ export default function Home() {
           <line x1="3" y1="10" x2="21" y2="10"></line>
         </svg>
       ),
-      bgColor: "#FFF3E0",
-      iconColor: "#FF9800",
-      shadowColor: "rgba(255, 152, 0, 0.18)",
+      bgColor: "#E8F5F1",
+      iconColor: "#178C78",
+      shadowColor: "rgba(1, 67, 66, 0.13)",
     },
     {
       id: "calendar",
@@ -181,9 +181,9 @@ export default function Home() {
           <path d="M16 18h.01"></path>
         </svg>
       ),
-      bgColor: "#E1F5FE",
-      iconColor: "#00BCD4",
-      shadowColor: "rgba(0, 188, 212, 0.18)",
+      bgColor: "#EDF7F2",
+      iconColor: "#327F6D",
+      shadowColor: "rgba(1, 67, 66, 0.1)",
     },
   ];
 
@@ -204,34 +204,34 @@ export default function Home() {
                 "--card-order": index,
               }}
             >
-              <div className="dashboard-card-top">
+              <div className="dashboard-card-main">
                 <div
                   className="dashboard-card-icon"
                   style={{ color: item.iconColor }}
                 >
                   {item.icon}
                 </div>
-                <span className="dashboard-card-arrow" aria-hidden="true">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m9 18 6-6-6-6"></path>
-                  </svg>
-                </span>
+                <div className="dashboard-card-content">
+                  <h4 className="dashboard-card-title">{item.title}</h4>
+                  {item.description && (
+                    <p className="dashboard-card-desc">{item.description}</p>
+                  )}
+                </div>
               </div>
-              <div className="dashboard-card-content">
-                <h4 className="dashboard-card-title">{item.title}</h4>
-                {item.description && (
-                  <p className="dashboard-card-desc">{item.description}</p>
-                )}
-              </div>
+              <span className="dashboard-card-arrow" aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </span>
             </Link>
           ))}
         </div>

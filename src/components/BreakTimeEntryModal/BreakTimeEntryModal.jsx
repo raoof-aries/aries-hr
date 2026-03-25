@@ -10,6 +10,7 @@ const DEFAULT_BREAK_OUT_REASONS = [
   "Personal",
 ];
 const OTHER_REASON = "Other";
+const REASON_PLACEHOLDER = "";
 
 function normalizeBreakOutReasons(payload) {
   const reasons = Array.isArray(payload?.breakOutReasons)
@@ -31,7 +32,7 @@ export default function BreakTimeEntryModal({
   const [availableReasons, setAvailableReasons] = useState(
     DEFAULT_BREAK_OUT_REASONS,
   );
-  const [reason, setReason] = useState(DEFAULT_BREAK_OUT_REASONS[0]);
+  const [reason, setReason] = useState(REASON_PLACEHOLDER);
   const [customReason, setCustomReason] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const breakOutReasons = [...availableReasons, OTHER_REASON];
@@ -76,10 +77,18 @@ export default function BreakTimeEntryModal({
   }, [actionType, isOpen]);
 
   useEffect(() => {
+    if (isOpen && actionType === "out") {
+      setReason(REASON_PLACEHOLDER);
+      setCustomReason("");
+      setErrorMessage("");
+    }
+  }, [actionType, isOpen]);
+
+  useEffect(() => {
     const validReasons = new Set([...availableReasons, OTHER_REASON]);
 
-    if (!validReasons.has(reason)) {
-      setReason(availableReasons[0] || OTHER_REASON);
+    if (reason !== REASON_PLACEHOLDER && !validReasons.has(reason)) {
+      setReason(REASON_PLACEHOLDER);
       setCustomReason("");
     }
   }, [availableReasons, reason]);
@@ -165,6 +174,9 @@ export default function BreakTimeEntryModal({
               }}
               required
             >
+              <option value="" disabled>
+                Select an option
+              </option>
               {breakOutReasons.map((option) => (
                 <option key={option} value={option}>
                   {option}

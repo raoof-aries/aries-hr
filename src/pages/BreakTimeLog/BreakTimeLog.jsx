@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import BreakTimeFeedbackModal from "../../components/BreakTimeFeedbackModal/BreakTimeFeedbackModal";
 import BreakTimeEntryModal from "../../components/BreakTimeEntryModal/BreakTimeEntryModal";
 import QrScannerModal from "../../components/QrScannerModal/QrScannerModal";
 import {
@@ -8,12 +9,13 @@ import {
 import { validateBreakTimeQrCodeWithApi } from "../../services/breakTimeQrService";
 import "./BreakTimeLog.css";
 
-function getStatusTone(type) {
-  return type === "success" ? "success" : "error";
-}
-
-function getActionLabel(actionType) {
-  return actionType === "out" ? "OUT" : "IN";
+function buildSubmissionFeedback(actionType, result) {
+  return {
+    type: "success",
+    actionType,
+    message: result.message,
+    recordedTime: formatBreakApiTime(result.recordedAt),
+  };
 }
 
 export default function BreakTimeLog() {
@@ -23,17 +25,6 @@ export default function BreakTimeLog() {
   const [scannerError, setScannerError] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [pendingSubmission, setPendingSubmission] = useState(null);
-
-  const showSubmissionFeedback = useCallback((actionType, result) => {
-    const recordedTime = formatBreakApiTime(result.recordedAt);
-
-    setFeedback({
-      type: "success",
-      actionType,
-      message: result.message,
-      recordedTime,
-    });
-  }, []);
 
   const handleOpenScanner = () => {
     if (isSubmitting) {
@@ -61,8 +52,6 @@ export default function BreakTimeLog() {
         if (!result.success) {
           return result;
         }
-
-        showSubmissionFeedback(actionType, result);
         return result;
       } catch (error) {
         console.error("Unable to submit break time:", error);
@@ -74,7 +63,7 @@ export default function BreakTimeLog() {
         setIsSubmitting(false);
       }
     },
-    [showSubmissionFeedback],
+    [],
   );
 
   const handleQrDetected = useCallback(
@@ -92,9 +81,9 @@ export default function BreakTimeLog() {
 
       setScannerError("");
       setFeedback(null);
-      setIsScannerOpen(false);
 
       if (result.actionType === "in") {
+        setIsScannerOpen(false);
         const submissionResult = await handleSubmitAction({
           actionType: "in",
           qrValue: result.qrValue,
@@ -104,13 +93,19 @@ export default function BreakTimeLog() {
         if (!submissionResult.success) {
           setFeedback({
             type: "error",
+            actionType: "in",
             message: submissionResult.message || "Unable to record break in.",
           });
+        }
+
+        if (submissionResult.success) {
+          setFeedback(buildSubmissionFeedback("in", submissionResult));
         }
 
         return true;
       }
 
+      setIsScannerOpen(false);
       setPendingSubmission({
         actionType: result.actionType,
         qrValue: result.qrValue,
@@ -140,6 +135,7 @@ export default function BreakTimeLog() {
     if (result.success) {
       setIsEntryModalOpen(false);
       setPendingSubmission(null);
+      setFeedback(buildSubmissionFeedback(pendingSubmission.actionType, result));
     }
 
     return result;
@@ -157,23 +153,70 @@ export default function BreakTimeLog() {
   return (
     <div className="breakTimeLogPage">
       <section className="breakTimeLogActionCard">
-        <div className="breakTimeLogToolbar">
-          <div className="breakTimeLogToolbarCopy">
-            <h2>Log Break Time</h2>
-            <p>
-              Scan the approved QR code. The backend decides whether this scan
-              records Break IN or Break OUT.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="breakTimeLogPrimaryButton"
-            onClick={handleOpenScanner}
-            disabled={isSubmitting}
+        <div className="breakTimeLogToolbarCopy">
+          <span className="breakTimeLogEyebrow">Break Management</span>
+          <h2>Log Break Time</h2>
+          <p>
+            Scan the approved QR code. The backend decides whether this scan
+            records Break IN or Break OUT.
+          </p>
+        </div>
+
+        <div className="breakTimeLogQrTile" aria-hidden="true">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
+            <rect x="3" y="3" width="6" height="6" rx="1.2" />
+            <rect x="15" y="3" width="6" height="6" rx="1.2" />
+            <rect x="3" y="15" width="6" height="6" rx="1.2" />
+            <path d="M15 15h1" />
+            <path d="M18 15h.01" />
+            <path d="M21 15h.01" />
+            <path d="M15 18h.01" />
+            <path d="M18 18h1" />
+            <path d="M21 18h.01" />
+            <path d="M15 21h.01" />
+            <path d="M18 21h.01" />
+          </svg>
+        </div>
+
+        <button
+          type="button"
+          className="breakTimeLogPrimaryButton"
+          onClick={handleOpenScanner}
+          disabled={isSubmitting}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+            <path d="M7 12h10"></path>
+          </svg>
+          <span>{isSubmitting ? "Processing..." : "Scan QR Code"}</span>
+        </button>
+
+        <div className="breakTimeLogHintCard">
+          <span className="breakTimeLogHintIcon" aria-hidden="true">
             <svg
-              width="18"
-              height="18"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -181,36 +224,16 @@ export default function BreakTimeLog() {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
-              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
-              <path d="M7 12h10"></path>
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 8v4" />
+              <path d="M12 16h.01" />
             </svg>
-            <span>{isSubmitting ? "Processing..." : "Scan QR Code"}</span>
-          </button>
+          </span>
+          <p>
+            Auto-detects Break IN or Break OUT based on your last activity.
+          </p>
         </div>
       </section>
-
-      {feedback && (
-        <section
-          className={`breakTimeLogFeedbackCard ${getStatusTone(feedback.type)}`}
-        >
-          <div className="breakTimeLogFeedbackHeader">
-            <span className="breakTimeLogFeedbackBadge">
-              {feedback.type === "success"
-                ? `Break ${getActionLabel(feedback.actionType)}`
-                : "Submission Error"}
-            </span>
-            {feedback.recordedTime && (
-              <strong className="breakTimeLogFeedbackTime">
-                {feedback.recordedTime}
-              </strong>
-            )}
-          </div>
-          <p className="breakTimeLogFeedbackMessage">{feedback.message}</p>
-        </section>
-      )}
 
       {isScannerOpen && (
         <QrScannerModal
@@ -230,6 +253,12 @@ export default function BreakTimeLog() {
           onSubmit={handleCreateOutLog}
         />
       )}
+
+      <BreakTimeFeedbackModal
+        feedback={feedback}
+        isOpen={Boolean(feedback)}
+        onClose={() => setFeedback(null)}
+      />
     </div>
   );
 }

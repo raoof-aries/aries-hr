@@ -1,0 +1,107 @@
+.breakTimeFeedbackModalCard {
+  max-height: min(calc(100dvh - 40px), 640px);
+}
+
+.breakTimeFeedbackModalBody {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.breakTimeFeedbackModalPanel {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 28px 20px;
+  border-radius: 22px;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.breakTimeFeedbackModalPanel.success {
+  background: linear-gradient(180deg, #f2fcf7, #e8f9f1);
+  border-color: rgba(22, 145, 95, 0.16);
+}
+
+.breakTimeFeedbackModalPanel.error {
+  background: linear-gradient(180deg, #fff6f6, #ffeceb);
+  border-color: rgba(220, 38, 38, 0.12);
+}
+
+.breakTimeFeedbackModalIcon {
+  width: 74px;
+  height: 74px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+}
+
+.breakTimeFeedbackModalPanel.success .breakTimeFeedbackModalIcon {
+  background: rgba(22, 145, 95, 0.12);
+  color: #0f8c5a;
+  box-shadow: inset 0 0 0 1px rgba(22, 145, 95, 0.08);
+}
+
+.breakTimeFeedbackModalPanel.error .breakTimeFeedbackModalIcon {
+  background: rgba(220, 38, 38, 0.1);
+  color: #c62828;
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.08);
+}
+
+.breakTimeFeedbackModalBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.breakTimeFeedbackModalPanel.success .breakTimeFeedbackModalBadge {
+  background: rgba(22, 145, 95, 0.12);
+  color: #0f8c5a;
+}
+
+.breakTimeFeedbackModalPanel.error .breakTimeFeedbackModalBadge {
+  background: rgba(220, 38, 38, 0.1);
+  color: #c62828;
+}
+
+.breakTimeFeedbackModalTime {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.breakTimeFeedbackModalMessage {
+  margin: 0;
+  max-width: 320px;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.breakTimeFeedbackModalActions {
+  margin-top: 0;
+}
+
+@media (max-width: 639px) {
+  .breakTimeFeedbackModalBody {
+    gap: 16px;
+    padding: 16px 18px 18px;
+  }
+
+  .breakTimeFeedbackModalPanel {
+    gap: 12px;
+    padding: 24px 16px;
+    border-radius: 20px;
+  }
+
+  .breakTimeFeedbackModalIcon {
+    width: 66px;
+    height: 66px;
+    border-radius: 22px;
+  }
+}
