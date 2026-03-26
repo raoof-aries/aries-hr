@@ -10,7 +10,7 @@
       ]
     },
     {
-      "source": "/hrms/sw.js",
+      "source": "/salary/sw.js",
       "headers": [
         {
           "key": "Cache-Control",
@@ -28,7 +28,7 @@
       ]
     },
     {
-      "source": "/hrms/manifest.webmanifest",
+      "source": "/salary/manifest.webmanifest",
       "headers": [
         {
           "key": "Cache-Control",
@@ -40,58 +40,58 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/hrms/",
+      "destination": "/salary/",
       "permanent": false
     },
     {
-      "source": "/hrms",
-      "destination": "/hrms/",
+      "source": "/salary",
+      "destination": "/salary/",
       "permanent": false
     }
   ],
   "rewrites": [
     {
-      "source": "/hrms/assets/(.*)",
+      "source": "/salary/assets/(.*)",
       "destination": "/assets/$1"
     },
     {
-      "source": "/hrms/icons/(.*)",
+      "source": "/salary/icons/(.*)",
       "destination": "/icons/$1"
     },
     {
-      "source": "/hrms/data/(.*)",
+      "source": "/salary/data/(.*)",
       "destination": "/data/$1"
     },
     {
-      "source": "/hrms/config/(.*)",
+      "source": "/salary/config/(.*)",
       "destination": "/config/$1"
     },
     {
-      "source": "/hrms/logo.png",
+      "source": "/salary/logo.png",
       "destination": "/logo.png"
     },
     {
-      "source": "/hrms/manifest.webmanifest",
+      "source": "/salary/manifest.webmanifest",
       "destination": "/manifest.webmanifest"
     },
     {
-      "source": "/hrms/registerSW.js",
+      "source": "/salary/registerSW.js",
       "destination": "/registerSW.js"
     },
     {
-      "source": "/hrms/sw.js",
+      "source": "/salary/sw.js",
       "destination": "/sw.js"
     },
     {
-      "source": "/hrms/workbox-(.*).js",
+      "source": "/salary/workbox-(.*).js",
       "destination": "/workbox-$1.js"
     },
     {
-      "source": "/hrms",
+      "source": "/salary",
       "destination": "/index.html"
     },
     {
-      "source": "/hrms/(.*)",
+      "source": "/salary/(.*)",
       "destination": "/index.html"
     }
   ]
