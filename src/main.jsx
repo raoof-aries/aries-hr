@@ -40,7 +40,7 @@ if (import.meta.env.PROD) {
 }
 
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter basename="/hrms">
+  <BrowserRouter basename="/hrms1">
     <App />
   </BrowserRouter>
 );
