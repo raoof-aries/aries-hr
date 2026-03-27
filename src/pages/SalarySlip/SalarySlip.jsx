@@ -71,9 +71,15 @@ function extractUserId(user = {}) {
 }
 
 function getJoiningYear(user = {}) {
-  const rawValue = `${user.dateOfJoining || user.doj || ""}`.trim();
-  const yearMatch = rawValue.match(/^(\d{4})/);
-  const parsedYear = yearMatch ? Number.parseInt(yearMatch[1], 10) : NaN;
+  const rawValue = `${
+    user.groupJoiningDate ||
+    user.gdoj ||
+    user.dateOfJoining ||
+    user.doj ||
+    ""
+  }`.trim();
+  const yearMatch = rawValue.match(/\b(19|20)\d{2}\b/);
+  const parsedYear = yearMatch ? Number.parseInt(yearMatch[0], 10) : NaN;
 
   return Number.isFinite(parsedYear) && parsedYear <= CURRENT_YEAR
     ? parsedYear
