@@ -10,7 +10,7 @@
       ]
     },
     {
-      "source": "/salary/sw.js",
+      "source": "/hrms/sw.js",
       "headers": [
         {
           "key": "Cache-Control",
@@ -28,7 +28,7 @@
       ]
     },
     {
-      "source": "/salary/manifest.webmanifest",
+      "source": "/hrms/manifest.webmanifest",
       "headers": [
         {
           "key": "Cache-Control",
@@ -40,58 +40,58 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/salary/",
+      "destination": "/hrms/",
       "permanent": false
     },
     {
-      "source": "/salary",
-      "destination": "/salary/",
+      "source": "/hrms",
+      "destination": "/hrms/",
       "permanent": false
     }
   ],
   "rewrites": [
     {
-      "source": "/salary/assets/(.*)",
+      "source": "/hrms/assets/(.*)",
       "destination": "/assets/$1"
     },
     {
-      "source": "/salary/icons/(.*)",
+      "source": "/hrms/icons/(.*)",
       "destination": "/icons/$1"
     },
     {
-      "source": "/salary/data/(.*)",
+      "source": "/hrms/data/(.*)",
       "destination": "/data/$1"
     },
     {
-      "source": "/salary/config/(.*)",
+      "source": "/hrms/config/(.*)",
       "destination": "/config/$1"
     },
     {
-      "source": "/salary/logo.png",
+      "source": "/hrms/logo.png",
       "destination": "/logo.png"
     },
     {
-      "source": "/salary/manifest.webmanifest",
+      "source": "/hrms/manifest.webmanifest",
       "destination": "/manifest.webmanifest"
     },
     {
-      "source": "/salary/registerSW.js",
+      "source": "/hrms/registerSW.js",
       "destination": "/registerSW.js"
     },
     {
-      "source": "/salary/sw.js",
+      "source": "/hrms/sw.js",
       "destination": "/sw.js"
     },
     {
-      "source": "/salary/workbox-(.*).js",
+      "source": "/hrms/workbox-(.*).js",
       "destination": "/workbox-$1.js"
     },
     {
-      "source": "/salary",
+      "source": "/hrms",
       "destination": "/index.html"
     },
     {
-      "source": "/salary/(.*)",
+      "source": "/hrms/(.*)",
       "destination": "/index.html"
     }
   ]
