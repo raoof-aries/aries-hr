@@ -8,6 +8,7 @@ import "./Home.css";
 export default function Home() {
   const [nextBreakAction, setNextBreakAction] = useState("in");
   const isBreakOut = nextBreakAction === "out";
+  const implementedModuleIds = new Set(["break", "salary"]);
 
   useEffect(() => {
     let isActive = true;
@@ -218,64 +219,126 @@ export default function Home() {
       iconColor: "#327F6D",
       shadowColor: "rgba(1, 67, 66, 0.1)",
     },
-  ];
+  ].map((item) => {
+    if (implementedModuleIds.has(item.id)) {
+      return {
+        ...item,
+        isAvailable: true,
+      };
+    }
+
+    return {
+      ...item,
+      isAvailable: false,
+      description: "This feature will be available soon",
+      bgColor: "#ECEFF0",
+      iconColor: "#8C9592",
+      shadowColor: "rgba(129, 136, 136, 0.05)",
+    };
+  });
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-quick-access">
         <div className="dashboard-grid">
-          {quickAccessItems.map((item, index) => (
-            <Link
-              key={item.id}
-              to={item.route}
-              className={`dashboard-card${item.cardTone ? ` dashboard-card-${item.cardTone}` : ""}`}
-              style={{
-                "--card-accent": item.iconColor,
-                "--card-soft": item.bgColor,
-                "--card-icon-bg": item.bgColor,
-                "--card-shadow": item.shadowColor,
-                "--card-order": index,
-              }}
-            >
-              <div className="dashboard-card-main">
-                <div
-                  className="dashboard-card-icon"
-                  style={{ color: item.iconColor }}
+          {quickAccessItems.map((item, index) => {
+            const cardClassName = `dashboard-card${item.cardTone ? ` dashboard-card-${item.cardTone}` : ""}${item.isAvailable ? "" : " dashboard-card-inactive"}`;
+            const cardStyle = {
+              "--card-accent": item.iconColor,
+              "--card-soft": item.bgColor,
+              "--card-icon-bg": item.bgColor,
+              "--card-shadow": item.shadowColor,
+              "--card-order": index,
+            };
+
+            const cardContent = (
+              <>
+                <div className="dashboard-card-main">
+                  <div
+                    className="dashboard-card-icon"
+                    style={{ color: item.iconColor }}
+                  >
+                    {item.icon}
+                  </div>
+                  <div className="dashboard-card-content">
+                    <h4 className="dashboard-card-title">{item.title}</h4>
+                    {item.description && (
+                      <p className="dashboard-card-desc">{item.description}</p>
+                    )}
+                    {item.statusBadge && (
+                      <span className="dashboard-card-status-badge">
+                        {item.statusBadge}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {item.isAvailable ? (
+                  <span
+                    className="dashboard-card-arrow"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                  </span>
+                ) : (
+                  <span
+                    className="dashboard-card-lock"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                      <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
+                    </svg>
+                  </span>
+                )}
+              </>
+            );
+
+            if (item.isAvailable) {
+              return (
+                <Link
+                  key={item.id}
+                  to={item.route}
+                  className={cardClassName}
+                  style={cardStyle}
                 >
-                  {item.icon}
-                </div>
-                <div className="dashboard-card-content">
-                  <h4 className="dashboard-card-title">{item.title}</h4>
-                  {item.description && (
-                    <p className="dashboard-card-desc">{item.description}</p>
-                  )}
-                  {item.statusBadge && (
-                    <span className="dashboard-card-status-badge">
-                      {item.statusBadge}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <span
-                className="dashboard-card-arrow"
-                aria-hidden="true"
+                  {cardContent}
+                </Link>
+              );
+            }
+
+            return (
+              <div
+                key={item.id}
+                className={cardClassName}
+                style={cardStyle}
+                aria-disabled="true"
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="m9 18 6-6-6-6"></path>
-                </svg>
-              </span>
-            </Link>
-          ))}
+                {cardContent}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
