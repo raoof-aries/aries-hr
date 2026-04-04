@@ -1,12 +1,42 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  getNextBreakAction,
+} from "../../services/breakTimeStatusService";
 import "./Home.css";
 
 export default function Home() {
+  const [nextBreakAction, setNextBreakAction] = useState("in");
+  const isBreakOut = nextBreakAction === "out";
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadNextBreakAction = async () => {
+      const result = await getNextBreakAction();
+
+      if (!isActive || !result?.success) {
+        return;
+      }
+
+      setNextBreakAction(result.actionType);
+    };
+
+    loadNextBreakAction();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
   const quickAccessItems = [
     {
       id: "break",
       title: "Break",
-      description: "Open your break time log",
+      statusBadge: isBreakOut ? "Break Active" : null,
+      description: isBreakOut
+        ? "Tap to mark IN"
+        : "Open your break time log",
       route: "/break-time-log",
       icon: (
         <svg
@@ -23,9 +53,12 @@ export default function Home() {
           <polyline points="12 7 12 12 15 15"></polyline>
         </svg>
       ),
-      bgColor: "#E6F3EF",
-      iconColor: "#0F7A67",
-      shadowColor: "rgba(1, 67, 66, 0.14)",
+      bgColor: isBreakOut ? "#FFF4F4" : "#E6F3EF",
+      iconColor: isBreakOut ? "#CF5B5B" : "#0F7A67",
+      shadowColor: isBreakOut
+        ? "rgba(198, 69, 69, 0.16)"
+        : "rgba(1, 67, 66, 0.14)",
+      cardTone: isBreakOut ? "warning" : null,
     },
     {
       id: "salary",
@@ -195,7 +228,7 @@ export default function Home() {
             <Link
               key={item.id}
               to={item.route}
-              className="dashboard-card"
+              className={`dashboard-card${item.cardTone ? ` dashboard-card-${item.cardTone}` : ""}`}
               style={{
                 "--card-accent": item.iconColor,
                 "--card-soft": item.bgColor,
@@ -216,18 +249,27 @@ export default function Home() {
                   {item.description && (
                     <p className="dashboard-card-desc">{item.description}</p>
                   )}
+                  {item.statusBadge && (
+                    <span className="dashboard-card-status-badge">
+                      {item.statusBadge}
+                    </span>
+                  )}
                 </div>
               </div>
-              <span className="dashboard-card-arrow" aria-hidden="true">
+              <span
+                className="dashboard-card-arrow"
+                aria-hidden="true"
+              >
                 <svg
                   width="14"
                   height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  aria-hidden="true"
                 >
                   <path d="m9 18 6-6-6-6"></path>
                 </svg>
