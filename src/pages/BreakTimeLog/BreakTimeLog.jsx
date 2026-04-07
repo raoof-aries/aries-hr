@@ -383,7 +383,13 @@ export default function BreakTimeLog() {
             <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
             <path d="M7 12h10"></path>
           </svg>
-          <span>{isSubmitting ? "Processing..." : "Scan QR Code"}</span>
+          <span>
+            {isSubmitting
+              ? "Processing..."
+              : activeBreak
+                ? "Scan to End Break"
+                : "Scan QR Code"}
+          </span>
         </button>
       </section>
 
