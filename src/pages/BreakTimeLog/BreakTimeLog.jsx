@@ -67,6 +67,22 @@ function getStatusTone(status) {
   return status?.toLowerCase() === "active" ? "active" : "closed";
 }
 
+function renderBreakDetailValue(value) {
+  if (value) {
+    return <strong>{value}</strong>;
+  }
+
+  return <span className="breakTimeLogDetailPlaceholder">-</span>;
+}
+
+function renderSummaryTimeValue(value) {
+  if (value) {
+    return <span>{value}</span>;
+  }
+
+  return <span className="breakTimeLogSummaryPlaceholder">-</span>;
+}
+
 function BreakLogCard({
   log,
   variant = "default",
@@ -100,9 +116,18 @@ function BreakLogCard({
             </div>
             {!isPriorityCard ? (
               <div className="breakTimeLogEntrySummary">
-                <span>{log.breakTime || "--:--:--"}</span>
-                <span>
-                  {log.breakOut || "--:--:--"} to {log.breakIn || "--:--:--"}
+                <span className="breakTimeLogDurationPill">
+                  {log.breakTime || "-"}
+                </span>
+                <span className="breakTimeLogSummaryRange">
+                  {renderSummaryTimeValue(log.breakOut)}
+                  <span
+                    className="breakTimeLogSummarySeparator"
+                    aria-hidden="true"
+                  >
+                    -
+                  </span>
+                  {renderSummaryTimeValue(log.breakIn)}
                 </span>
               </div>
             ) : (
@@ -138,17 +163,17 @@ function BreakLogCard({
         <div id={detailId} className="breakTimeLogEntryDetails">
           <div className="breakTimeLogDetailRow">
             <span>Break out</span>
-            <strong>{log.breakOut || "--:--:--"}</strong>
+            {renderBreakDetailValue(log.breakOut)}
           </div>
 
           <div className="breakTimeLogDetailRow">
             <span>Break in</span>
-            <strong>{log.breakIn || "--:--:--"}</strong>
+            {renderBreakDetailValue(log.breakIn)}
           </div>
 
           <div className="breakTimeLogDetailRow">
             <span>Break time</span>
-            <strong>{log.breakTime || "--:--:--"}</strong>
+            {renderBreakDetailValue(log.breakTime)}
           </div>
 
           <div className="breakTimeLogDetailRow">
