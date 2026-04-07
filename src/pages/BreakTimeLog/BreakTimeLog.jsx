@@ -2,12 +2,19 @@ import { useCallback, useState } from "react";
 import BreakTimeFeedbackModal from "../../components/BreakTimeFeedbackModal/BreakTimeFeedbackModal";
 import BreakTimeEntryModal from "../../components/BreakTimeEntryModal/BreakTimeEntryModal";
 import QrScannerModal from "../../components/QrScannerModal/QrScannerModal";
+import breakTimeLogDummy from "../../data/breakTimeLogDummy.json";
 import {
   formatBreakApiTime,
   submitBreakTimeAction,
 } from "../../services/breakTimeLogService";
 import { validateBreakTimeQrCodeWithApi } from "../../services/breakTimeQrService";
 import "./BreakTimeLog.css";
+
+const DATE_LABEL_FORMATTER = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 
 function buildSubmissionFeedback(actionType, result) {
   return {
@@ -18,13 +25,183 @@ function buildSubmissionFeedback(actionType, result) {
   };
 }
 
+function getTodayDateValue() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getLatestAvailableDate(logs) {
+  return [...logs]
+    .map((item) => item.date)
+    .filter(Boolean)
+    .sort((first, second) => second.localeCompare(first))[0];
+}
+
+function formatSelectedDate(dateValue) {
+  if (!dateValue) {
+    return "Selected date";
+  }
+
+  const [year, month, day] = dateValue.split("-").map(Number);
+
+  if (!year || !month || !day) {
+    return dateValue;
+  }
+
+  return DATE_LABEL_FORMATTER.format(new Date(year, month - 1, day));
+}
+
+function getBreakSortValue(log) {
+  return log.breakOut || log.breakIn || "00:00:00";
+}
+
+function sortBreaksByLatest(first, second) {
+  return getBreakSortValue(second).localeCompare(getBreakSortValue(first));
+}
+
+function getStatusTone(status) {
+  return status?.toLowerCase() === "active" ? "active" : "closed";
+}
+
+function BreakLogCard({
+  log,
+  variant = "default",
+  isExpanded = false,
+  onToggle,
+}) {
+  const statusTone = getStatusTone(log.status);
+  const isPriorityCard = variant === "priority";
+  const detailId = `break-log-panel-${log.id}`;
+
+  return (
+    <article
+      className={`breakTimeLogEntryCard ${isPriorityCard ? "priority" : ""}`}
+    >
+      <button
+        type="button"
+        className="breakTimeLogEntryToggle"
+        onClick={onToggle}
+        aria-expanded={isExpanded}
+        aria-controls={detailId}
+      >
+        <div className="breakTimeLogEntryTop">
+          <div className="breakTimeLogEntryHeading">
+            <div className="breakTimeLogEntryTitleRow">
+              <h3>{log.reason || "Break reason pending"}</h3>
+              {isPriorityCard ? (
+                <span className={`breakTimeLogStatusBadge ${statusTone}`}>
+                  Open
+                </span>
+              ) : null}
+            </div>
+            {!isPriorityCard ? (
+              <div className="breakTimeLogEntrySummary">
+                <span>{log.breakTime || "--:--:--"}</span>
+                <span>
+                  {log.breakOut || "--:--:--"} to {log.breakIn || "--:--:--"}
+                </span>
+              </div>
+            ) : (
+              <p className="breakTimeLogEntryMeta">
+                Started at {log.breakOut || "--:--:--"}
+              </p>
+            )}
+          </div>
+
+          <div className="breakTimeLogEntryActions">
+            <span
+              className={`breakTimeLogToggleArrow ${isExpanded ? "expanded" : ""}`}
+              aria-hidden="true"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m9 18 6-6-6-6"></path>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </button>
+
+      {isExpanded ? (
+        <div id={detailId} className="breakTimeLogEntryDetails">
+          <div className="breakTimeLogDetailRow">
+            <span>Break out</span>
+            <strong>{log.breakOut || "--:--:--"}</strong>
+          </div>
+
+          <div className="breakTimeLogDetailRow">
+            <span>Break in</span>
+            <strong>{log.breakIn || "--:--:--"}</strong>
+          </div>
+
+          <div className="breakTimeLogDetailRow">
+            <span>Break time</span>
+            <strong>{log.breakTime || "--:--:--"}</strong>
+          </div>
+
+          <div className="breakTimeLogDetailRow">
+            <span>Status</span>
+            <strong>{log.status}</strong>
+          </div>
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
 export default function BreakTimeLog() {
+  const dummyBreakLogs = Array.isArray(breakTimeLogDummy)
+    ? breakTimeLogDummy
+    : [];
+  const todayDateValue = getTodayDateValue();
+  const initialDate =
+    dummyBreakLogs.find((entry) => entry.date === todayDateValue)?.date ||
+    getLatestAvailableDate(dummyBreakLogs) ||
+    todayDateValue;
+
+  const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [expandedLogId, setExpandedLogId] = useState("");
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scannerError, setScannerError] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [pendingSubmission, setPendingSubmission] = useState(null);
+
+  const filteredBreakLogs = dummyBreakLogs
+    .filter((entry) => entry.date === selectedDate)
+    .sort(sortBreaksByLatest);
+  const activeBreaks = filteredBreakLogs.filter(
+    (entry) => getStatusTone(entry.status) === "active",
+  );
+  const completedBreaks = filteredBreakLogs.filter(
+    (entry) => getStatusTone(entry.status) !== "active",
+  );
+  const activeBreak = activeBreaks[0] || null;
+  const closedBreakCount = completedBreaks.length;
+
+  const handleDateChange = (event) => {
+    const nextDate = event.target.value;
+
+    setSelectedDate(nextDate);
+    setExpandedLogId("");
+  };
+
+  const handleToggleLog = (logId) => {
+    setExpandedLogId((currentId) => (currentId === logId ? "" : logId));
+  };
 
   const handleOpenScanner = () => {
     if (isSubmitting) {
@@ -52,6 +229,7 @@ export default function BreakTimeLog() {
         if (!result.success) {
           return result;
         }
+
         return result;
       } catch (error) {
         console.error("Unable to submit break time:", error);
@@ -152,46 +330,17 @@ export default function BreakTimeLog() {
 
   return (
     <div className="breakTimeLogPage">
-      <section className="breakTimeLogActionCard">
-        <div className="breakTimeLogToolbarCopy">
-          <span className="breakTimeLogEyebrow">Break Management</span>
-          <h2>Log Break Time</h2>
-          <p>
-            Scan the approved QR code. The backend decides whether this scan
-            records Break IN or Break OUT.
-          </p>
-        </div>
-
-        <div className="breakTimeLogQrTile" aria-hidden="true">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="3" width="6" height="6" rx="1.2" />
-            <rect x="15" y="3" width="6" height="6" rx="1.2" />
-            <rect x="3" y="15" width="6" height="6" rx="1.2" />
-            <path d="M15 15h1" />
-            <path d="M18 15h.01" />
-            <path d="M21 15h.01" />
-            <path d="M15 18h.01" />
-            <path d="M18 18h1" />
-            <path d="M21 18h.01" />
-            <path d="M15 21h.01" />
-            <path d="M18 21h.01" />
-          </svg>
-        </div>
-
+      <section className="breakTimeLogHeroCard">
         <button
           type="button"
           className="breakTimeLogPrimaryButton"
           onClick={handleOpenScanner}
           disabled={isSubmitting}
+          aria-label={
+            activeBreak
+              ? `Scan QR Code to complete the active ${activeBreak.reason}`
+              : "Scan QR Code to record your next break action"
+          }
         >
           <svg
             width="18"
@@ -211,28 +360,89 @@ export default function BreakTimeLog() {
           </svg>
           <span>{isSubmitting ? "Processing..." : "Scan QR Code"}</span>
         </button>
+      </section>
 
-        <div className="breakTimeLogHintCard">
-          <span className="breakTimeLogHintIcon" aria-hidden="true">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 8v4" />
-              <path d="M12 16h.01" />
-            </svg>
-          </span>
-          <p>
-            Auto-detects Break IN or Break OUT based on your last activity.
-          </p>
+      <section className="breakTimeLogOverviewCard">
+        <div className="breakTimeLogOverviewTop">
+          <label className="breakTimeLogDateFilter">
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={handleDateChange}
+              aria-label="Select date"
+            />
+          </label>
         </div>
+
+        <div className="breakTimeLogStats">
+          <div className="breakTimeLogStatCard">
+            <span>Total breaks</span>
+            <strong>{filteredBreakLogs.length}</strong>
+          </div>
+          <div className="breakTimeLogStatCard">
+            <span>Closed breaks</span>
+            <strong>{closedBreakCount}</strong>
+          </div>
+          <div className="breakTimeLogStatCard active">
+            <span>Open break</span>
+            <strong>{activeBreak ? "1 active" : "None"}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="breakTimeLogTimeline">
+        {activeBreaks.length > 0 && (
+          <div className="breakTimeLogPriorityStack">
+          {activeBreaks.map((log) => (
+            <BreakLogCard
+              key={log.id}
+              log={log}
+              variant="priority"
+              isExpanded={expandedLogId === log.id}
+              onToggle={() => handleToggleLog(log.id)}
+            />
+          ))}
+          </div>
+        )}
+
+        {completedBreaks.length > 0 ? (
+          <div className="breakTimeLogList">
+            {completedBreaks.map((log) => (
+              <BreakLogCard
+                key={log.id}
+                log={log}
+                isExpanded={expandedLogId === log.id}
+                onToggle={() => handleToggleLog(log.id)}
+              />
+            ))}
+          </div>
+        ) : null}
+
+        {filteredBreakLogs.length === 0 && (
+          <div className="breakTimeLogEmptyState">
+            <div className="breakTimeLogEmptyIcon" aria-hidden="true">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M8 2v4" />
+                <path d="M16 2v4" />
+                <rect x="3" y="5" width="18" height="16" rx="3" />
+                <path d="M3 10h18" />
+              </svg>
+            </div>
+            <div>
+              <h4>No breaks for this date</h4>
+              <p>Change the date filter to view another day's break log.</p>
+            </div>
+          </div>
+        )}
       </section>
 
       {isScannerOpen && (
