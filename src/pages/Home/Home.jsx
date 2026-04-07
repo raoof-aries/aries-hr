@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  getNextBreakAction,
-} from "../../services/breakTimeStatusService";
+import { getNextBreakAction } from "../../services/breakTimeStatusService";
 import "./Home.css";
 
 export default function Home() {
@@ -34,10 +32,8 @@ export default function Home() {
     {
       id: "break",
       title: "Break",
-      statusBadge: isBreakOut ? "Break Active" : null,
-      description: isBreakOut
-        ? "Tap to mark IN"
-        : "Open your break time log",
+      statusBadge: isBreakOut ? "Break Initiated" : null,
+      description: isBreakOut ? "Tap to mark IN" : "Open your break time log",
       route: "/break-time-log",
       icon: (
         <svg
@@ -273,10 +269,7 @@ export default function Home() {
                   </div>
                 </div>
                 {item.isAvailable ? (
-                  <span
-                    className="dashboard-card-arrow"
-                    aria-hidden="true"
-                  >
+                  <span className="dashboard-card-arrow" aria-hidden="true">
                     <svg
                       width="14"
                       height="14"
@@ -292,10 +285,7 @@ export default function Home() {
                     </svg>
                   </span>
                 ) : (
-                  <span
-                    className="dashboard-card-lock"
-                    aria-hidden="true"
-                  >
+                  <span className="dashboard-card-lock" aria-hidden="true">
                     <svg
                       width="14"
                       height="14"
