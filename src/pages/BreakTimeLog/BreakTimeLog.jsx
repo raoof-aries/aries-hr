@@ -37,6 +37,30 @@ function sortBreaksByLatest(first, second) {
   return getBreakSortValue(second).localeCompare(getBreakSortValue(first));
 }
 
+function parseDurationToSeconds(durationValue) {
+  const [hours = "0", minutes = "0", seconds = "0"] = `${durationValue || ""}`
+    .trim()
+    .split(":");
+
+  return (
+    Number.parseInt(hours, 10) * 3600 +
+    Number.parseInt(minutes, 10) * 60 +
+    Number.parseInt(seconds, 10)
+  );
+}
+
+function formatDurationFromSeconds(totalSeconds) {
+  const safeTotalSeconds = Math.max(0, totalSeconds);
+  const hours = String(Math.floor(safeTotalSeconds / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((safeTotalSeconds % 3600) / 60)).padStart(
+    2,
+    "0",
+  );
+  const seconds = String(safeTotalSeconds % 60).padStart(2, "0");
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
 function getStatusTone(status) {
   return `${status || ""}`.trim().toLowerCase() === "closed"
     ? "closed"
@@ -216,7 +240,13 @@ export default function BreakTimeLog() {
     (entry) => getStatusTone(entry.status) !== "active",
   );
   const activeBreak = activeBreaks[0] || null;
-  const closedBreakCount = completedBreaks.length;
+  const totalBreakDuration = formatDurationFromSeconds(
+    completedBreaks.reduce(
+      (totalSeconds, entry) =>
+        totalSeconds + parseDurationToSeconds(entry.breakTime),
+      0,
+    ),
+  );
 
   const handleDateChange = (event) => {
     const nextDate = event.target.value;
@@ -514,8 +544,8 @@ export default function BreakTimeLog() {
             <strong>{filteredBreakLogs.length}</strong>
           </div>
           <div className="breakTimeLogStatCard">
-            <span>Closed breaks</span>
-            <strong>{closedBreakCount}</strong>
+            <span>Break time</span>
+            <strong>{totalBreakDuration}</strong>
           </div>
           <div className="breakTimeLogStatCard active">
             <span>Open break</span>
