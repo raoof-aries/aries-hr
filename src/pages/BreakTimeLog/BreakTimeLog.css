@@ -129,24 +129,79 @@
 }
 
 .breakTimeLogDateFilter {
+  position: relative;
+  display: flex;
+  align-items: center;
   width: min(100%, 220px);
-}
-
-.breakTimeLogDateFilter input {
   min-height: 46px;
-  width: 100%;
-  padding: 0 14px;
+  padding: 0 44px 0 14px;
   border-radius: 14px;
   border: 1px solid rgba(1, 67, 66, 0.12);
   background: rgba(255, 255, 255, 0.94);
-  color: var(--text-primary);
-  font: inherit;
   box-sizing: border-box;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  cursor: pointer;
 }
 
-.breakTimeLogDateFilter input:focus {
-  outline: none;
+.breakTimeLogDateFilter::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  border-radius: 6px;
+  background-color: rgba(1, 67, 66, 0.74);
+  pointer-events: none;
+  -webkit-mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+}
+
+.breakTimeLogDateDisplayText {
+  display: block;
+  width: 100%;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breakTimeLogDateInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: none;
+  background: transparent;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.breakTimeLogDateInput::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.breakTimeLogDateInput::-webkit-clear-button,
+.breakTimeLogDateInput::-webkit-inner-spin-button {
+  display: none;
+}
+
+.breakTimeLogDateFilter:focus-within {
   border-color: var(--apple-blue);
   box-shadow: 0 0 0 3px var(--apple-blue-light);
 }
