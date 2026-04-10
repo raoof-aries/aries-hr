@@ -1,30 +1,34 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getNextBreakAction } from "../../services/breakTimeStatusService";
+import {
+  BREAK_STATUS_UPDATED_EVENT,
+  getBreakStatus,
+} from "../../services/breakTimeStatusService";
 import "./Home.css";
 
 export default function Home() {
-  const [nextBreakAction, setNextBreakAction] = useState("in");
-  const isBreakOut = nextBreakAction === "out";
+  const [isOnBreak, setIsOnBreak] = useState(false);
   const implementedModuleIds = new Set(["break", "salary"]);
 
   useEffect(() => {
     let isActive = true;
 
-    const loadNextBreakAction = async () => {
-      const result = await getNextBreakAction();
+    const loadBreakStatus = async () => {
+      const result = await getBreakStatus();
 
       if (!isActive || !result?.success) {
         return;
       }
 
-      setNextBreakAction(result.actionType);
+      setIsOnBreak(result.isOnBreak);
     };
 
-    loadNextBreakAction();
+    loadBreakStatus();
+    window.addEventListener(BREAK_STATUS_UPDATED_EVENT, loadBreakStatus);
 
     return () => {
       isActive = false;
+      window.removeEventListener(BREAK_STATUS_UPDATED_EVENT, loadBreakStatus);
     };
   }, []);
 
@@ -32,8 +36,8 @@ export default function Home() {
     {
       id: "break",
       title: "Break",
-      statusBadge: isBreakOut ? "Break Initiated" : null,
-      description: isBreakOut ? "Tap to mark IN" : "Open your break time log",
+      statusBadge: isOnBreak ? "Break Initiated" : null,
+      description: isOnBreak ? "Tap to mark IN" : "Open your break time log",
       route: "/break-time-log",
       icon: (
         <svg
@@ -50,12 +54,12 @@ export default function Home() {
           <polyline points="12 7 12 12 15 15"></polyline>
         </svg>
       ),
-      bgColor: isBreakOut ? "#FFF4F4" : "#E6F3EF",
-      iconColor: isBreakOut ? "#CF5B5B" : "#0F7A67",
-      shadowColor: isBreakOut
+      bgColor: isOnBreak ? "#FFF4F4" : "#E6F3EF",
+      iconColor: isOnBreak ? "#CF5B5B" : "#0F7A67",
+      shadowColor: isOnBreak
         ? "rgba(198, 69, 69, 0.16)"
         : "rgba(1, 67, 66, 0.14)",
-      cardTone: isBreakOut ? "warning" : null,
+      cardTone: isOnBreak ? "warning" : null,
     },
     {
       id: "salary",
