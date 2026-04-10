@@ -10,7 +10,7 @@
       ]
     },
     {
-      "source": "/hrms/sw.js",
+      "source": "/hrms1/sw.js",
       "headers": [
         {
           "key": "Cache-Control",
@@ -28,7 +28,7 @@
       ]
     },
     {
-      "source": "/hrms/manifest.webmanifest",
+      "source": "/hrms1/manifest.webmanifest",
       "headers": [
         {
           "key": "Cache-Control",
@@ -40,58 +40,58 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/hrms/",
+      "destination": "/hrms1/",
       "permanent": false
     },
     {
-      "source": "/hrms",
-      "destination": "/hrms/",
+      "source": "/hrms1",
+      "destination": "/hrms1/",
       "permanent": false
     }
   ],
   "rewrites": [
     {
-      "source": "/hrms/assets/(.*)",
+      "source": "/hrms1/assets/(.*)",
       "destination": "/assets/$1"
     },
     {
-      "source": "/hrms/icons/(.*)",
+      "source": "/hrms1/icons/(.*)",
       "destination": "/icons/$1"
     },
     {
-      "source": "/hrms/data/(.*)",
+      "source": "/hrms1/data/(.*)",
       "destination": "/data/$1"
     },
     {
-      "source": "/hrms/config/(.*)",
+      "source": "/hrms1/config/(.*)",
       "destination": "/config/$1"
     },
     {
-      "source": "/hrms/logo.png",
+      "source": "/hrms1/logo.png",
       "destination": "/logo.png"
     },
     {
-      "source": "/hrms/manifest.webmanifest",
+      "source": "/hrms1/manifest.webmanifest",
       "destination": "/manifest.webmanifest"
     },
     {
-      "source": "/hrms/registerSW.js",
+      "source": "/hrms1/registerSW.js",
       "destination": "/registerSW.js"
     },
     {
-      "source": "/hrms/sw.js",
+      "source": "/hrms1/sw.js",
       "destination": "/sw.js"
     },
     {
-      "source": "/hrms/workbox-(.*).js",
+      "source": "/hrms1/workbox-(.*).js",
       "destination": "/workbox-$1.js"
     },
     {
-      "source": "/hrms",
+      "source": "/hrms1",
       "destination": "/index.html"
     },
     {
-      "source": "/hrms/(.*)",
+      "source": "/hrms1/(.*)",
       "destination": "/index.html"
     }
   ]

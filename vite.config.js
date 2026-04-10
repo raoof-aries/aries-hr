@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   root: __dirname,
-  base: "/hrms/",
+  base: "/hrms1/",
   plugins: [
     react(),
     VitePWA({
@@ -22,8 +22,8 @@ export default defineConfig({
       manifest: {
         name: "HR Portal",
         short_name: "HR App",
-        start_url: "/hrms/",
-        scope: "/hrms/",
+        start_url: "/hrms1/",
+        scope: "/hrms1/",
         display: "standalone",
         background_color: "#ffffff",
         theme_color: "#000000",
