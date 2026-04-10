@@ -20,8 +20,8 @@ export default defineConfig({
         skipWaiting: true,
       },
       manifest: {
-        name: "HR Portal",
-        short_name: "HR App",
+        name: "Aries HRMS",
+        short_name: "Aries HRMS",
         start_url: "/hrms1/",
         scope: "/hrms1/",
         display: "standalone",
