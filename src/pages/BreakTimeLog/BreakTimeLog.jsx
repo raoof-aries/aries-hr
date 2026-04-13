@@ -61,20 +61,6 @@ function formatDurationFromSeconds(totalSeconds) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
-function formatDateForDisplay(dateValue) {
-  const [year, month, day] = `${dateValue || ""}`.split("-").map(Number);
-
-  if (!year || !month || !day) {
-    return "Select date";
-  }
-
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(year, month - 1, day));
-}
-
 function getStatusTone(status) {
   return `${status || ""}`.trim().toLowerCase() === "closed"
     ? "closed"
@@ -261,13 +247,6 @@ export default function BreakTimeLog() {
       0,
     ),
   );
-
-  const handleDateChange = (event) => {
-    const nextDate = event.target.value;
-
-    setSelectedDate(nextDate);
-    setExpandedLogId("");
-  };
 
   const handleToggleLog = (logId) => {
     setExpandedLogId((currentId) => (currentId === logId ? "" : logId));
@@ -541,22 +520,6 @@ export default function BreakTimeLog() {
       </section>
 
       <section className="breakTimeLogOverviewCard">
-        <div className="breakTimeLogOverviewTop">
-          <label className="breakTimeLogDateFilter">
-            <span className="breakTimeLogDateDisplayText" aria-hidden="true">
-              {formatDateForDisplay(selectedDate)}
-            </span>
-            <input
-              className="breakTimeLogDateInput"
-              type="date"
-              value={selectedDate}
-              onChange={handleDateChange}
-              max={getTodayDateValue()}
-              aria-label="Select date"
-            />
-          </label>
-        </div>
-
         <div className="breakTimeLogStats">
           <div className="breakTimeLogStatCard">
             <span>Total breaks</span>
