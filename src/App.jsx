@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import Login from "./pages/Login/Login";
@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
 import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper";
 import AuthGateLoader from "./components/AuthGateLoader/AuthGateLoader";
+import { getIsRegularUser } from "./utils/userMode";
 
 function LoginRoute() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -26,6 +27,22 @@ function LoginRoute() {
   return <Login />;
 }
 
+function ProtectedAppRoute({ children, allowNonRegular = false }) {
+  const location = useLocation();
+  const { user } = useAuth();
+  const isRegularUser = getIsRegularUser(user);
+
+  return (
+    <ProtectedRoute>
+      {!allowNonRegular && !isRegularUser ? (
+        <Navigate to="/" replace state={{ from: location }} />
+      ) : (
+        <Layout>{children}</Layout>
+      )}
+    </ProtectedRoute>
+  );
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -33,121 +50,97 @@ function AppRoutes() {
       <Route
         path="/"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <Home />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute allowNonRegular>
+            <Home />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/salary-slip"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <SalarySlip />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <SalarySlip />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/incentive-slip"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <FeatureUnderDevelopment />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/allowance"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <FeatureUnderDevelopment />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/allowance/upload"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <FeatureUnderDevelopment />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/health"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <FeatureUnderDevelopment />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/leave"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <FeatureUnderDevelopment />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/calendar"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <FeatureUnderDevelopment />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/notifications"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <FeatureUnderDevelopment />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/profile"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <Profile />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <Profile />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/effism-locking"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <FeatureUnderDevelopment />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
         }
       />
       <Route
         path="/break-time-log"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <BreakTimeLog />
-            </Layout>
-          </ProtectedRoute>
+          <ProtectedAppRoute>
+            <BreakTimeLog />
+          </ProtectedAppRoute>
         }
       />
     </Routes>

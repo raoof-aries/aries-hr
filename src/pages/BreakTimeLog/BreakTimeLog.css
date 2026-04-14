@@ -3,6 +3,24 @@
   gap: 16px;
 }
 
+.breakTimeLogTopStack {
+  display: grid;
+  gap: 16px;
+}
+
+.breakTimeLogPageNonRegular {
+  position: relative;
+  z-index: 2;
+}
+
+.breakTimeLogPageNonRegular .breakTimeLogTopStack {
+  margin-top: -44px;
+}
+
+.breakTimeLogPageNonRegular .breakTimeLogOverviewCard {
+  margin-top: -12px;
+}
+
 .breakTimeLogHeroCard,
 .breakTimeLogOverviewCard,
 .breakTimeLogTimeline {
@@ -514,6 +532,14 @@
 }
 
 @media (max-width: 640px) {
+  .breakTimeLogPageNonRegular .breakTimeLogTopStack {
+    margin-top: -46px;
+  }
+
+  .breakTimeLogPageNonRegular .breakTimeLogOverviewCard {
+    margin-top: -12px;
+  }
+
   .breakTimeLogHeroCard,
   .breakTimeLogOverviewCard,
   .breakTimeLogTimeline {

@@ -1,14 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import {
   BREAK_STATUS_UPDATED_EVENT,
   getBreakStatus,
 } from "../../services/breakTimeStatusService";
+import { getIsRegularUser } from "../../utils/userMode";
 import "./Home.css";
 
 export default function Home() {
   const [isOnBreak, setIsOnBreak] = useState(false);
+  const [timeIn, setTimeIn] = useState("");
+  const [timeOut, setTimeOut] = useState("");
+  const [dayType, setDayType] = useState("");
+  const [daySubtype, setDaySubtype] = useState("");
+  const { user } = useAuth();
+  const isRegularUser = getIsRegularUser(user);
   const implementedModuleIds = new Set(["break", "salary"]);
+  const showOffTypeField = dayType === "off";
+  const showLeaveTypeField = dayType === "leave";
 
   useEffect(() => {
     let isActive = true;
@@ -236,6 +246,101 @@ export default function Home() {
       shadowColor: "rgba(129, 136, 136, 0.05)",
     };
   });
+
+  const handleDayTypeChange = (event) => {
+    const nextDayType = event.target.value;
+    const shouldResetSubtype =
+      nextDayType !== dayType ||
+      (nextDayType !== "off" && nextDayType !== "leave");
+
+    setDayType(nextDayType);
+
+    if (shouldResetSubtype) {
+      setDaySubtype("");
+    }
+  };
+
+  if (!isRegularUser) {
+    return (
+      <div className="dashboard-container dashboard-container-simple">
+        <section className="attendance-panel" aria-label="Attendance details">
+          <div className="attendance-form">
+            <label className="attendance-field attendance-field-time">
+              <span className="attendance-label">Time in</span>
+              <input
+                type="time"
+                className="attendance-input"
+                value={timeIn}
+                onChange={(event) => setTimeIn(event.target.value)}
+              />
+            </label>
+
+            <label className="attendance-field attendance-field-time">
+              <span className="attendance-label">Time out</span>
+              <input
+                type="time"
+                className="attendance-input"
+                value={timeOut}
+                onChange={(event) => setTimeOut(event.target.value)}
+              />
+            </label>
+
+            <label className="attendance-field attendance-field-choice">
+              <span className="attendance-label">Day type</span>
+              <select
+                className="attendance-input attendance-select"
+                value={dayType}
+                onChange={handleDayTypeChange}
+              >
+                <option value="">Select day type</option>
+                <option value="working-day">Working Day</option>
+                <option value="site-job">Site Job</option>
+                <option value="off">OFF</option>
+                <option value="work-from-home">Work From Home</option>
+                <option value="leave">Leave</option>
+              </select>
+            </label>
+
+            {showOffTypeField ? (
+              <label className="attendance-field attendance-field-secondary">
+                <span className="attendance-label">OFF Type</span>
+                <select
+                  className="attendance-input attendance-select"
+                  value={daySubtype}
+                  onChange={(event) => setDaySubtype(event.target.value)}
+                >
+                  <option value="">Select</option>
+                  <option value="weekend-holiday">Weekend Holiday</option>
+                  <option value="coff">COFF</option>
+                  <option value="non-working-day">Non working Day</option>
+                  <option value="public-holiday">Public Holiday</option>
+                </select>
+              </label>
+            ) : null}
+
+            {showLeaveTypeField ? (
+              <label className="attendance-field attendance-field-secondary">
+                <span className="attendance-label">Leave Type</span>
+                <select
+                  className="attendance-input attendance-select"
+                  value={daySubtype}
+                  onChange={(event) => setDaySubtype(event.target.value)}
+                >
+                  <option value="">Select</option>
+                  <option value="medical-leave">Medical Leave</option>
+                  <option value="annual-leave">Annual Leave</option>
+                  <option value="lop">LOP</option>
+                  <option value="paternity-leave">Paternity Leave</option>
+                  <option value="bereavement-leave">Bereavement Leave</option>
+                  <option value="lay-off">Lay Off</option>
+                </select>
+              </label>
+            ) : null}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">

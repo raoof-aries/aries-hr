@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LuBell, LuClock3, LuLock } from "react-icons/lu";
+import { LuBell, LuClock3, LuLock, LuLogOut } from "react-icons/lu";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { getIsRegularUser } from "../../utils/userMode";
 import "./Layout.css";
 
 const PULL_REFRESH_THRESHOLD = 54;
@@ -400,6 +401,7 @@ export default function Layout({ children }) {
   };
 
   const profileData = user || {};
+  const isRegularUser = getIsRegularUser(profileData);
   const displayName = profileData?.name || userName || "User";
 
   // Extract first name from user display name
@@ -460,96 +462,104 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="layout-container">
+    <div
+      className={`layout-container ${isRegularUser ? "" : "layout-container-non-regular"}`}
+    >
       {/* Sidebar */}
-      <aside className={`layout-sidebar ${sidebarOpen ? "open" : "closed"}`}>
-        <div className="layout-sidebar-header">
-          <Link to="/profile" className="layout-logo" aria-label="Open profile">
-            <div className="layout-logo-icon">
-              <img
-                src={profileImageUrl}
-                alt="Profile"
-                className="layout-logo-profile-image"
-              />
-            </div>
-            <span className="layout-logo-text">Aries HRMS</span>
-          </Link>
-          <button
-            className="layout-sidebar-toggle"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label="Toggle sidebar"
-          >
-            {sidebarOpen ? (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            ) : (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-              </svg>
-            )}
-          </button>
-        </div>
+      {isRegularUser && (
+        <aside className={`layout-sidebar ${sidebarOpen ? "open" : "closed"}`}>
+          <div className="layout-sidebar-header">
+            <Link
+              to="/profile"
+              className="layout-logo"
+              aria-label="Open profile"
+            >
+              <div className="layout-logo-icon">
+                <img
+                  src={profileImageUrl}
+                  alt="Profile"
+                  className="layout-logo-profile-image"
+                />
+              </div>
+              <span className="layout-logo-text">Aries HRMS</span>
+            </Link>
+            <button
+              className="layout-sidebar-toggle"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Toggle sidebar"
+            >
+              {sidebarOpen ? (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              ) : (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              )}
+            </button>
+          </div>
 
-        <nav className="layout-nav">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.route;
-            return (
-              <Link
-                key={item.id}
-                to={item.route}
-                className={`layout-nav-item ${isActive ? "active" : ""}`}
-              >
-                <span className="layout-nav-icon">{item.icon}</span>
-                <span className="layout-nav-text">{item.title}</span>
-              </Link>
-            );
-          })}
-        </nav>
+          <nav className="layout-nav">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.route;
+              return (
+                <Link
+                  key={item.id}
+                  to={item.route}
+                  className={`layout-nav-item ${isActive ? "active" : ""}`}
+                >
+                  <span className="layout-nav-icon">{item.icon}</span>
+                  <span className="layout-nav-text">{item.title}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-        <div className="layout-sidebar-footer">
-          <button className="layout-nav-item" onClick={handleLogout}>
-            <span className="layout-nav-icon">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-            </span>
-            <span className="layout-nav-text">Log out</span>
-          </button>
-        </div>
-      </aside>
+          <div className="layout-sidebar-footer">
+            <button className="layout-nav-item" onClick={handleLogout}>
+              <span className="layout-nav-icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </span>
+              <span className="layout-nav-text">Log out</span>
+            </button>
+          </div>
+        </aside>
+      )}
 
       <div
         className={`layout-pull-refresh ${pullProgress >= 1 ? "is-armed" : ""} ${isPullRefreshing ? "is-refreshing" : ""}`}
@@ -564,7 +574,7 @@ export default function Layout({ children }) {
 
       {/* Main Content */}
       <div
-        className={`layout-main ${isHomeScreen ? "layout-main-home" : "layout-main-page"} ${effectivePullDistance > 0 ? "layout-main--pulling" : ""} ${isPullRefreshing ? "layout-main--refreshing" : ""}`}
+        className={`layout-main ${isRegularUser ? "" : "layout-main-full"} ${isHomeScreen ? "layout-main-home" : "layout-main-page"} ${effectivePullDistance > 0 ? "layout-main--pulling" : ""} ${isPullRefreshing ? "layout-main--refreshing" : ""}`}
         style={{ "--pull-offset": `${effectivePullDistance}px` }}
       >
 
@@ -572,7 +582,52 @@ export default function Layout({ children }) {
         <header
           className={`layout-header ${isHomeScreen ? "layout-header-home" : "layout-header-page"}`}
         >
-          {isHomeScreen ? (
+          {isHomeScreen && !isRegularUser ? (
+            <div className="home-hero-card home-hero-card-simple">
+              <div className="home-hero-top home-hero-top-simple">
+                <div className="home-hero-greeting">
+                  <span className="home-hero-hello">Hi, {greeting}</span>
+                  <span className="home-hero-date">{formattedDate}</span>
+                </div>
+                <button
+                  className="home-hero-logo-button"
+                  onClick={handleLogout}
+                  aria-label="Log out"
+                >
+                  <span className="home-hero-logo-label">Log out</span>
+                  <span className="home-hero-logo-mark">
+                    <LuLogOut aria-hidden="true" />
+                  </span>
+                </button>
+              </div>
+
+              <div className="home-hero-profile home-hero-profile-static">
+                <div className="home-hero-avatar">
+                  <img
+                    src={profileImageUrl}
+                    alt="Profile"
+                    className="layout-header-profile-image"
+                  />
+                </div>
+                <div className="home-hero-details">
+                  <h2 className="home-hero-name">{displayName}</h2>
+                  <p className="home-hero-role">
+                    {profileData?.designation || "-"}
+                  </p>
+                  <div className="home-hero-meta">
+                    <span className="home-hero-pill">
+                      {profileData?.employeeCode ||
+                        profileData?.employee_code ||
+                        "-"}
+                    </span>
+                    <span className="home-hero-pill">
+                      {profileData?.years_in_aries || "-"} yrs
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : isHomeScreen ? (
             <div className="home-hero-card">
               <div className="home-hero-top">
                 <div className="home-hero-greeting">
@@ -916,93 +971,95 @@ export default function Layout({ children }) {
       </div>
 
       {/* Mobile Bottom Navbar */}
-      <nav className="layout-mobile-nav">
-        <Link
-          to="/"
-          className={`layout-mobile-nav-item ${location.pathname === "/" ? "active" : ""}`}
-          aria-label="Dashboard"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      {isRegularUser && (
+        <nav className="layout-mobile-nav">
+          <Link
+            to="/"
+            className={`layout-mobile-nav-item ${location.pathname === "/" ? "active" : ""}`}
+            aria-label="Dashboard"
           >
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-        </Link>
-        <Link
-          to="/salary-slip"
-          className={`layout-mobile-nav-item ${location.pathname === "/salary-slip" ? "active" : ""}`}
-          aria-label="Salary"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </Link>
+          <Link
+            to="/salary-slip"
+            className={`layout-mobile-nav-item ${location.pathname === "/salary-slip" ? "active" : ""}`}
+            aria-label="Salary"
           >
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-            <line x1="1" y1="10" x2="23" y2="10"></line>
-            <path d="M7 14h.01"></path>
-            <path d="M7 18h.01"></path>
-            <path d="M17 14h.01"></path>
-            <path d="M17 18h.01"></path>
-          </svg>
-        </Link>
-        <Link
-          to="/incentive-slip"
-          className={`layout-mobile-nav-item ${location.pathname === "/incentive-slip" ? "active" : ""}`}
-          aria-label="Incentive"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+              <line x1="1" y1="10" x2="23" y2="10"></line>
+              <path d="M7 14h.01"></path>
+              <path d="M7 18h.01"></path>
+              <path d="M17 14h.01"></path>
+              <path d="M17 18h.01"></path>
+            </svg>
+          </Link>
+          <Link
+            to="/incentive-slip"
+            className={`layout-mobile-nav-item ${location.pathname === "/incentive-slip" ? "active" : ""}`}
+            aria-label="Incentive"
           >
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-          </svg>
-        </Link>
-        <button
-          className="layout-mobile-nav-item layout-mobile-menu-toggle"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="More"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+          </Link>
+          <button
+            className="layout-mobile-nav-item layout-mobile-menu-toggle"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="More"
           >
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-      </nav>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        </nav>
+      )}
 
       {/* Mobile Full Menu Modal */}
-      {mobileMenuOpen && (
+      {isRegularUser && mobileMenuOpen && (
         <div
           className="layout-mobile-menu-overlay"
           onClick={() => setMobileMenuOpen(false)}

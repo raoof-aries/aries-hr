@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import BreakTimeFeedbackModal from "../../components/BreakTimeFeedbackModal/BreakTimeFeedbackModal";
 import BreakTimeEntryModal from "../../components/BreakTimeEntryModal/BreakTimeEntryModal";
 import QrScannerModal from "../../components/QrScannerModal/QrScannerModal";
+import { useAuth } from "../../context/AuthContext";
 import {
   fetchBreakLogListing,
   formatBreakApiTime,
@@ -9,6 +10,7 @@ import {
 } from "../../services/breakTimeLogService";
 import { validateBreakTimeQrCodeWithApi } from "../../services/breakTimeQrService";
 import { notifyBreakStatusUpdated } from "../../services/breakTimeStatusService";
+import { getIsRegularUser } from "../../utils/userMode";
 import "./BreakTimeLog.css";
 
 function buildSubmissionFeedback(actionType, result) {
@@ -187,6 +189,7 @@ function BreakLogCard({
 }
 
 export default function BreakTimeLog() {
+  const { user } = useAuth();
   const latestBreakLogRequestRef = useRef(0);
   const [selectedDate, setSelectedDate] = useState(() => getTodayDateValue());
   const [breakLogs, setBreakLogs] = useState([]);
@@ -199,6 +202,7 @@ export default function BreakTimeLog() {
   const [logsError, setLogsError] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [pendingSubmission, setPendingSubmission] = useState(null);
+  const isRegularUser = getIsRegularUser(user);
 
   const refreshBreakLogs = useCallback(async (dateValue) => {
     const requestId = latestBreakLogRequestRef.current + 1;
@@ -480,61 +484,65 @@ export default function BreakTimeLog() {
   const timelineState = renderTimelineState();
 
   return (
-    <div className="breakTimeLogPage">
-      <section className="breakTimeLogHeroCard">
-        <button
-          type="button"
-          className="breakTimeLogPrimaryButton"
-          onClick={handleOpenScanner}
-          disabled={isSubmitting}
-          aria-label={
-            activeBreak
-              ? `Scan QR Code to complete the active ${activeBreak.reason}`
-              : "Scan QR Code to record your next break action"
-          }
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+    <div
+      className={`breakTimeLogPage ${isRegularUser ? "" : "breakTimeLogPageNonRegular"}`}
+    >
+      <div className="breakTimeLogTopStack">
+        <section className="breakTimeLogHeroCard">
+          <button
+            type="button"
+            className="breakTimeLogPrimaryButton"
+            onClick={handleOpenScanner}
+            disabled={isSubmitting}
+            aria-label={
+              activeBreak
+                ? `Scan QR Code to complete the active ${activeBreak.reason}`
+                : "Scan QR Code to record your next break action"
+            }
           >
-            <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
-            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
-            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
-            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
-            <path d="M7 12h10"></path>
-          </svg>
-          <span>
-            {isSubmitting
-              ? "Processing..."
-              : activeBreak
-                ? "Scan to End Break"
-                : "Scan QR Code"}
-          </span>
-        </button>
-      </section>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+              <path d="M7 12h10"></path>
+            </svg>
+            <span>
+              {isSubmitting
+                ? "Processing..."
+                : activeBreak
+                  ? "Scan to End Break"
+                  : "Scan QR Code"}
+            </span>
+          </button>
+        </section>
 
-      <section className="breakTimeLogOverviewCard">
-        <div className="breakTimeLogStats">
-          <div className="breakTimeLogStatCard">
-            <span>Total breaks</span>
-            <strong>{filteredBreakLogs.length}</strong>
+        <section className="breakTimeLogOverviewCard">
+          <div className="breakTimeLogStats">
+            <div className="breakTimeLogStatCard">
+              <span>Total breaks</span>
+              <strong>{filteredBreakLogs.length}</strong>
+            </div>
+            <div className="breakTimeLogStatCard">
+              <span>Break time</span>
+              <strong>{totalBreakDuration}</strong>
+            </div>
+            <div className="breakTimeLogStatCard active">
+              <span>Open break</span>
+              <strong>{activeBreak ? "1 active" : "None"}</strong>
+            </div>
           </div>
-          <div className="breakTimeLogStatCard">
-            <span>Break time</span>
-            <strong>{totalBreakDuration}</strong>
-          </div>
-          <div className="breakTimeLogStatCard active">
-            <span>Open break</span>
-            <strong>{activeBreak ? "1 active" : "None"}</strong>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <section className="breakTimeLogTimeline">
         {activeBreaks.length > 0 && !timelineState && (
