@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LuBell, LuClock3, LuLock, LuLogOut } from "react-icons/lu";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { refreshApp } from "../../utils/pwa";
 import { getIsRegularUser } from "../../utils/userMode";
 import "./Layout.css";
 
@@ -11,17 +12,7 @@ const MAX_PULL_DISTANCE = 78;
 const MOBILE_BREAKPOINT = 599;
 
 async function hardRefreshPage() {
-  if ("serviceWorker" in navigator) {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(registrations.map((registration) => registration.unregister()));
-  }
-
-  if ("caches" in window) {
-    const cacheNames = await window.caches.keys();
-    await Promise.all(cacheNames.map((cacheName) => window.caches.delete(cacheName)));
-  }
-
-  window.location.reload();
+  await refreshApp();
 }
 
 const menuItems = [
@@ -404,13 +395,6 @@ export default function Layout({ children }) {
   const isRegularUser = getIsRegularUser(profileData);
   const displayName = profileData?.name || userName || "User";
 
-  // Extract first name from user display name
-  const getFirstName = () => {
-    if (!displayName) return "User";
-    const nameParts = displayName.trim().split(/\s+/);
-    return nameParts[0];
-  };
-
   const getGreetingByTime = (date) => {
     const hours = date.getHours();
 
@@ -426,7 +410,6 @@ export default function Layout({ children }) {
     year: "numeric",
   }).format(currentDateTime);
 
-  const firstName = getFirstName();
   const greeting = getGreetingByTime(currentDateTime);
   const profileImageUrl =
     profileData?.profileImageUrl ||
