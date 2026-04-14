@@ -143,6 +143,7 @@ export default function Calendar() {
   const defaultYear = YEAR_OPTIONS.includes(String(today.getFullYear()))
     ? String(today.getFullYear())
     : YEAR_OPTIONS[YEAR_OPTIONS.length - 1];
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(PLACE_OPTIONS[0].value);
   const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
@@ -171,54 +172,87 @@ export default function Calendar() {
 
   return (
     <div className="calendarPage">
-      <section className="calendarPanel" aria-label="Calendar filters">
-        <div className="calendarFilterGrid">
-          <label className="calendarField calendarFieldPlace">
-            <span className="calendarFieldLabel">Place</span>
-            <select
-              className="calendarSelect"
-              value={selectedPlace}
-              onChange={(event) => setSelectedPlace(event.target.value)}
-            >
-              {PLACE_OPTIONS.map((place) => (
-                <option key={place.value} value={place.value}>
-                  {place.label}
-                </option>
-              ))}
-            </select>
-          </label>
+      <div className="calendarToolbar">
+        <button
+          type="button"
+          className="calendarFilterToggle"
+          onClick={() => setIsFilterOpen((current) => !current)}
+          aria-expanded={isFilterOpen}
+          aria-controls="calendar-filter-panel"
+        >
+          <span>{isFilterOpen ? "Hide Filters" : "Show Filters"}</span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18"></path>
+            <path d="M6 12h12"></path>
+            <path d="M10 18h4"></path>
+          </svg>
+        </button>
+      </div>
 
-          <label className="calendarField">
-            <span className="calendarFieldLabel">Year</span>
-            <select
-              className="calendarSelect"
-              value={selectedYear}
-              onChange={(event) => setSelectedYear(event.target.value)}
-            >
-              {YEAR_OPTIONS.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </label>
+      {isFilterOpen ? (
+        <section
+          id="calendar-filter-panel"
+          className="calendarPanel"
+          aria-label="Calendar filters"
+        >
+          <div className="calendarFilterGrid">
+            <label className="calendarField calendarFieldPlace">
+              <span className="calendarFieldLabel">Place</span>
+              <select
+                className="calendarSelect"
+                value={selectedPlace}
+                onChange={(event) => setSelectedPlace(event.target.value)}
+              >
+                {PLACE_OPTIONS.map((place) => (
+                  <option key={place.value} value={place.value}>
+                    {place.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="calendarField">
-            <span className="calendarFieldLabel">Month</span>
-            <select
-              className="calendarSelect"
-              value={selectedMonth}
-              onChange={(event) => setSelectedMonth(event.target.value)}
-            >
-              {MONTH_OPTIONS.map((month) => (
-                <option key={month.value} value={month.value}>
-                  {month.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </section>
+            <label className="calendarField">
+              <span className="calendarFieldLabel">Year</span>
+              <select
+                className="calendarSelect"
+                value={selectedYear}
+                onChange={(event) => setSelectedYear(event.target.value)}
+              >
+                {YEAR_OPTIONS.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="calendarField">
+              <span className="calendarFieldLabel">Month</span>
+              <select
+                className="calendarSelect"
+                value={selectedMonth}
+                onChange={(event) => setSelectedMonth(event.target.value)}
+              >
+                {MONTH_OPTIONS.map((month) => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </section>
+      ) : null}
 
       <section className="calendarViewer">
         <figure

@@ -40,11 +40,49 @@
 }
 
 .calendarHero,
+.calendarToolbar,
 .calendarPanel,
 .calendarViewer,
 .calendarLegendSection {
   position: relative;
   z-index: 1;
+}
+
+.calendarToolbar {
+  display: flex;
+  justify-content: stretch;
+  margin-bottom: 12px;
+}
+
+.calendarFilterToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 0.5px solid rgba(1, 67, 66, 0.14);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(239, 247, 244, 0.98), rgba(226, 239, 235, 0.96));
+  color: var(--apple-blue);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 8px 18px rgba(1, 67, 66, 0.08);
+  font-size: var(--fs-body-sm);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.calendarFilterToggle:hover {
+  border-color: rgba(1, 67, 66, 0.22);
+  background:
+    linear-gradient(180deg, rgba(243, 250, 248, 1), rgba(232, 242, 239, 0.98));
+}
+
+.calendarFilterToggle svg {
+  flex-shrink: 0;
+  opacity: 0.8;
 }
 
 .calendarPanel {
@@ -103,7 +141,7 @@
 }
 
 .calendarViewer {
-  margin-top: 36px;
+  margin-top: 20px;
   padding: 0;
   background: transparent;
   border: 0;
@@ -113,12 +151,12 @@
 .calendarImageFrame {
   position: relative;
   margin: 0;
-  overflow: visible;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  overflow: hidden;
+  padding: 12px;
+  border: 0.5px solid var(--border-color);
+  border-radius: 24px;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -134,7 +172,7 @@
   height: auto;
   aspect-ratio: 4 / 5;
   object-fit: cover;
-  border-radius: 22px;
+  border-radius: 16px;
   box-shadow: none;
   user-select: none;
   -webkit-user-select: none;
@@ -149,7 +187,7 @@
 }
 
 .calendarLegendSection {
-  margin-top: 36px;
+  margin-top: 20px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -212,15 +250,20 @@
     padding: 20px 0 36px;
   }
 
+  .calendarToolbar {
+    margin-bottom: 10px;
+  }
+
   .calendarPanel {
     border-radius: 24px;
   }
 
   .calendarImageFrame {
-    padding: 0;
+    padding: 12px;
+    border-radius: 22px;
   }
 
   .calendarImage {
-    border-radius: 20px;
+    border-radius: 16px;
   }
 }
