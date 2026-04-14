@@ -12,6 +12,7 @@ import Layout from "./components/Layout/Layout";
 import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper";
 import AuthGateLoader from "./components/AuthGateLoader/AuthGateLoader";
 import { getIsRegularUser } from "./utils/userMode";
+import Calendar from "./pages/Calendar/Calendar";
 
 function LoginRoute() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -107,7 +108,7 @@ function AppRoutes() {
         path="/calendar"
         element={
           <ProtectedAppRoute>
-            <FeatureUnderDevelopment />
+            <Calendar />
           </ProtectedAppRoute>
         }
       />

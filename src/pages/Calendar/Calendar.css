@@ -1,21 +1,226 @@
-.dummy-page {
-  padding: 40px 20px;
-  text-align: center;
-  min-height: 60vh;
+.calendarPage {
+  --calendar-paper: rgba(255, 255, 255, 0.84);
+  --calendar-paper-strong: rgba(255, 255, 255, 0.96);
+  --calendar-ink: #0d302d;
+  --calendar-accent: #014342;
+  --calendar-accent-soft: rgba(1, 67, 66, 0.1);
+  --calendar-line: rgba(1, 67, 66, 0.12);
+  --calendar-shadow: 0 20px 50px rgba(1, 67, 66, 0.1);
+  position: relative;
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 24px 0 48px;
+  color: var(--calendar-ink);
+}
+
+.calendarPage::before,
+.calendarPage::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.calendarPage::before {
+  top: 32px;
+  right: 24px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(216, 75, 87, 0.16), transparent 70%);
+}
+
+.calendarPage::after {
+  left: 10px;
+  bottom: 80px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(31, 155, 98, 0.16), transparent 72%);
+}
+
+.calendarHero,
+.calendarPanel,
+.calendarViewer,
+.calendarLegendSection {
+  position: relative;
+  z-index: 1;
+}
+
+.calendarPanel {
+  margin-top: 0;
+  padding: 20px;
+  border: 1px solid var(--calendar-line);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 250, 249, 0.88)),
+    var(--calendar-paper);
+  box-shadow: var(--calendar-shadow);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.calendarFilterGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.calendarFieldPlace {
+  grid-column: 1 / -1;
+}
+
+.calendarField {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 8px;
 }
 
-.dummy-page h1 {
-  font-size: var(--fs-display);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-}
-
-.dummy-page p {
-  font-size: var(--fs-body-lg);
+.calendarFieldLabel {
+  font-size: var(--fs-small);
+  font-weight: 700;
   color: var(--text-secondary);
+}
+
+.calendarSelect {
+  appearance: none;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--calendar-line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 244, 242, 0.95));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), var(--shadow-sm);
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+.calendarSelect:focus {
+  outline: none;
+  border-color: rgba(1, 67, 66, 0.4);
+  box-shadow: 0 0 0 4px rgba(1, 67, 66, 0.08), var(--shadow-sm);
+}
+
+.calendarViewer {
+  margin-top: 36px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.calendarImageFrame {
+  position: relative;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.calendarImageFrame::before {
+  display: none;
+}
+
+.calendarImage {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 22px;
+  box-shadow: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+.calendarImageShield {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.01));
+}
+
+.calendarLegendSection {
+  margin-top: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.calendarLegendGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.calendarLegendCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(1, 67, 66, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.calendarLegendSwatch {
+  --legend-color: var(--calendar-accent);
+  --legend-glow: rgba(1, 67, 66, 0.14);
+  width: 16px;
+  height: 16px;
+  margin-top: 4px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--legend-color);
+  box-shadow: 0 0 0 6px var(--legend-glow);
+}
+
+.calendarLegendContent h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--fs-body-lg);
+  font-weight: 700;
+}
+
+.calendarLegendContent p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-body-sm);
+  line-height: 1.65;
+}
+
+@media (min-width: 720px) {
+  .calendarPanel {
+    padding: 26px;
+  }
+
+  .calendarLegendGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  .calendarPage {
+    padding: 20px 0 36px;
+  }
+
+  .calendarPanel {
+    border-radius: 24px;
+  }
+
+  .calendarImageFrame {
+    padding: 0;
+  }
+
+  .calendarImage {
+    border-radius: 20px;
+  }
 }
