@@ -86,7 +86,6 @@ export default function Calendar() {
         <div className="calendarToolbarMeta" aria-live="polite">
           <h2 className="calendarToolbarMonth">
             {activeMonth.label} {selectedYear}
-            <span className="calendarToolbarSeparator"> - </span>
             <span className="calendarToolbarPlaceInline">{activePlace.label}</span>
           </h2>
         </div>
