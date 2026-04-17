@@ -31,8 +31,8 @@ const STEP_CONFIG = [
   {
     id: "tasks",
     title: "Tasks",
-    path: "/effism-lite/tasks",
-    // path: "/",
+    // path: "/effism-lite/tasks",
+    path: "/",
   },
 ];
 
@@ -182,6 +182,123 @@ function getTaskJobNumberLabel(value) {
   return value || "No job number";
 }
 
+function formatDateDisplayValue(value) {
+  if (!value) {
+    return "Select date";
+  }
+
+  const [year, month, day] = value.split("-").map(Number);
+
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  const dateValue = new Date(year, month - 1, day);
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(dateValue);
+}
+
+function convertNativeTimeToMeridiem(value) {
+  const matchedValue = `${value || ""}`.match(/^(\d{2}):(\d{2})$/);
+
+  if (!matchedValue) {
+    return {
+      time: "",
+      meridiem: "AM",
+    };
+  }
+
+  const hours = Number(matchedValue[1]);
+  const minutes = matchedValue[2];
+  const meridiem = hours >= 12 ? "PM" : "AM";
+  const normalizedHours = hours % 12 || 12;
+
+  return {
+    time: `${String(normalizedHours).padStart(2, "0")}:${minutes}`,
+    meridiem,
+  };
+}
+
+function convertMeridiemToNativeTime(timeValue, meridiemValue) {
+  const matchedValue = `${timeValue || ""}`.trim().match(/^(\d{1,2})[:.](\d{2})$/);
+
+  if (!matchedValue) {
+    return "";
+  }
+
+  const hours = Number(matchedValue[1]);
+  const minutes = Number(matchedValue[2]);
+
+  if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
+    return "";
+  }
+
+  const normalizedMeridiem = `${meridiemValue || "AM"}`.toUpperCase();
+  let nativeHours = hours % 12;
+
+  if (normalizedMeridiem === "PM") {
+    nativeHours += 12;
+  }
+
+  return `${String(nativeHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function convertNativeTimeToClock(value) {
+  const matchedValue = `${value || ""}`.match(/^(\d{2}):(\d{2})$/);
+
+  if (!matchedValue) {
+    return "";
+  }
+
+  return `${matchedValue[1]}:${matchedValue[2]}`;
+}
+
+function DatePickerField({ id, label, value, onChange, className = "" }) {
+  return (
+    <label
+      className={`effismLite-field${className ? ` ${className}` : ""}`}
+      htmlFor={id}
+    >
+      <span className="effismLite-fieldLabel">{label}</span>
+      <div className="effismLite-pickerField">
+        <span className="effismLite-pickerValue">
+          {formatDateDisplayValue(value)}
+        </span>
+
+        <span className="effismLite-pickerIcon" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M8 2v4"></path>
+            <path d="M16 2v4"></path>
+            <rect width="18" height="18" x="3" y="4" rx="2"></rect>
+            <path d="M3 10h18"></path>
+          </svg>
+        </span>
+
+        <input
+          id={id}
+          className="effismLite-pickerNativeInput"
+          type="date"
+          value={value}
+          onChange={onChange}
+        />
+      </div>
+    </label>
+  );
+}
+
 function DataListInput({
   id,
   label,
@@ -242,21 +359,72 @@ function MeridiemTimeInput({
   onTimeChange,
   onMeridiemChange,
   onBlur,
+  className = "",
 }) {
+  const nativePickerValue = convertMeridiemToNativeTime(
+    timeValue,
+    meridiemValue,
+  );
+
+  const handleNativeTimeChange = (event) => {
+    const nextValue = convertNativeTimeToMeridiem(event.target.value);
+
+    onTimeChange({
+      target: {
+        value: nextValue.time,
+      },
+    });
+
+    onMeridiemChange({
+      target: {
+        value: nextValue.meridiem,
+      },
+    });
+  };
+
   return (
-    <label className="effismLite-field" htmlFor={id}>
+    <label
+      className={`effismLite-field${className ? ` ${className}` : ""}`}
+      htmlFor={id}
+    >
       <span className="effismLite-fieldLabel">{label}</span>
       <div className="effismLite-timeControl">
-        <input
-          id={id}
-          className="effismLite-timeValue"
-          type="text"
-          inputMode="text"
-          value={timeValue}
-          onChange={onTimeChange}
-          onBlur={onBlur}
-          placeholder="00:00"
-        />
+        <div className="effismLite-timeValueWrap">
+          <input
+            id={id}
+            className="effismLite-timeValue"
+            type="text"
+            inputMode="numeric"
+            value={timeValue}
+            onChange={onTimeChange}
+            onBlur={onBlur}
+            placeholder="00:00"
+          />
+          <div className="effismLite-timePickerTrigger">
+            <span className="effismLite-timePickerIcon" aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5l3 3"></path>
+              </svg>
+            </span>
+            <input
+              className="effismLite-timePickerNativeInput"
+              type="time"
+              value={nativePickerValue}
+              onChange={handleNativeTimeChange}
+              aria-label={`${label} time picker`}
+            />
+          </div>
+        </div>
         <select
           className="effismLite-timeMeridiem"
           value={meridiemValue}
@@ -266,6 +434,65 @@ function MeridiemTimeInput({
           <option value="AM">AM</option>
           <option value="PM">PM</option>
         </select>
+      </div>
+    </label>
+  );
+}
+
+function ClockPickerField({
+  id,
+  label,
+  value,
+  onChange,
+  onBlur,
+  placeholder = "00:00",
+}) {
+  const nativePickerValue = convertNativeTimeToClock(value);
+
+  return (
+    <label className="effismLite-field" htmlFor={id}>
+      <span className="effismLite-fieldLabel">{label}</span>
+      <div className="effismLite-inputWrap">
+        <input
+          id={id}
+          className="effismLite-input effismLite-timeOnlyInput"
+          type="text"
+          inputMode="numeric"
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+        />
+        <div className="effismLite-inputPickerGlyph">
+          <span className="effismLite-timePickerIcon" aria-hidden="true">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7v5l3 3"></path>
+            </svg>
+          </span>
+          <input
+            className="effismLite-timePickerNativeInput"
+            type="time"
+            value={nativePickerValue}
+            onChange={(event) =>
+              onChange({
+                target: {
+                  value: convertNativeTimeToClock(event.target.value),
+                },
+              })
+            }
+            aria-label={`${label} time picker`}
+          />
+        </div>
       </div>
     </label>
   );
@@ -697,21 +924,15 @@ export default function EffismLite() {
       ) : (
         <section className="effismLite-panel">
           <div className="effismLite-formGrid">
-            <label
-              className="effismLite-field effismLite-fieldWide"
-              htmlFor="effism-lite-date"
-            >
-              <span className="effismLite-fieldLabel">Date</span>
-              <input
-                id="effism-lite-date"
-                className="effismLite-input"
-                type="date"
-                value={jobDetails.date}
-                onChange={(event) =>
-                  updateJobDetails("date", event.target.value)
-                }
-              />
-            </label>
+            <DatePickerField
+              id="effism-lite-date"
+              className="effismLite-fieldWide"
+              label="Date"
+              value={jobDetails.date}
+              onChange={(event) =>
+                updateJobDetails("date", event.target.value)
+              }
+            />
 
             <label
               className="effismLite-field effismLite-fieldWide"
@@ -783,6 +1004,7 @@ export default function EffismLite() {
 
             <MeridiemTimeInput
               id="effism-lite-time-in"
+              className="effismLite-fieldWide"
               label="Time In"
               timeValue={jobDetails.timeIn}
               meridiemValue={jobDetails.timeInMeridiem}
@@ -797,6 +1019,7 @@ export default function EffismLite() {
 
             <MeridiemTimeInput
               id="effism-lite-time-out"
+              className="effismLite-fieldWide"
               label="Time Out"
               timeValue={jobDetails.timeOut}
               meridiemValue={jobDetails.timeOutMeridiem}
@@ -809,38 +1032,27 @@ export default function EffismLite() {
               onBlur={() => handleJobTimeBlur("timeOut")}
             />
 
-            <label className="effismLite-field" htmlFor="effism-lite-break">
-              <span className="effismLite-fieldLabel">Break</span>
-              <input
+            <div className="effismLite-formRow effismLite-fieldWide">
+              <ClockPickerField
                 id="effism-lite-break"
-                className="effismLite-input"
-                type="text"
-                inputMode="text"
+                label="Break"
                 value={jobDetails.breakTime}
                 onChange={(event) =>
                   updateJobDetails("breakTime", event.target.value)
                 }
-                placeholder="00:00"
+                onBlur={() => handleJobTimeBlur("breakTime")}
               />
-            </label>
 
-            <label
-              className="effismLite-field"
-              htmlFor="effism-lite-site-travel"
-            >
-              <span className="effismLite-fieldLabel">Site Travel</span>
-              <input
+              <ClockPickerField
                 id="effism-lite-site-travel"
-                className="effismLite-input"
-                type="text"
-                inputMode="text"
+                label="Site Travel"
                 value={jobDetails.siteTravel}
                 onChange={(event) =>
                   updateJobDetails("siteTravel", event.target.value)
                 }
-                placeholder="00:00"
+                onBlur={() => handleJobTimeBlur("siteTravel")}
               />
-            </label>
+            </div>
           </div>
         </section>
       )}
