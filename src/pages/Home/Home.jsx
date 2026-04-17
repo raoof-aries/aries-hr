@@ -5,6 +5,11 @@ import {
   BREAK_STATUS_UPDATED_EVENT,
   getBreakStatus,
 } from "../../services/breakTimeStatusService";
+import {
+  LEAVE_DAY_SUBTYPE_OPTIONS,
+  NON_EFFISM_DAY_TYPE_OPTIONS,
+  OFF_DAY_SUBTYPE_OPTIONS,
+} from "../../data/attendanceOptions";
 import { getIsRegularUser } from "../../utils/userMode";
 import "./Home.css";
 
@@ -16,7 +21,7 @@ export default function Home() {
   const [daySubtype, setDaySubtype] = useState("");
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
@@ -43,6 +48,33 @@ export default function Home() {
   }, []);
 
   const quickAccessItems = [
+    {
+      id: "effism-lite",
+      title: "EFFISM Lite",
+      description: "Time log and task entry",
+      route: "/effism-lite",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          <path d="M8 7h8"></path>
+          <path d="M8 11h8"></path>
+          <path d="M8 15h5"></path>
+        </svg>
+      ),
+      bgColor: "#E7F5F1",
+      iconColor: "#0D6C5F",
+      shadowColor: "rgba(1, 67, 66, 0.14)",
+    },
     {
       id: "break",
       title: "Break",
@@ -293,11 +325,11 @@ export default function Home() {
                 onChange={handleDayTypeChange}
               >
                 <option value="">Select day type</option>
-                <option value="working-day">Working Day</option>
-                <option value="site-job">Site Job</option>
-                <option value="off">OFF</option>
-                <option value="work-from-home">Work From Home</option>
-                <option value="leave">Leave</option>
+                {NON_EFFISM_DAY_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </label>
 
@@ -310,10 +342,11 @@ export default function Home() {
                   onChange={(event) => setDaySubtype(event.target.value)}
                 >
                   <option value="">Select</option>
-                  <option value="weekend-holiday">Weekend Holiday</option>
-                  <option value="coff">COFF</option>
-                  <option value="non-working-day">Non working Day</option>
-                  <option value="public-holiday">Public Holiday</option>
+                  {OFF_DAY_SUBTYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </label>
             ) : null}
@@ -327,12 +360,11 @@ export default function Home() {
                   onChange={(event) => setDaySubtype(event.target.value)}
                 >
                   <option value="">Select</option>
-                  <option value="medical-leave">Medical Leave</option>
-                  <option value="annual-leave">Annual Leave</option>
-                  <option value="lop">LOP</option>
-                  <option value="paternity-leave">Paternity Leave</option>
-                  <option value="bereavement-leave">Bereavement Leave</option>
-                  <option value="lay-off">Lay Off</option>
+                  {LEAVE_DAY_SUBTYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </label>
             ) : null}

@@ -6,6 +6,7 @@ import Home from "./pages/Home/Home";
 import Profile from "./pages/Profile/Profile";
 import BreakTimeLog from "./pages/BreakTimeLog/BreakTimeLog";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
+import EffismLite from "./pages/EffismLite/EffismLite";
 import FeatureUnderDevelopment from "./pages/FeatureUnderDevelopment/FeatureUnderDevelopment";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
@@ -132,6 +133,14 @@ function AppRoutes() {
         element={
           <ProtectedAppRoute>
             <FeatureUnderDevelopment />
+          </ProtectedAppRoute>
+        }
+      />
+      <Route
+        path="/effism-lite/*"
+        element={
+          <ProtectedAppRoute>
+            <EffismLite />
           </ProtectedAppRoute>
         }
       />

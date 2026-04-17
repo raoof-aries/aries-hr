@@ -437,10 +437,14 @@ export default function Layout({ children }) {
       "/notifications": "Notifications",
       "/profile": "Profile",
       "/effism-locking": "Effism Locking",
+      "/effism-lite": "EFFISM Lite",
       "/break-time-log": "Break Time Log",
     };
     // Handle exact pathname match
     const currentPath = location.pathname;
+    if (currentPath.startsWith("/effism-lite")) {
+      return "EFFISM Lite";
+    }
     return routeMap[currentPath] || "HRMS";
   };
 
