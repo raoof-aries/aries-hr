@@ -112,9 +112,7 @@ function formatClockInputAsTyped(value) {
   }
 
   const hoursPart = cleanedValue.slice(0, firstColonIndex).replace(/:/g, "");
-  const minutesPart = cleanedValue
-    .slice(firstColonIndex + 1)
-    .replace(/:/g, "");
+  const minutesPart = cleanedValue.slice(firstColonIndex + 1).replace(/:/g, "");
 
   if (!hoursPart && !minutesPart) {
     return "";
@@ -687,10 +685,14 @@ export default function EffismLite() {
         taskList.map((task) =>
           createEditableTask(
             {
-              id: task.workreport_id ? `effism-lite-task-${task.workreport_id}` : createTaskId(),
+              id: task.workreport_id
+                ? `effism-lite-task-${task.workreport_id}`
+                : createTaskId(),
               workreportId: `${task.workreport_id || ""}`,
               taskName: `${task.taskname || ""}`,
-              mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
+              mainType: mapTaskMainTypeIdToLabel(
+                task.main_type ?? task.mian_type,
+              ),
               jobNumber: `${task.job_no || ""}`,
               estimatedTime: normalizeApiClockValue(task.est_time),
               actualTime: normalizeApiClockValue(task.act_time),
@@ -772,7 +774,9 @@ export default function EffismLite() {
     }
 
     setJobDiaryCompleteStatus("error");
-    setJobDiaryCompleteMessage(result.message || "Failed to complete job diary.");
+    setJobDiaryCompleteMessage(
+      result.message || "Failed to complete job diary.",
+    );
   };
 
   const handleAddTask = () => {
@@ -855,10 +859,14 @@ export default function EffismLite() {
         refreshedTasks.map((task) =>
           createEditableTask(
             {
-              id: task.workreport_id ? `effism-lite-task-${task.workreport_id}` : createTaskId(),
+              id: task.workreport_id
+                ? `effism-lite-task-${task.workreport_id}`
+                : createTaskId(),
               workreportId: `${task.workreport_id || ""}`,
               taskName: `${task.taskname || ""}`,
-              mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
+              mainType: mapTaskMainTypeIdToLabel(
+                task.main_type ?? task.mian_type,
+              ),
               jobNumber: `${task.job_no || ""}`,
               estimatedTime: normalizeApiClockValue(task.est_time),
               actualTime: normalizeApiClockValue(task.act_time),
@@ -1441,7 +1449,7 @@ export default function EffismLite() {
               />
             </div>
 
-            <div className="effismLite-formActions effismLite-fieldWide">
+            {/* <div className="effismLite-formActions effismLite-fieldWide">
               <button
                 type="button"
                 className="effismLite-button effismLite-buttonSoftAction"
@@ -1450,7 +1458,7 @@ export default function EffismLite() {
               >
                 Complete
               </button>
-            </div>
+            </div> */}
           </div>
         </section>
       )}
