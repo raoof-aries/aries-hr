@@ -542,6 +542,7 @@ export default function EffismLite() {
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
   const [jobDiaryCompleteStatus, setJobDiaryCompleteStatus] = useState("idle");
   const [jobDiaryCompleteMessage, setJobDiaryCompleteMessage] = useState("");
+  const [showCompleteConfirmation, setShowCompleteConfirmation] = useState(false);
   const hasHydratedTimeRef = useRef(false);
   const autosaveTimerRef = useRef(null);
   const hasUserEditedTimeRef = useRef(false);
@@ -756,14 +757,15 @@ export default function EffismLite() {
     navigate(path);
   };
 
-  const handleComplete = async () => {
-    const shouldComplete = window.confirm(
-      "Are you sure you want to complete this job diary?",
-    );
-    if (!shouldComplete) {
+  const handleComplete = () => {
+    if (jobDiaryCompleteStatus === "loading") {
       return;
     }
+    setShowCompleteConfirmation(true);
+  };
 
+  const handleConfirmComplete = async () => {
+    setShowCompleteConfirmation(false);
     setJobDiaryCompleteStatus("loading");
     const result = await completeEffismLiteJobDiary(jobDetails.date);
 
@@ -777,6 +779,10 @@ export default function EffismLite() {
     setJobDiaryCompleteMessage(
       result.message || "Failed to complete job diary.",
     );
+  };
+
+  const handleCancelComplete = () => {
+    setShowCompleteConfirmation(false);
   };
 
   const handleAddTask = () => {
@@ -969,6 +975,30 @@ export default function EffismLite() {
       {jobDiaryCompleteStatus === "error" ? (
         <div className="effismLite-completeNotice is-error" role="alert">
           {jobDiaryCompleteMessage}
+        </div>
+      ) : null}
+
+      {showCompleteConfirmation ? (
+        <div className="effismLite-completeConfirmCard" role="alertdialog">
+          <p className="effismLite-completeConfirmText">
+            Are you sure you want to complete this job diary?
+          </p>
+          <div className="effismLite-completeConfirmActions">
+            <button
+              type="button"
+              className="effismLite-button effismLite-buttonGhost"
+              onClick={handleCancelComplete}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="effismLite-button effismLite-buttonPrimary"
+              onClick={handleConfirmComplete}
+            >
+              Complete
+            </button>
+          </div>
         </div>
       ) : null}
 
