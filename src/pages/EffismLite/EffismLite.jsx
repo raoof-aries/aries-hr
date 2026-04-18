@@ -697,7 +697,7 @@ export default function EffismLite() {
               jobNumber: `${task.job_no || ""}`,
               estimatedTime: normalizeApiClockValue(task.est_time),
               actualTime: normalizeApiClockValue(task.act_time),
-              outcome: `${task.description || ""}`,
+              outcome: `${task.desc ?? task.description ?? ""}`,
               status: `${task.status ?? 0}%`,
             },
             {
@@ -876,7 +876,7 @@ export default function EffismLite() {
               jobNumber: `${task.job_no || ""}`,
               estimatedTime: normalizeApiClockValue(task.est_time),
               actualTime: normalizeApiClockValue(task.act_time),
-              outcome: `${task.description || ""}`,
+              outcome: `${task.desc ?? task.description ?? ""}`,
               status: `${task.status ?? 0}%`,
             },
             {

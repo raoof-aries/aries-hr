@@ -359,6 +359,7 @@ function buildTaskFormData(task, date) {
   formData.append("act_time", actualTime || "00:00");
   formData.append("job_no", jobNumber);
   formData.append("description", description);
+  formData.append("desc", description);
   formData.append("status", normalizedStatusValue);
 
   return formData;
