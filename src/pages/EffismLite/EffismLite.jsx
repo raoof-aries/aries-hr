@@ -31,8 +31,7 @@ const STEP_CONFIG = [
   {
     id: "tasks",
     title: "Tasks",
-    // path: "/effism-lite/tasks",
-    path: "/",
+    path: "/effism-lite/tasks",
   },
 ];
 
@@ -238,7 +237,9 @@ function convertNativeTimeToMeridiem(value) {
 }
 
 function convertMeridiemToNativeTime(timeValue, meridiemValue) {
-  const matchedValue = `${timeValue || ""}`.trim().match(/^(\d{1,2})[:.](\d{2})$/);
+  const matchedValue = `${timeValue || ""}`
+    .trim()
+    .match(/^(\d{1,2})[:.](\d{2})$/);
 
   if (!matchedValue) {
     return "";
@@ -973,9 +974,7 @@ export default function EffismLite() {
               className="effismLite-fieldWide"
               label="Date"
               value={jobDetails.date}
-              onChange={(event) =>
-                updateJobDetails("date", event.target.value)
-              }
+              onChange={(event) => updateJobDetails("date", event.target.value)}
             />
 
             <label
