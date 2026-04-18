@@ -549,6 +549,8 @@ export default function EffismLite() {
     navigate(path);
   };
 
+  const handleComplete = () => {};
+
   const handleAddTask = () => {
     const newTask = createEditableTask();
 
@@ -655,6 +657,28 @@ export default function EffismLite() {
             );
           })}
         </div>
+
+        <button
+          type="button"
+          className="effismLite-button effismLite-buttonPrimary effismLite-completeButton"
+          onClick={handleComplete}
+          aria-label="Complete effism lite entry"
+          title="Complete"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </button>
       </div>
 
       {isTaskStep ? (
