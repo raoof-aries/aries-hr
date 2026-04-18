@@ -1114,10 +1114,10 @@ export default function EffismLite() {
 
                     <div className="effismLite-taskSummary">
                       <span className="effismLite-taskSummaryItem">
-                        {renderTaskSummaryTime("Est.", task.estimatedTime)}
+                        {renderTaskSummaryTime("Est ", task.estimatedTime)}
                       </span>
                       <span className="effismLite-taskSummaryItem">
-                        {renderTaskSummaryTime("Act", task.actualTime)}
+                        {renderTaskSummaryTime("Act ", task.actualTime)}
                       </span>
                       <span
                         className={`effismLite-taskSummaryItem effismLite-taskStatusPill is-${getTaskStatusTone(task.status)}`}
