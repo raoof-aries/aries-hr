@@ -98,17 +98,24 @@ function normalizeClockInput(value) {
 }
 
 function formatClockInputAsTyped(value) {
-  const digitsOnlyValue = `${value || ""}`.replace(/\D/g, "").slice(0, 4);
+  const rawValue = `${value || ""}`;
+  const cleanedValue = rawValue.replace(/[^\d:]/g, "");
+  const firstColonIndex = cleanedValue.indexOf(":");
 
-  if (!digitsOnlyValue) {
+  if (firstColonIndex === -1) {
+    return cleanedValue.slice(0, 5);
+  }
+
+  const hoursPart = cleanedValue.slice(0, firstColonIndex).replace(/:/g, "");
+  const minutesPart = cleanedValue
+    .slice(firstColonIndex + 1)
+    .replace(/:/g, "");
+
+  if (!hoursPart && !minutesPart) {
     return "";
   }
 
-  if (digitsOnlyValue.length <= 2) {
-    return digitsOnlyValue;
-  }
-
-  return `${digitsOnlyValue.slice(0, 2)}:${digitsOnlyValue.slice(2)}`;
+  return `${hoursPart.slice(0, 2)}:${minutesPart.slice(0, 2)}`;
 }
 
 function normalizeStatusValue(value) {
@@ -529,17 +536,18 @@ export default function EffismLite() {
     siteTravel: "",
   });
   const [tasks, setTasks] = useState(getInitialTasks);
+  const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
   const hasHydratedTimeRef = useRef(false);
   const autosaveTimerRef = useRef(null);
+  const hasUserEditedTimeRef = useRef(false);
+  const saveStatusHideTimerRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
 
     const loadTimeData = async () => {
-      const [lastWorkingDate, timeRecord] = await Promise.all([
-        getEffismLiteLastWorkingDate(),
-        getEffismLiteTimeRecord(),
-      ]);
+      const lastWorkingDate = await getEffismLiteLastWorkingDate();
+      const timeRecord = await getEffismLiteTimeRecord(lastWorkingDate);
 
       if (!isMounted) {
         return;
@@ -580,6 +588,10 @@ export default function EffismLite() {
         clearTimeout(autosaveTimerRef.current);
         autosaveTimerRef.current = null;
       }
+      if (saveStatusHideTimerRef.current) {
+        clearTimeout(saveStatusHideTimerRef.current);
+        saveStatusHideTimerRef.current = null;
+      }
     };
   }, []);
 
@@ -588,12 +600,28 @@ export default function EffismLite() {
       return;
     }
 
+    if (!hasUserEditedTimeRef.current) {
+      return;
+    }
+
     if (autosaveTimerRef.current) {
       clearTimeout(autosaveTimerRef.current);
     }
 
     autosaveTimerRef.current = setTimeout(() => {
-      saveEffismLiteTimeRecord(jobDetails);
+      if (saveStatusHideTimerRef.current) {
+        clearTimeout(saveStatusHideTimerRef.current);
+        saveStatusHideTimerRef.current = null;
+      }
+
+      setTimeSaveStatus("saving");
+      saveEffismLiteTimeRecord(jobDetails)
+        .then((payload) => {
+          setTimeSaveStatus(payload ? "saved" : "error");
+        })
+        .catch(() => {
+          setTimeSaveStatus("error");
+        });
     }, 1200);
 
     return () => {
@@ -604,9 +632,28 @@ export default function EffismLite() {
     };
   }, [jobDetails]);
 
+  useEffect(() => {
+    if (timeSaveStatus !== "saved" && timeSaveStatus !== "error") {
+      return;
+    }
+
+    saveStatusHideTimerRef.current = setTimeout(() => {
+      setTimeSaveStatus("idle");
+      saveStatusHideTimerRef.current = null;
+    }, 2500);
+
+    return () => {
+      if (saveStatusHideTimerRef.current) {
+        clearTimeout(saveStatusHideTimerRef.current);
+        saveStatusHideTimerRef.current = null;
+      }
+    };
+  }, [timeSaveStatus]);
+
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
   const updateJobDetails = (field, value) => {
+    hasUserEditedTimeRef.current = true;
     setJobDetails((currentJobDetails) => ({
       ...currentJobDetails,
       [field]: value,
@@ -618,6 +665,7 @@ export default function EffismLite() {
   };
 
   const handleJobTimeBlur = (field) => {
+    hasUserEditedTimeRef.current = true;
     setJobDetails((currentJobDetails) => ({
       ...currentJobDetails,
       [field]: normalizeClockInput(currentJobDetails[field]),
@@ -625,6 +673,7 @@ export default function EffismLite() {
   };
 
   const handleDayTypeChange = (event) => {
+    hasUserEditedTimeRef.current = true;
     const nextDayType = event.target.value;
     const shouldResetSubtype =
       nextDayType !== jobDetails.dayType ||
@@ -1119,6 +1168,21 @@ export default function EffismLite() {
         </section>
       ) : (
         <section className="effismLite-panel">
+          {timeSaveStatus !== "idle" ? (
+            <div className="effismLite-saveStatusWrap" aria-live="polite">
+              <span
+                className={`effismLite-saveStatusPill is-${timeSaveStatus}`}
+                role="status"
+              >
+                {timeSaveStatus === "saving"
+                  ? "Saving..."
+                  : timeSaveStatus === "saved"
+                    ? "Saved"
+                    : "Save failed"}
+              </span>
+            </div>
+          ) : null}
+
           <div className="effismLite-formGrid">
             <DatePickerField
               id="effism-lite-date"

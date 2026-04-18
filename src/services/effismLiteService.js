@@ -144,17 +144,25 @@ export async function getEffismLiteLastWorkingDate() {
   }
 }
 
-export async function getEffismLiteTimeRecord() {
+export async function getEffismLiteTimeRecord(dateValue) {
   const { apiBaseUrl } = await getRuntimeConfig();
   if (!apiBaseUrl) {
     return null;
   }
 
+  const normalizedDateValue = `${dateValue || ""}`.trim();
+  if (!normalizedDateValue) {
+    return null;
+  }
+
+  const formData = new FormData();
+  formData.append("date", normalizedDateValue);
+
   try {
     const response = await fetch(`${apiBaseUrl}?action=fetchTime`, {
       method: "POST",
       headers: getAuthHeaders(),
-      body: new FormData(),
+      body: formData,
     });
 
     let payload = null;
@@ -192,17 +200,36 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
   const nwt = normalizeDurationForApi(jobDetails.breakTime);
   const siteTravel = normalizeDurationForApi(jobDetails.siteTravel);
 
-  if (!jobDetails.date || !workStatus || !timeIn || !timeOut || !nwt || !siteTravel) {
+  if (!jobDetails.date) {
     return null;
   }
 
   const formData = new FormData();
   formData.append("date", jobDetails.date);
-  formData.append("work_status", workStatus);
-  formData.append("time_in", timeIn);
-  formData.append("time_out", timeOut);
-  formData.append("nwt", nwt);
-  formData.append("site_travel", siteTravel);
+
+  if (workStatus) {
+    formData.append("work_status", workStatus);
+  }
+
+  if (timeIn) {
+    formData.append("time_in", timeIn);
+  }
+
+  if (timeOut) {
+    formData.append("time_out", timeOut);
+  }
+
+  if (nwt) {
+    formData.append("nwt", nwt);
+  }
+
+  if (siteTravel) {
+    formData.append("site_travel", siteTravel);
+  }
+
+  if (![workStatus, timeIn, timeOut, nwt, siteTravel].some(Boolean)) {
+    return null;
+  }
 
   try {
     const response = await fetch(`${apiBaseUrl}?action=saveTime`, {

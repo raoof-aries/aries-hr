@@ -41,7 +41,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/arieshrms-api": {
-        target: "https://www.efftime.com/webservices/arieshrms/",
+        target: "https://www.efftime.com/webservices/effism_lite/",
         changeOrigin: true,
         secure: true,
         rewrite: (requestPath) =>

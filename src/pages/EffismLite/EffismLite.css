@@ -117,7 +117,44 @@
 }
 
 .effismLite-panel {
+  position: relative;
   padding: 22px;
+}
+
+.effismLite-saveStatusWrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.effismLite-saveStatusPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.effismLite-saveStatusPill.is-saving {
+  background: rgba(1, 67, 66, 0.12);
+  border: 1px solid rgba(1, 67, 66, 0.2);
+  color: var(--apple-blue);
+}
+
+.effismLite-saveStatusPill.is-saved {
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  color: #1f8f4c;
+}
+
+.effismLite-saveStatusPill.is-error {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.26);
+  color: #c62828;
 }
 
 .effismLite-panelTasks {
