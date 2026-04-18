@@ -440,3 +440,117 @@ export async function editEffismLiteJob(task, date) {
     return null;
   }
 }
+
+export async function completeEffismLiteJobDiary(dateValue) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return {
+      success: false,
+      message: "API base URL is missing.",
+    };
+  }
+
+  const normalizedDateValue = `${dateValue || ""}`.trim();
+  if (!normalizedDateValue) {
+    return {
+      success: false,
+      message: "Date is required.",
+    };
+  }
+
+  const formData = new FormData();
+  formData.append("date", normalizedDateValue);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=completeJobdiary`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return {
+        success: false,
+        message: payload?.message || "Failed to complete job diary.",
+        payload,
+      };
+    }
+
+    return {
+      success: true,
+      message: payload?.message || "Job diary completed successfully.",
+      payload,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to complete job diary.",
+    };
+  }
+}
+
+export async function getEffismLiteJobDiaryStatus(dateValue) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return {
+      success: false,
+      isComplete: false,
+      message: "API base URL is missing.",
+    };
+  }
+
+  const normalizedDateValue = `${dateValue || ""}`.trim();
+  if (!normalizedDateValue) {
+    return {
+      success: false,
+      isComplete: false,
+      message: "Date is required.",
+    };
+  }
+
+  const formData = new FormData();
+  formData.append("date", normalizedDateValue);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=jobdiaryStatus`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return {
+        success: false,
+        isComplete: false,
+        message: payload?.message || "Failed to fetch job diary status.",
+      };
+    }
+
+    return {
+      success: true,
+      isComplete: Number.parseInt(`${payload?.is_complete ?? 0}`, 10) === 1,
+      message: payload?.message || "",
+      payload,
+    };
+  } catch {
+    return {
+      success: false,
+      isComplete: false,
+      message: "Failed to fetch job diary status.",
+    };
+  }
+}

@@ -7,7 +7,9 @@ import {
 } from "../../data/attendanceOptions";
 import {
   addEffismLiteJob,
+  completeEffismLiteJobDiary,
   editEffismLiteJob,
+  getEffismLiteJobDiaryStatus,
   getEffismLiteLastWorkingDate,
   getEffismLiteTimeRecord,
   listEffismLiteJobs,
@@ -540,6 +542,8 @@ export default function EffismLite() {
   });
   const [tasks, setTasks] = useState([]);
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
+  const [jobDiaryCompleteStatus, setJobDiaryCompleteStatus] = useState("idle");
+  const [jobDiaryCompleteMessage, setJobDiaryCompleteMessage] = useState("");
   const hasHydratedTimeRef = useRef(false);
   const autosaveTimerRef = useRef(null);
   const hasUserEditedTimeRef = useRef(false);
@@ -578,6 +582,19 @@ export default function EffismLite() {
           ...currentJobDetails,
           date: lastWorkingDate,
         }));
+      }
+
+      if (lastWorkingDate) {
+        const jobDiaryStatusResult =
+          await getEffismLiteJobDiaryStatus(lastWorkingDate);
+
+        if (jobDiaryStatusResult.isComplete) {
+          setJobDiaryCompleteStatus("success");
+          setJobDiaryCompleteMessage("Job diary completed.");
+        } else if (jobDiaryStatusResult.success) {
+          setJobDiaryCompleteStatus("idle");
+          setJobDiaryCompleteMessage("");
+        }
       }
 
       hasHydratedTimeRef.current = true;
@@ -737,7 +754,26 @@ export default function EffismLite() {
     navigate(path);
   };
 
-  const handleComplete = () => {};
+  const handleComplete = async () => {
+    const shouldComplete = window.confirm(
+      "Are you sure you want to complete this job diary?",
+    );
+    if (!shouldComplete) {
+      return;
+    }
+
+    setJobDiaryCompleteStatus("loading");
+    const result = await completeEffismLiteJobDiary(jobDetails.date);
+
+    if (result.success) {
+      setJobDiaryCompleteStatus("success");
+      setJobDiaryCompleteMessage("Job diary completed.");
+      return;
+    }
+
+    setJobDiaryCompleteStatus("error");
+    setJobDiaryCompleteMessage(result.message || "Failed to complete job diary.");
+  };
 
   const handleAddTask = () => {
     const newTask = createEditableTask(undefined, {
@@ -894,6 +930,7 @@ export default function EffismLite() {
             type="button"
             className="effismLite-button effismLite-buttonPrimary effismLite-completeButton"
             onClick={handleComplete}
+            disabled={jobDiaryCompleteStatus === "loading"}
             aria-label="Complete effism lite entry"
             title="Complete"
           >
@@ -914,6 +951,18 @@ export default function EffismLite() {
           </button>
         </div>
       </div>
+
+      {jobDiaryCompleteStatus === "success" ? (
+        <div className="effismLite-completeNotice is-success" role="status">
+          Job diary completed.
+        </div>
+      ) : null}
+
+      {jobDiaryCompleteStatus === "error" ? (
+        <div className="effismLite-completeNotice is-error" role="alert">
+          {jobDiaryCompleteMessage}
+        </div>
+      ) : null}
 
       {isTaskStep ? (
         <div className="effismLite-taskToolbarRow">
@@ -1397,6 +1446,7 @@ export default function EffismLite() {
                 type="button"
                 className="effismLite-button effismLite-buttonSoftAction"
                 onClick={handleComplete}
+                disabled={jobDiaryCompleteStatus === "loading"}
               >
                 Complete
               </button>

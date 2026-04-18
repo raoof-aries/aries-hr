@@ -601,6 +601,25 @@
   line-height: 1;
 }
 
+.effismLite-completeNotice {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.effismLite-completeNotice.is-success {
+  color: #1f8f4c;
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+}
+
+.effismLite-completeNotice.is-error {
+  color: #c62828;
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.26);
+}
+
 .effismLite-formActions {
   margin-top: 4px;
 }
