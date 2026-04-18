@@ -653,6 +653,13 @@ export default function EffismLite() {
     );
   };
 
+  const handleTaskHeaderKeyDown = (event, taskId) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleTaskExpanded(taskId);
+    }
+  };
+
   return (
     <div className="effismLite-page">
       <div className="effismLite-toolbar">
@@ -740,10 +747,12 @@ export default function EffismLite() {
                 key={task.id}
                 className={`effismLite-taskCard${task.isExpanded ? " is-expanded" : ""}${task.isEditing ? " is-editing" : ""}`}
               >
-                <button
-                  type="button"
+                <div
                   className="effismLite-taskHeader"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => toggleTaskExpanded(task.id)}
+                  onKeyDown={(event) => handleTaskHeaderKeyDown(event, task.id)}
                   aria-expanded={task.isExpanded}
                 >
                   <div className="effismLite-taskHeaderMain">
@@ -752,23 +761,60 @@ export default function EffismLite() {
                         {getTaskMainTypeLabel(task.mainType)}
                       </span>
 
-                      <span
-                        className="effismLite-taskChevron"
-                        aria-hidden="true"
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                      <div className="effismLite-taskHeaderActions">
+                        <button
+                          type="button"
+                          className={`effismLite-taskIconButton${task.isEditing ? " is-active" : ""}`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleEditTask(task.id);
+                          }}
+                          aria-label={`Edit ${getTaskSummaryTitle(task)}`}
+                          title="Edit task"
                         >
-                          <path d="m9 18 6-6-6-6"></path>
-                        </svg>
-                      </span>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
+                            <path d="m12.5 5.5 3 3" />
+                          </svg>
+                        </button>
+
+                        <button
+                          type="button"
+                          className="effismLite-taskIconButton effismLite-taskChevron"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleTaskExpanded(task.id);
+                          }}
+                          aria-label={
+                            task.isExpanded ? "Collapse task" : "Expand task"
+                          }
+                          aria-expanded={task.isExpanded}
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="m9 18 6-6-6-6"></path>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
 
                     <h4 className="effismLite-taskTitle">
@@ -793,7 +839,7 @@ export default function EffismLite() {
                       </span>
                     </div>
                   </div>
-                </button>
+                </div>
 
                 {task.isExpanded ? (
                   <div className="effismLite-taskBody">
