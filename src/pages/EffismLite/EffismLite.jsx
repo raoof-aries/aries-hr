@@ -191,6 +191,14 @@ function getTaskMainTypeLabel(value) {
   return value || "No type";
 }
 
+function getTaskMainTypeTone(value) {
+  if (value === "Non Invoiceable") {
+    return "non-invoiceable";
+  }
+
+  return "invoiceable";
+}
+
 function getTaskJobNumberLabel(value) {
   return value || "No job number";
 }
@@ -1047,7 +1055,9 @@ export default function EffismLite() {
                 >
                   <div className="effismLite-taskHeaderMain">
                     <div className="effismLite-taskHeaderTop">
-                      <span className="effismLite-taskTypePill">
+                      <span
+                        className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
+                      >
                         {getTaskMainTypeLabel(task.mainType)}
                       </span>
 

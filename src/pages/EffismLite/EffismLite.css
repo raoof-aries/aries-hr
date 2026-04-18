@@ -807,6 +807,18 @@
   flex: 0 1 auto;
 }
 
+.effismLite-taskTypePill.is-invoiceable {
+  background: rgba(63, 197, 113, 0.12);
+  border-color: rgba(63, 197, 113, 0.28);
+  color: #1e9a54;
+}
+
+.effismLite-taskTypePill.is-non-invoiceable {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #c24141;
+}
+
 .effismLite-taskSummary {
   display: flex;
   flex-wrap: wrap;
