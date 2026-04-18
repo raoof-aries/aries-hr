@@ -88,6 +88,16 @@ function mapDayTypeToApiWorkStatus(value) {
   return normalizedValue;
 }
 
+const TASK_MAIN_TYPE_TO_ID = {
+  Invoiceable: "1",
+  "Non Invoiceable": "2",
+};
+
+const TASK_MAIN_TYPE_ID_TO_LABEL = {
+  "1": "Invoiceable",
+  "2": "Non Invoiceable",
+};
+
 export function mapApiWorkStatusToDayType(value) {
   const normalizedValue = `${value || ""}`.trim().toLowerCase();
 
@@ -112,6 +122,38 @@ export function normalizeApiClockValue(value) {
   }
 
   return `${matchedValue[1]}:${matchedValue[2]}`;
+}
+
+function normalizeTaskTimeForApi(value) {
+  const normalizedValue = normalizeClockInput(value);
+  const matchedValue = `${normalizedValue || ""}`.match(/^(\d{1,2}):(\d{2})$/);
+
+  if (!matchedValue) {
+    return "";
+  }
+
+  return `${String(Number(matchedValue[1])).padStart(2, "0")}:${matchedValue[2]}`;
+}
+
+export function mapTaskMainTypeIdToLabel(value) {
+  const normalizedValue = `${value || ""}`.trim();
+  if (!normalizedValue) {
+    return "";
+  }
+
+  if (TASK_MAIN_TYPE_ID_TO_LABEL[normalizedValue]) {
+    return TASK_MAIN_TYPE_ID_TO_LABEL[normalizedValue];
+  }
+
+  if (normalizedValue === "Invoiceable" || normalizedValue === "Non Invoiceable") {
+    return normalizedValue;
+  }
+
+  return "";
+}
+
+export function mapTaskMainTypeLabelToId(value) {
+  return TASK_MAIN_TYPE_TO_ID[`${value || ""}`] || "";
 }
 
 export async function getEffismLiteLastWorkingDate() {
@@ -233,6 +275,150 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
 
   try {
     const response = await fetch(`${apiBaseUrl}?action=saveTime`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return null;
+    }
+
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export async function listEffismLiteJobs(dateValue) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return [];
+  }
+
+  const normalizedDateValue = `${dateValue || ""}`.trim();
+  if (!normalizedDateValue) {
+    return [];
+  }
+
+  const formData = new FormData();
+  formData.append("date", normalizedDateValue);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=listJobs`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload) || !Array.isArray(payload?.data)) {
+      return [];
+    }
+
+    return payload.data;
+  } catch {
+    return [];
+  }
+}
+
+function buildTaskFormData(task, date) {
+  const taskName = `${task?.taskName || ""}`.trim();
+  const mainTypeId = mapTaskMainTypeLabelToId(task?.mainType);
+  const estimatedTime = normalizeTaskTimeForApi(task?.estimatedTime);
+  const actualTime = normalizeTaskTimeForApi(task?.actualTime);
+  const jobNumber = `${task?.jobNumber || ""}`.trim();
+  const description = `${task?.outcome || ""}`.trim();
+  const statusValue = Number.parseInt(`${task?.status || "0"}`.replace("%", ""), 10);
+  const normalizedStatusValue = Number.isFinite(statusValue)
+    ? `${Math.min(100, Math.max(0, statusValue))}`
+    : "0";
+
+  if (!date || !taskName || !mainTypeId || !estimatedTime) {
+    return null;
+  }
+
+  const formData = new FormData();
+  formData.append("date", date);
+  formData.append("taskname", taskName);
+  formData.append("main_type", mainTypeId);
+  formData.append("est_time", estimatedTime);
+  formData.append("act_time", actualTime || "00:00");
+  formData.append("job_no", jobNumber);
+  formData.append("description", description);
+  formData.append("status", normalizedStatusValue);
+
+  return formData;
+}
+
+export async function addEffismLiteJob(task, date) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return null;
+  }
+
+  const formData = buildTaskFormData(task, date);
+  if (!formData) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=addNewJob`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return null;
+    }
+
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export async function editEffismLiteJob(task, date) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return null;
+  }
+
+  const workreportId = `${task?.workreportId || ""}`.trim();
+  if (!workreportId) {
+    return null;
+  }
+
+  const formData = buildTaskFormData(task, date);
+  if (!formData) {
+    return null;
+  }
+
+  formData.append("workreport_id", workreportId);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=editJob`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: formData,

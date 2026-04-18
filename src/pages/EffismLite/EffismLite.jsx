@@ -5,10 +5,13 @@ import {
   NON_EFFISM_DAY_TYPE_OPTIONS,
   OFF_DAY_SUBTYPE_OPTIONS,
 } from "../../data/attendanceOptions";
-import mockTasks from "../../data/effismLiteMockTasks.json";
 import {
+  addEffismLiteJob,
+  editEffismLiteJob,
   getEffismLiteLastWorkingDate,
   getEffismLiteTimeRecord,
+  listEffismLiteJobs,
+  mapTaskMainTypeIdToLabel,
   mapApiWorkStatusToDayType,
   normalizeApiClockValue,
   saveEffismLiteTimeRecord,
@@ -147,11 +150,12 @@ function normalizeStatusValue(value) {
 function createEditableTask(task = {}, overrides = {}) {
   return {
     id: task.id || createTaskId(),
+    workreportId: task.workreportId || "",
     taskName: task.taskName || "",
     mainType: task.mainType || "",
     jobNumber: task.jobNumber || "",
-    estimatedTime: task.estimatedTime || "",
-    actualTime: task.actualTime || "",
+    estimatedTime: task.estimatedTime || "00:00",
+    actualTime: task.actualTime || "00:00",
     outcome: task.outcome || "",
     status: normalizeStatusValue(task.status),
     isSaved: false,
@@ -159,16 +163,6 @@ function createEditableTask(task = {}, overrides = {}) {
     isExpanded: true,
     ...overrides,
   };
-}
-
-function getInitialTasks() {
-  return mockTasks.map((task) =>
-    createEditableTask(task, {
-      isSaved: true,
-      isEditing: false,
-      isExpanded: false,
-    }),
-  );
 }
 
 function getTaskSummaryTitle(task) {
@@ -278,7 +272,14 @@ function convertNativeTimeToClock(value) {
   return `${matchedValue[1]}:${matchedValue[2]}`;
 }
 
-function DatePickerField({ id, label, value, onChange, className = "" }) {
+function DatePickerField({
+  id,
+  label,
+  value,
+  onChange,
+  className = "",
+  disabled = false,
+}) {
   return (
     <label
       className={`effismLite-field${className ? ` ${className}` : ""}`}
@@ -314,6 +315,8 @@ function DatePickerField({ id, label, value, onChange, className = "" }) {
           type="date"
           value={value}
           onChange={onChange}
+          disabled={disabled}
+          readOnly={disabled}
         />
       </div>
     </label>
@@ -535,7 +538,7 @@ export default function EffismLite() {
     breakTime: "",
     siteTravel: "",
   });
-  const [tasks, setTasks] = useState(getInitialTasks);
+  const [tasks, setTasks] = useState([]);
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
   const hasHydratedTimeRef = useRef(false);
   const autosaveTimerRef = useRef(null);
@@ -650,6 +653,50 @@ export default function EffismLite() {
     };
   }, [timeSaveStatus]);
 
+  useEffect(() => {
+    if (!isTaskStep || !jobDetails.date) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadTasks = async () => {
+      const taskList = await listEffismLiteJobs(jobDetails.date);
+      if (!isMounted) {
+        return;
+      }
+
+      setTasks(
+        taskList.map((task) =>
+          createEditableTask(
+            {
+              id: task.workreport_id ? `effism-lite-task-${task.workreport_id}` : createTaskId(),
+              workreportId: `${task.workreport_id || ""}`,
+              taskName: `${task.taskname || ""}`,
+              mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
+              jobNumber: `${task.job_no || ""}`,
+              estimatedTime: normalizeApiClockValue(task.est_time),
+              actualTime: normalizeApiClockValue(task.act_time),
+              outcome: `${task.description || ""}`,
+              status: `${task.status ?? 0}%`,
+            },
+            {
+              isSaved: true,
+              isEditing: false,
+              isExpanded: false,
+            },
+          ),
+        ),
+      );
+    };
+
+    loadTasks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isTaskStep, jobDetails.date]);
+
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
   const updateJobDetails = (field, value) => {
@@ -726,7 +773,7 @@ export default function EffismLite() {
         task.id === taskId
           ? {
               ...task,
-              [field]: normalizeMeridiemTime(task[field]),
+              [field]: normalizeClockInput(task[field]) || "00:00",
             }
           : task,
       ),
@@ -747,20 +794,52 @@ export default function EffismLite() {
   };
 
   const handleSaveTask = (taskId) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              estimatedTime: normalizeMeridiemTime(task.estimatedTime),
-              actualTime: normalizeMeridiemTime(task.actualTime),
+    const taskToSave = tasks.find((task) => task.id === taskId);
+    if (!taskToSave || !jobDetails.date) {
+      return;
+    }
+
+    const normalizedTask = {
+      ...taskToSave,
+      estimatedTime: normalizeClockInput(taskToSave.estimatedTime) || "00:00",
+      actualTime: normalizeClockInput(taskToSave.actualTime) || "00:00",
+    };
+
+    const saveTask = async () => {
+      const payload = normalizedTask.workreportId
+        ? await editEffismLiteJob(normalizedTask, jobDetails.date)
+        : await addEffismLiteJob(normalizedTask, jobDetails.date);
+
+      if (!payload) {
+        return;
+      }
+
+      const refreshedTasks = await listEffismLiteJobs(jobDetails.date);
+      setTasks(
+        refreshedTasks.map((task) =>
+          createEditableTask(
+            {
+              id: task.workreport_id ? `effism-lite-task-${task.workreport_id}` : createTaskId(),
+              workreportId: `${task.workreport_id || ""}`,
+              taskName: `${task.taskname || ""}`,
+              mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
+              jobNumber: `${task.job_no || ""}`,
+              estimatedTime: normalizeApiClockValue(task.est_time),
+              actualTime: normalizeApiClockValue(task.act_time),
+              outcome: `${task.description || ""}`,
+              status: `${task.status ?? 0}%`,
+            },
+            {
               isSaved: true,
               isEditing: false,
               isExpanded: false,
-            }
-          : task,
-      ),
-    );
+            },
+          ),
+        ),
+      );
+    };
+
+    saveTask();
   };
 
   const handleEditTask = (taskId) => {
@@ -1063,7 +1142,7 @@ export default function EffismLite() {
                             onBlur={() =>
                               handleTaskTimeBlur(task.id, "estimatedTime")
                             }
-                            placeholder="09:30 AM"
+                            placeholder="00:00"
                             disabled={!task.isEditing}
                           />
                         </label>
@@ -1091,7 +1170,7 @@ export default function EffismLite() {
                             onBlur={() =>
                               handleTaskTimeBlur(task.id, "actualTime")
                             }
-                            placeholder="10:00 AM"
+                            placeholder="00:00"
                             disabled={!task.isEditing}
                           />
                         </label>
@@ -1189,7 +1268,8 @@ export default function EffismLite() {
               className="effismLite-fieldWide"
               label="Date"
               value={jobDetails.date}
-              onChange={(event) => updateJobDetails("date", event.target.value)}
+              onChange={() => {}}
+              disabled
             />
 
             <label
