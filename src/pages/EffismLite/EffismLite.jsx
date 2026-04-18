@@ -99,6 +99,20 @@ function normalizeClockInput(value) {
   return `${String(rawHours).padStart(2, "0")}:${rawMinutes}`;
 }
 
+function formatClockInputAsTyped(value) {
+  const digitsOnlyValue = `${value || ""}`.replace(/\D/g, "").slice(0, 4);
+
+  if (!digitsOnlyValue) {
+    return "";
+  }
+
+  if (digitsOnlyValue.length <= 2) {
+    return digitsOnlyValue;
+  }
+
+  return `${digitsOnlyValue.slice(0, 2)}:${digitsOnlyValue.slice(2)}`;
+}
+
 function normalizeStatusValue(value) {
   const trimmedValue = `${value || ""}`.trim();
 
@@ -383,11 +397,10 @@ function MeridiemTimeInput({
   };
 
   return (
-    <label
-      className={`effismLite-field${className ? ` ${className}` : ""}`}
-      htmlFor={id}
-    >
-      <span className="effismLite-fieldLabel">{label}</span>
+    <div className={`effismLite-field${className ? ` ${className}` : ""}`}>
+      <label className="effismLite-fieldLabel" htmlFor={id}>
+        {label}
+      </label>
       <div className="effismLite-timeControl">
         <div className="effismLite-timeValueWrap">
           <input
@@ -435,7 +448,7 @@ function MeridiemTimeInput({
           <option value="PM">PM</option>
         </select>
       </div>
-    </label>
+    </div>
   );
 }
 
@@ -523,6 +536,10 @@ export default function EffismLite() {
       ...currentJobDetails,
       [field]: value,
     }));
+  };
+
+  const handleJobClockChange = (field, value) => {
+    updateJobDetails(field, formatClockInputAsTyped(value));
   };
 
   const handleJobTimeBlur = (field) => {
@@ -1036,7 +1053,7 @@ export default function EffismLite() {
               timeValue={jobDetails.timeIn}
               meridiemValue={jobDetails.timeInMeridiem}
               onTimeChange={(event) =>
-                updateJobDetails("timeIn", event.target.value)
+                handleJobClockChange("timeIn", event.target.value)
               }
               onMeridiemChange={(event) =>
                 updateJobDetails("timeInMeridiem", event.target.value)
@@ -1051,7 +1068,7 @@ export default function EffismLite() {
               timeValue={jobDetails.timeOut}
               meridiemValue={jobDetails.timeOutMeridiem}
               onTimeChange={(event) =>
-                updateJobDetails("timeOut", event.target.value)
+                handleJobClockChange("timeOut", event.target.value)
               }
               onMeridiemChange={(event) =>
                 updateJobDetails("timeOutMeridiem", event.target.value)
@@ -1065,7 +1082,7 @@ export default function EffismLite() {
                 label="Break"
                 value={jobDetails.breakTime}
                 onChange={(event) =>
-                  updateJobDetails("breakTime", event.target.value)
+                  handleJobClockChange("breakTime", event.target.value)
                 }
                 onBlur={() => handleJobTimeBlur("breakTime")}
               />
@@ -1075,7 +1092,7 @@ export default function EffismLite() {
                 label="Site Travel"
                 value={jobDetails.siteTravel}
                 onChange={(event) =>
-                  updateJobDetails("siteTravel", event.target.value)
+                  handleJobClockChange("siteTravel", event.target.value)
                 }
                 onBlur={() => handleJobTimeBlur("siteTravel")}
               />
