@@ -14,17 +14,25 @@
 }
 
 .effismLite-toolbar {
+  --effismLite-toolbarControlHeight: 48px;
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .effismLite-toolbar .effismLite-tabs {
-  flex: 1 1 0;
+  flex: 0 0 auto;
   min-width: 0;
-  width: auto;
+  width: fit-content;
+}
+
+.effismLite-completeAction {
+  display: inline-flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+  height: var(--effismLite-toolbarControlHeight);
 }
 
 .effismLite-taskToolbarRow {
@@ -56,13 +64,15 @@
 
 .effismLite-tabs {
   display: inline-grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, max-content);
   gap: 4px;
-  width: 100%;
+  width: fit-content;
+  height: var(--effismLite-toolbarControlHeight);
+  box-sizing: border-box;
   padding: 4px;
   border-radius: 16px;
   border: 1px solid rgba(1, 67, 66, 0.08);
-  background: linear-gradient(180deg, #f7fbfa 0%, #eef5f3 100%);
+  background: linear-gradient(180deg, #f6fbfa 0%, #edf5f3 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 6px 16px rgba(15, 23, 42, 0.04);
@@ -73,35 +83,36 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 0 18px;
+  height: 100%;
+  min-height: 0;
+  padding: 0 20px;
   border-radius: 12px;
   border: 1px solid transparent;
   background: transparent;
-  color: #56716c;
-  font-size: 0.92rem;
+  color: #6d8782;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   transition:
     background-color 0.18s ease,
     border-color 0.18s ease,
-    color 0.18s ease,
     box-shadow 0.18s ease,
+    color 0.18s ease,
     transform 0.18s ease;
 }
 
 .effismLite-tab:hover {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.6);
   color: var(--apple-blue);
 }
 
 .effismLite-tab.is-active {
   background: linear-gradient(180deg, #ffffff 0%, #f9fdfb 100%);
-  border-color: rgba(15, 109, 97, 0.12);
-  color: #0b4d48;
+  border-color: rgba(1, 67, 66, 0.08);
+  color: var(--apple-blue);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.96),
-    0 6px 14px rgba(15, 109, 97, 0.12);
+    0 6px 14px rgba(1, 67, 66, 0.1);
 }
 
 .effismLite-panel {
@@ -461,26 +472,35 @@
 
 .effismLite-completeButton {
   flex: 0 0 auto;
-  width: 48px;
-  min-width: 48px;
-  height: 48px;
-  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--effismLite-toolbarControlHeight);
+  min-width: var(--effismLite-toolbarControlHeight);
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
   padding: 0;
-  border-radius: 14px;
-  border: 1px solid rgba(1, 67, 66, 0.12);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: var(--apple-blue);
   color: #ffffff;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 12px 22px rgba(1, 67, 66, 0.22);
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 6px 14px rgba(1, 67, 66, 0.16);
 }
 
 .effismLite-completeButton:hover {
-  transform: translateY(-1px);
   background: var(--apple-blue-hover);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    0 16px 28px rgba(1, 67, 66, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 16px rgba(1, 67, 66, 0.18);
+}
+
+.effismLite-completeButtonIcon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
 }
 
 .effismLite-buttonGhost {
@@ -491,6 +511,26 @@
 
 .effismLite-buttonGhost:hover {
   background: #f8fafc;
+}
+
+.effismLite-buttonSoftAction {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid rgba(1, 67, 66, 0.14);
+  background: linear-gradient(180deg, #ffffff 0%, #f5faf8 100%);
+  color: var(--apple-blue);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 20px rgba(1, 67, 66, 0.08);
+}
+
+.effismLite-buttonSoftAction:hover {
+  transform: translateY(-1px);
+  border-color: rgba(1, 67, 66, 0.2);
+  background: linear-gradient(180deg, #ffffff 0%, #edf6f3 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 14px 24px rgba(1, 67, 66, 0.12);
 }
 
 .effismLite-taskToolbarButton {
@@ -519,6 +559,10 @@
   font-size: 1.15rem;
   font-weight: 700;
   line-height: 1;
+}
+
+.effismLite-formActions {
+  margin-top: 4px;
 }
 
 .effismLite-summaryCard {
@@ -732,8 +776,9 @@
   }
 
   .effismLite-tabs {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: inline-grid;
+    grid-template-columns: repeat(2, max-content);
+    width: fit-content;
   }
 
   .effismLite-button {
@@ -750,10 +795,8 @@
   }
 
   .effismLite-completeButton {
-    width: 46px;
-    min-width: 46px;
-    height: 46px;
-    min-height: 46px;
+    width: var(--effismLite-toolbarControlHeight);
+    min-width: var(--effismLite-toolbarControlHeight);
   }
 
   .effismLite-taskHeader {

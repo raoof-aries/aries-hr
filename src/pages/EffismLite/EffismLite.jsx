@@ -658,27 +658,30 @@ export default function EffismLite() {
           })}
         </div>
 
-        <button
-          type="button"
-          className="effismLite-button effismLite-buttonPrimary effismLite-completeButton"
-          onClick={handleComplete}
-          aria-label="Complete effism lite entry"
-          title="Complete"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        <div className="effismLite-completeAction">
+          <button
+            type="button"
+            className="effismLite-button effismLite-buttonPrimary effismLite-completeButton"
+            onClick={handleComplete}
+            aria-label="Complete effism lite entry"
+            title="Complete"
           >
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
-        </button>
+            <svg
+              width="16"
+              height="16"
+              className="effismLite-completeButtonIcon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {isTaskStep ? (
@@ -1076,6 +1079,16 @@ export default function EffismLite() {
                 }
                 onBlur={() => handleJobTimeBlur("siteTravel")}
               />
+            </div>
+
+            <div className="effismLite-formActions effismLite-fieldWide">
+              <button
+                type="button"
+                className="effismLite-button effismLite-buttonSoftAction"
+                onClick={handleComplete}
+              >
+                Complete
+              </button>
             </div>
           </div>
         </section>
