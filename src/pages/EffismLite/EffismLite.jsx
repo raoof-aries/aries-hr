@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   LEAVE_DAY_SUBTYPE_OPTIONS,
@@ -6,6 +6,13 @@ import {
   OFF_DAY_SUBTYPE_OPTIONS,
 } from "../../data/attendanceOptions";
 import mockTasks from "../../data/effismLiteMockTasks.json";
+import {
+  getEffismLiteLastWorkingDate,
+  getEffismLiteTimeRecord,
+  mapApiWorkStatusToDayType,
+  normalizeApiClockValue,
+  saveEffismLiteTimeRecord,
+} from "../../services/effismLiteService";
 import "./EffismLite.css";
 
 const MAIN_TYPE_OPTIONS = ["Invoiceable", "Non Invoiceable"];
@@ -34,14 +41,6 @@ const STEP_CONFIG = [
     path: "/effism-lite/tasks",
   },
 ];
-
-function getTodayDateInputValue() {
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-  const day = String(currentDate.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 function createTaskId() {
   return `effism-lite-task-${Date.now()}-${Math.random()
@@ -519,7 +518,7 @@ export default function EffismLite() {
   const currentStepPath = isTaskStep ? "/effism-lite/tasks" : "/effism-lite";
 
   const [jobDetails, setJobDetails] = useState({
-    date: getTodayDateInputValue(),
+    date: "",
     dayType: "",
     daySubtype: "",
     timeIn: "",
@@ -530,6 +529,81 @@ export default function EffismLite() {
     siteTravel: "",
   });
   const [tasks, setTasks] = useState(getInitialTasks);
+  const hasHydratedTimeRef = useRef(false);
+  const autosaveTimerRef = useRef(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadTimeData = async () => {
+      const [lastWorkingDate, timeRecord] = await Promise.all([
+        getEffismLiteLastWorkingDate(),
+        getEffismLiteTimeRecord(),
+      ]);
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (timeRecord) {
+        const normalizedTimeIn = normalizeApiClockValue(timeRecord.time_in);
+        const normalizedTimeOut = normalizeApiClockValue(timeRecord.time_out);
+        const timeInValue = convertNativeTimeToMeridiem(normalizedTimeIn);
+        const timeOutValue = convertNativeTimeToMeridiem(normalizedTimeOut);
+
+        setJobDetails((currentJobDetails) => ({
+          ...currentJobDetails,
+          date: `${timeRecord.date_log || lastWorkingDate || ""}`,
+          dayType: mapApiWorkStatusToDayType(timeRecord.work_status),
+          timeIn: timeInValue.time,
+          timeInMeridiem: timeInValue.meridiem,
+          timeOut: timeOutValue.time,
+          timeOutMeridiem: timeOutValue.meridiem,
+          breakTime: normalizeApiClockValue(timeRecord.nwt),
+          siteTravel: normalizeApiClockValue(timeRecord.site_travel),
+        }));
+      } else {
+        setJobDetails((currentJobDetails) => ({
+          ...currentJobDetails,
+          date: lastWorkingDate,
+        }));
+      }
+
+      hasHydratedTimeRef.current = true;
+    };
+
+    loadTimeData();
+
+    return () => {
+      isMounted = false;
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydratedTimeRef.current) {
+      return;
+    }
+
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+    }
+
+    autosaveTimerRef.current = setTimeout(() => {
+      saveEffismLiteTimeRecord(jobDetails);
+    }, 1200);
+
+    return () => {
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = null;
+      }
+    };
+  }, [jobDetails]);
+
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
   const updateJobDetails = (field, value) => {
@@ -633,6 +707,7 @@ export default function EffismLite() {
               actualTime: normalizeMeridiemTime(task.actualTime),
               isSaved: true,
               isEditing: false,
+              isExpanded: false,
             }
           : task,
       ),
@@ -767,25 +842,52 @@ export default function EffismLite() {
                           className={`effismLite-taskIconButton${task.isEditing ? " is-active" : ""}`}
                           onClick={(event) => {
                             event.stopPropagation();
+                            if (task.isEditing) {
+                              handleSaveTask(task.id);
+                              return;
+                            }
+
                             handleEditTask(task.id);
                           }}
-                          aria-label={`Edit ${getTaskSummaryTitle(task)}`}
-                          title="Edit task"
+                          aria-label={
+                            task.isEditing
+                              ? `Save ${getTaskSummaryTitle(task)}`
+                              : `Edit ${getTaskSummaryTitle(task)}`
+                          }
+                          title={task.isEditing ? "Save task" : "Edit task"}
                         >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                          >
-                            <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
-                            <path d="m12.5 5.5 3 3" />
-                          </svg>
+                          {task.isEditing ? (
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                              <path d="M17 21v-8H7v8" />
+                              <path d="M7 3v5h8" />
+                            </svg>
+                          ) : (
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
+                              <path d="m12.5 5.5 3 3" />
+                            </svg>
+                          )}
                         </button>
 
                         <button

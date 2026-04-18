@@ -1,0 +1,229 @@
+import { getRuntimeConfig } from "../utils/runtimeConfig";
+
+function isSuccessfulPayload(payload) {
+  return payload?.status === true || payload?.status === "true";
+}
+
+function getAuthHeaders() {
+  const authToken = localStorage.getItem("authToken") || "";
+
+  return authToken
+    ? {
+        Authorization: `Bearer ${authToken}`,
+      }
+    : {};
+}
+
+function normalizeClockInput(value) {
+  const trimmedValue = `${value || ""}`.trim();
+
+  if (!trimmedValue) {
+    return "";
+  }
+
+  const matchedValue = trimmedValue.match(/^(\d{1,2})[:.](\d{2})$/);
+
+  if (!matchedValue) {
+    return trimmedValue;
+  }
+
+  const [, rawHours, rawMinutes] = matchedValue;
+  const minutes = Number(rawMinutes);
+
+  if (minutes < 0 || minutes > 59) {
+    return trimmedValue;
+  }
+
+  return `${String(rawHours).padStart(2, "0")}:${rawMinutes}`;
+}
+
+function normalizeDurationForApi(value) {
+  const normalizedValue = normalizeClockInput(value);
+  const matchedValue = normalizedValue.match(/^(\d{1,2}):(\d{2})$/);
+
+  if (!matchedValue) {
+    return "";
+  }
+
+  return `${String(Number(matchedValue[1])).padStart(2, "0")}:${matchedValue[2]}`;
+}
+
+function convertMeridiemToNativeTime(timeValue, meridiemValue) {
+  const matchedValue = `${timeValue || ""}`
+    .trim()
+    .match(/^(\d{1,2})[:.](\d{2})$/);
+
+  if (!matchedValue) {
+    return "";
+  }
+
+  const hours = Number(matchedValue[1]);
+  const minutes = Number(matchedValue[2]);
+
+  if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
+    return "";
+  }
+
+  const normalizedMeridiem = `${meridiemValue || "AM"}`.toUpperCase();
+  let nativeHours = hours % 12;
+
+  if (normalizedMeridiem === "PM") {
+    nativeHours += 12;
+  }
+
+  return `${String(nativeHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function mapDayTypeToApiWorkStatus(value) {
+  const normalizedValue = `${value || ""}`.trim().toLowerCase();
+
+  if (normalizedValue === "working-day") {
+    return "work";
+  }
+
+  if (normalizedValue === "work-from-home") {
+    return "wfh";
+  }
+
+  return normalizedValue;
+}
+
+export function mapApiWorkStatusToDayType(value) {
+  const normalizedValue = `${value || ""}`.trim().toLowerCase();
+
+  if (normalizedValue === "work") {
+    return "working-day";
+  }
+
+  if (normalizedValue === "wfh") {
+    return "work-from-home";
+  }
+
+  return normalizedValue;
+}
+
+export function normalizeApiClockValue(value) {
+  const matchedValue = `${value || ""}`
+    .trim()
+    .match(/^(\d{2}):(\d{2})(?::\d{2})?$/);
+
+  if (!matchedValue) {
+    return "";
+  }
+
+  return `${matchedValue[1]}:${matchedValue[2]}`;
+}
+
+export async function getEffismLiteLastWorkingDate() {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return "";
+  }
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=lastWorkingDate`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: new FormData(),
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return "";
+    }
+
+    return `${payload?.last_working_date || ""}`;
+  } catch {
+    return "";
+  }
+}
+
+export async function getEffismLiteTimeRecord() {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=fetchTime`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: new FormData(),
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return null;
+    }
+
+    return payload?.data || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveEffismLiteTimeRecord(jobDetails) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return null;
+  }
+
+  const workStatus = mapDayTypeToApiWorkStatus(jobDetails.dayType);
+  const timeIn = convertMeridiemToNativeTime(
+    jobDetails.timeIn,
+    jobDetails.timeInMeridiem,
+  );
+  const timeOut = convertMeridiemToNativeTime(
+    jobDetails.timeOut,
+    jobDetails.timeOutMeridiem,
+  );
+  const nwt = normalizeDurationForApi(jobDetails.breakTime);
+  const siteTravel = normalizeDurationForApi(jobDetails.siteTravel);
+
+  if (!jobDetails.date || !workStatus || !timeIn || !timeOut || !nwt || !siteTravel) {
+    return null;
+  }
+
+  const formData = new FormData();
+  formData.append("date", jobDetails.date);
+  formData.append("work_status", workStatus);
+  formData.append("time_in", timeIn);
+  formData.append("time_out", timeOut);
+  formData.append("nwt", nwt);
+  formData.append("site_travel", siteTravel);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=saveTime`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return null;
+    }
+
+    return payload;
+  } catch {
+    return null;
+  }
+}
