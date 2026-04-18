@@ -150,7 +150,7 @@ function createEditableTask(task = {}, overrides = {}) {
     status: normalizeStatusValue(task.status),
     isSaved: false,
     isEditing: true,
-    isExpanded: false,
+    isExpanded: true,
     ...overrides,
   };
 }
@@ -570,7 +570,10 @@ export default function EffismLite() {
   const handleComplete = () => {};
 
   const handleAddTask = () => {
-    const newTask = createEditableTask();
+    const newTask = createEditableTask(undefined, {
+      isEditing: true,
+      isExpanded: true,
+    });
 
     setTasks((currentTasks) => [
       newTask,

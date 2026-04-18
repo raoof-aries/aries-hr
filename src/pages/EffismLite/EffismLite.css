@@ -269,8 +269,8 @@
   border: 0;
   background: transparent;
   color: #123430;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 600;
   font-family: inherit;
 }
 
@@ -358,8 +358,8 @@
   border: 1px solid rgba(1, 67, 66, 0.1);
   background: rgba(255, 255, 255, 0.96);
   color: #123430;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 600;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.96),
     0 8px 18px rgba(1, 67, 66, 0.05);
