@@ -153,7 +153,21 @@ export function mapTaskMainTypeIdToLabel(value) {
 }
 
 export function mapTaskMainTypeLabelToId(value) {
-  return TASK_MAIN_TYPE_TO_ID[`${value || ""}`] || "";
+  const normalizedValue = `${value || ""}`.trim();
+  if (!normalizedValue) {
+    return "";
+  }
+
+  if (TASK_MAIN_TYPE_TO_ID[normalizedValue]) {
+    return TASK_MAIN_TYPE_TO_ID[normalizedValue];
+  }
+
+  const lowered = normalizedValue.toLowerCase();
+  const matchedKey = Object.keys(TASK_MAIN_TYPE_TO_ID).find(
+    (key) => key.toLowerCase() === lowered,
+  );
+
+  return matchedKey ? TASK_MAIN_TYPE_TO_ID[matchedKey] : "";
 }
 
 export async function getEffismLiteLastWorkingDate() {

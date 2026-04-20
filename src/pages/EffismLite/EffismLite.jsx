@@ -172,6 +172,8 @@ function createEditableTask(task = {}, overrides = {}) {
     status: normalizeStatusValue(task.status),
     cfDate: task.cfDate || "",
     targetDate: task.targetDate || "",
+    isSaving: false,
+    saveError: "",
     isSaved: false,
     isEditing: true,
     isExpanded: true,
@@ -1354,6 +1356,7 @@ export default function EffismLite() {
           ? {
               ...task,
               [field]: value,
+              saveError: "",
             }
           : task,
       ),
@@ -1392,7 +1395,7 @@ export default function EffismLite() {
     });
   };
 
-  const handleSaveTask = (taskId) => {
+  const handleSaveTask = async (taskId) => {
     const taskToSave = tasks.find((task) => task.id === taskId);
     if (!taskToSave || !jobDetails.date) {
       return;
@@ -1404,47 +1407,77 @@ export default function EffismLite() {
       actualTime: normalizeClockInput(taskToSave.actualTime) || "00:00",
     };
 
-    const saveTask = async () => {
-      const payload = normalizedTask.workreportId
-        ? await editEffismLiteJob(normalizedTask, jobDetails.date)
-        : await addEffismLiteJob(normalizedTask, jobDetails.date);
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId
+          ? { ...task, isSaving: true, saveError: "" }
+          : task,
+      ),
+    );
 
-      if (!payload) {
-        return;
-      }
+    const payload = normalizedTask.workreportId
+      ? await editEffismLiteJob(normalizedTask, jobDetails.date)
+      : await addEffismLiteJob(normalizedTask, jobDetails.date);
 
-      const refreshedTasks = await listEffismLiteJobs(jobDetails.date);
-      setTasks(
-        refreshedTasks.map((task) =>
-          createEditableTask(
-            {
-              id: task.workreport_id
-                ? `effism-lite-task-${task.workreport_id}`
-                : createTaskId(),
-              workreportId: `${task.workreport_id || ""}`,
-              taskName: `${task.taskname || ""}`,
-              mainType: mapTaskMainTypeIdToLabel(
-                task.main_type ?? task.mian_type,
-              ),
-              jobNumber: `${task.job_no || ""}`,
-              estimatedTime: normalizeApiClockValue(task.est_time),
-              actualTime: normalizeApiClockValue(task.act_time),
-              outcome: `${task.desc ?? task.description ?? ""}`,
-              status: `${task.status ?? 0}%`,
-              cfDate: `${task.cf_date ?? task.cf ?? ""}`.trim(),
-              targetDate: `${task.target_date ?? task.target ?? ""}`.trim(),
-            },
-            {
+    if (!payload) {
+      setTasks((currentTasks) =>
+        currentTasks.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                isSaving: false,
+                saveError:
+                  "Could not save this task. Please check required fields (Task Name, Main Type, Est Time) and try again.",
+              }
+            : task,
+        ),
+      );
+      return;
+    }
+
+    // Collapse immediately so it feels responsive.
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              isSaving: false,
               isSaved: true,
               isEditing: false,
               isExpanded: false,
-            },
-          ),
-        ),
-      );
-    };
+              saveError: "",
+            }
+          : task,
+      ),
+    );
 
-    saveTask();
+    const refreshedTasks = await listEffismLiteJobs(jobDetails.date);
+    setTasks(
+      refreshedTasks.map((task) =>
+        createEditableTask(
+          {
+            id: task.workreport_id
+              ? `effism-lite-task-${task.workreport_id}`
+              : createTaskId(),
+            workreportId: `${task.workreport_id || ""}`,
+            taskName: `${task.taskname || ""}`,
+            mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
+            jobNumber: `${task.job_no || ""}`,
+            estimatedTime: normalizeApiClockValue(task.est_time),
+            actualTime: normalizeApiClockValue(task.act_time),
+            outcome: `${task.desc ?? task.description ?? ""}`,
+            status: `${task.status ?? 0}%`,
+            cfDate: `${task.cf_date ?? task.cf ?? ""}`.trim(),
+            targetDate: `${task.target_date ?? task.target ?? ""}`.trim(),
+          },
+          {
+            isSaved: true,
+            isEditing: false,
+            isExpanded: false,
+          },
+        ),
+      ),
+    );
   };
 
   const handleEditTask = (taskId) => {
@@ -1748,6 +1781,7 @@ export default function EffismLite() {
                             onClick={() => handleSaveTask(task.id)}
                             aria-label={`Save ${getTaskSummaryTitle(task)}`}
                             title="Save task"
+                            disabled={task.isSaving}
                           >
                             <svg
                               width="16"
@@ -1794,6 +1828,11 @@ export default function EffismLite() {
 
                     <div className="effismLite-taskBody">
                       <div className="effismLite-taskFields">
+                        {task.saveError ? (
+                          <div className="effismLite-taskSaveError" role="alert">
+                            {task.saveError}
+                          </div>
+                        ) : null}
                         <label
                           className="effismLite-field effismLite-fieldWide"
                           htmlFor={`task-name-${task.id}`}

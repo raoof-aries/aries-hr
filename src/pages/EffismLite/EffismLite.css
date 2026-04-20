@@ -913,6 +913,17 @@
   resize: vertical;
 }
 
+.effismLite-taskSaveError {
+  grid-column: 1 / -1;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(239, 68, 68, 0.24);
+  background: linear-gradient(180deg, #fff7f7 0%, #ffefef 100%);
+  color: #b42318;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 .effismLite-taskActions {
   display: flex;
   justify-content: flex-end;
