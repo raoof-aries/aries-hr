@@ -1650,7 +1650,7 @@ export default function EffismLite() {
             </div>
           ) : (
             <div className="effismLite-taskStack">
-              {tasks.map((task) => (
+              {tasks.map((task, taskIndex) => (
                 <article
                   key={task.id}
                   className={`effismLite-taskCard${task.isExpanded ? " is-expanded" : ""}${task.isEditing ? " is-editing" : ""}`}
@@ -1668,11 +1668,16 @@ export default function EffismLite() {
                   >
                     <div className="effismLite-taskHeaderMain">
                       <div className="effismLite-taskHeaderTop">
-                        <span
-                          className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
-                        >
-                          {getTaskMainTypeLabel(task.mainType)}
-                        </span>
+                        <div className="effismLite-taskHeaderMeta">
+                          <span className="effismLite-taskNumberPill">
+                            {taskIndex + 1}
+                          </span>
+                          <span
+                            className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
+                          >
+                            {getTaskMainTypeLabel(task.mainType)}
+                          </span>
+                        </div>
 
                         <div className="effismLite-taskHeaderActions">
                           <button
@@ -1815,6 +1820,9 @@ export default function EffismLite() {
                           <path d="m9 18 6-6-6-6"></path>
                         </svg>
                       </button>
+                      <span className="effismLite-taskNumberPill">
+                        {taskIndex + 1}
+                      </span>
                       <div className="effismLite-taskExpandedToolbarActions">
                         {task.isEditing ? (
                           <button

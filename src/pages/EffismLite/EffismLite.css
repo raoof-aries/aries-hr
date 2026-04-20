@@ -754,6 +754,14 @@
   min-width: 0;
 }
 
+.effismLite-taskHeaderMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+  line-height: 1;
+}
+
 .effismLite-taskHeaderActions {
   display: inline-flex;
   align-items: center;
@@ -810,34 +818,35 @@
 }
 
 .effismLite-taskTypePill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(63, 197, 113, 0.12);
-  border: 1px solid rgba(63, 197, 113, 0.28);
-  color: #1e9a54;
-  font-size: 0.78rem;
-  font-weight: 600;
+  display: inline-block;
+  color: #1f7a5b;
+  font-size: 0.8rem;
+  font-weight: 700;
   line-height: 1;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   width: fit-content;
   max-width: calc(100% - 46px);
   flex: 0 1 auto;
 }
 
+.effismLite-taskNumberPill {
+  display: inline-block;
+  color: #6f8598;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-right: 7px;
+  padding-right: 7px;
+  border-right: 1px solid rgba(15, 23, 42, 0.16);
+}
+
 .effismLite-taskTypePill.is-invoiceable {
-  background: rgba(63, 197, 113, 0.12);
-  border-color: rgba(63, 197, 113, 0.28);
-  color: #1e9a54;
+  color: #1f7a5b;
 }
 
 .effismLite-taskTypePill.is-non-invoiceable {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.28);
-  color: #c24141;
+  color: #b84d4d;
 }
 
 .effismLite-taskSummary {
