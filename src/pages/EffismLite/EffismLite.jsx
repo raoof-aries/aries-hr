@@ -30,16 +30,6 @@ const JOB_NUMBER_OPTIONS = [
   "ESOL/AMR/WEBS/24",
 ];
 
-const STATUS_OPTIONS = Array.from(
-  { length: 21 },
-  (_, index) => `${index * 5}%`,
-);
-
-const STATUS_SELECT_OPTIONS = STATUS_OPTIONS.map((option) => ({
-  value: option,
-  label: option,
-}));
-
 const DAY_TYPE_SELECT_OPTIONS = [
   { value: "", label: "Select day type" },
   ...NON_EFFISM_DAY_TYPE_OPTIONS,
@@ -1783,21 +1773,28 @@ export default function EffismLite() {
                             title="Save task"
                             disabled={task.isSaving}
                           >
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              aria-hidden="true"
-                            >
-                              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                              <path d="M17 21v-8H7v8" />
-                              <path d="M7 3v5h8" />
-                            </svg>
+                            {task.isSaving ? (
+                              <span
+                                className="effismLite-spinner"
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                <path d="M17 21v-8H7v8" />
+                                <path d="M7 3v5h8" />
+                              </svg>
+                            )}
                           </button>
                         ) : (
                           <button
@@ -1966,22 +1963,38 @@ export default function EffismLite() {
                         </label>
 
                         <div className="effismLite-field">
-                          <span className="effismLite-fieldLabel">Status</span>
-                          <EffismLiteDropdown
-                            id={`task-status-${task.id}`}
-                            ariaLabel="Task status"
-                            value={task.status}
-                            onValueChange={(nextValue) =>
-                              updateTask(
-                                task.id,
-                                "status",
-                                normalizeStatusValue(nextValue),
-                              )
-                            }
-                            options={STATUS_SELECT_OPTIONS}
-                            placeholder="0%"
-                            disabled={!task.isEditing}
-                          />
+                          <div className="effismLite-taskStatusHeader">
+                            <span className="effismLite-fieldLabel">Status</span>
+                            <span className="effismLite-taskStatusValue">
+                              {normalizeStatusValue(task.status)}
+                            </span>
+                          </div>
+                          <div className="effismLite-taskStatusSliderWrap">
+                            <input
+                              id={`task-status-${task.id}`}
+                              className="effismLite-taskStatusSlider"
+                              type="range"
+                              min="0"
+                              max="100"
+                              step="5"
+                              value={Number.parseInt(normalizeStatusValue(task.status), 10)}
+                              style={{
+                                "--effismLite-status-progress": `${Number.parseInt(
+                                  normalizeStatusValue(task.status),
+                                  10,
+                                )}%`,
+                              }}
+                              onChange={(event) =>
+                                updateTask(
+                                  task.id,
+                                  "status",
+                                  normalizeStatusValue(`${event.target.value}%`),
+                                )
+                              }
+                              disabled={!task.isEditing}
+                              aria-label="Task status"
+                            />
+                          </div>
                         </div>
 
                         <div className="effismLite-formRow effismLite-fieldWide">
@@ -2008,6 +2021,37 @@ export default function EffismLite() {
                             disabled={!task.isEditing}
                           />
                         </div>
+                      </div>
+
+                      <div className="effismLite-taskActions">
+                        {task.isEditing ? (
+                          <button
+                            type="button"
+                            className="effismLite-button effismLite-buttonPrimary"
+                            onClick={() => handleSaveTask(task.id)}
+                            disabled={task.isSaving}
+                          >
+                            {task.isSaving ? (
+                              <>
+                                <span
+                                  className="effismLite-spinner effismLite-spinnerOnButton"
+                                  aria-hidden="true"
+                                />
+                                Saving...
+                              </>
+                            ) : (
+                              "Save"
+                            )}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="effismLite-button effismLite-buttonGhost"
+                            onClick={() => handleEditTask(task.id)}
+                          >
+                            Edit
+                          </button>
+                        )}
                       </div>
                     </div>
                   </>
