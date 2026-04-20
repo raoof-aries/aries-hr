@@ -1374,14 +1374,25 @@ export default function EffismLite() {
         return currentTasks.filter((t) => t.id !== taskId);
       }
 
-      return currentTasks.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              isExpanded: !t.isExpanded,
-            }
-          : t,
-      );
+      const shouldExpand = task ? !task.isExpanded : true;
+
+      return currentTasks.map((t) => {
+        if (t.id === taskId) {
+          return {
+            ...t,
+            isExpanded: shouldExpand,
+          };
+        }
+
+        if (shouldExpand) {
+          return {
+            ...t,
+            isExpanded: false,
+          };
+        }
+
+        return t;
+      });
     });
   };
 
@@ -1479,7 +1490,10 @@ export default function EffismLite() {
               isEditing: true,
               isExpanded: true,
             }
-          : task,
+          : {
+              ...task,
+              isExpanded: false,
+            },
       ),
     );
   };
@@ -1742,11 +1756,23 @@ export default function EffismLite() {
 
                 {task.isExpanded ? (
                   <>
-                    <div className="effismLite-taskExpandedToolbar">
+                    <div
+                      className="effismLite-taskExpandedToolbar"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => toggleTaskExpanded(task.id)}
+                      onKeyDown={(event) =>
+                        handleTaskHeaderKeyDown(event, task.id)
+                      }
+                      aria-expanded
+                    >
                       <button
                         type="button"
                         className="effismLite-taskIconButton effismLite-taskChevron is-collapse"
-                        onClick={() => toggleTaskExpanded(task.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleTaskExpanded(task.id);
+                        }}
                         aria-label="Collapse task"
                       >
                         <svg
@@ -1768,7 +1794,10 @@ export default function EffismLite() {
                           <button
                             type="button"
                             className={`effismLite-taskIconButton${task.isEditing ? " is-active" : ""}`}
-                            onClick={() => handleSaveTask(task.id)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleSaveTask(task.id);
+                            }}
                             aria-label={`Save ${getTaskSummaryTitle(task)}`}
                             title="Save task"
                             disabled={task.isSaving}
@@ -1800,7 +1829,10 @@ export default function EffismLite() {
                           <button
                             type="button"
                             className="effismLite-taskIconButton"
-                            onClick={() => handleEditTask(task.id)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleEditTask(task.id);
+                            }}
                             aria-label={`Edit ${getTaskSummaryTitle(task)}`}
                             title="Edit task"
                           >
