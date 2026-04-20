@@ -157,6 +157,17 @@
   color: #c62828;
 }
 
+.effismLite-stepLoader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+}
+
+.effismLite-stepLoaderStandalone {
+  margin-top: 4px;
+}
+
 .effismLite-panelTasks {
   display: grid;
   gap: 18px;

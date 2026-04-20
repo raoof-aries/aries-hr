@@ -1077,11 +1077,14 @@ export default function EffismLite() {
     siteTravel: "",
   });
   const [tasks, setTasks] = useState([]);
+  const [isTimeLogLoading, setIsTimeLogLoading] = useState(true);
+  const [isTaskListLoading, setIsTaskListLoading] = useState(false);
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
   const [jobDiaryCompleteStatus, setJobDiaryCompleteStatus] = useState("idle");
   const [jobDiaryCompleteMessage, setJobDiaryCompleteMessage] = useState("");
   const [showCompleteConfirmation, setShowCompleteConfirmation] = useState(false);
   const hasHydratedTimeRef = useRef(false);
+  const loadedTaskDateRef = useRef("");
   const autosaveTimerRef = useRef(null);
   const hasUserEditedTimeRef = useRef(false);
   const saveStatusHideTimerRef = useRef(null);
@@ -1090,51 +1093,57 @@ export default function EffismLite() {
     let isMounted = true;
 
     const loadTimeData = async () => {
-      const lastWorkingDate = await getEffismLiteLastWorkingDate();
-      const timeRecord = await getEffismLiteTimeRecord(lastWorkingDate);
+      setIsTimeLogLoading(true);
+      try {
+        const lastWorkingDate = await getEffismLiteLastWorkingDate();
+        const timeRecord = await getEffismLiteTimeRecord(lastWorkingDate);
 
-      if (!isMounted) {
-        return;
-      }
-
-      if (timeRecord) {
-        const normalizedTimeIn = normalizeApiClockValue(timeRecord.time_in);
-        const normalizedTimeOut = normalizeApiClockValue(timeRecord.time_out);
-        const timeInValue = convertNativeTimeToMeridiem(normalizedTimeIn);
-        const timeOutValue = convertNativeTimeToMeridiem(normalizedTimeOut);
-
-        setJobDetails((currentJobDetails) => ({
-          ...currentJobDetails,
-          date: `${timeRecord.date_log || lastWorkingDate || ""}`,
-          dayType: mapApiWorkStatusToDayType(timeRecord.work_status),
-          timeIn: timeInValue.time,
-          timeInMeridiem: timeInValue.meridiem,
-          timeOut: timeOutValue.time,
-          timeOutMeridiem: timeOutValue.meridiem,
-          breakTime: normalizeApiClockValue(timeRecord.nwt),
-          siteTravel: normalizeApiClockValue(timeRecord.site_travel),
-        }));
-      } else {
-        setJobDetails((currentJobDetails) => ({
-          ...currentJobDetails,
-          date: lastWorkingDate,
-        }));
-      }
-
-      if (lastWorkingDate) {
-        const jobDiaryStatusResult =
-          await getEffismLiteJobDiaryStatus(lastWorkingDate);
-
-        if (jobDiaryStatusResult.isComplete) {
-          setJobDiaryCompleteStatus("success");
-          setJobDiaryCompleteMessage("Job diary completed.");
-        } else if (jobDiaryStatusResult.success) {
-          setJobDiaryCompleteStatus("idle");
-          setJobDiaryCompleteMessage("");
+        if (!isMounted) {
+          return;
         }
-      }
 
-      hasHydratedTimeRef.current = true;
+        if (timeRecord) {
+          const normalizedTimeIn = normalizeApiClockValue(timeRecord.time_in);
+          const normalizedTimeOut = normalizeApiClockValue(timeRecord.time_out);
+          const timeInValue = convertNativeTimeToMeridiem(normalizedTimeIn);
+          const timeOutValue = convertNativeTimeToMeridiem(normalizedTimeOut);
+
+          setJobDetails((currentJobDetails) => ({
+            ...currentJobDetails,
+            date: `${timeRecord.date_log || lastWorkingDate || ""}`,
+            dayType: mapApiWorkStatusToDayType(timeRecord.work_status),
+            timeIn: timeInValue.time,
+            timeInMeridiem: timeInValue.meridiem,
+            timeOut: timeOutValue.time,
+            timeOutMeridiem: timeOutValue.meridiem,
+            breakTime: normalizeApiClockValue(timeRecord.nwt),
+            siteTravel: normalizeApiClockValue(timeRecord.site_travel),
+          }));
+        } else {
+          setJobDetails((currentJobDetails) => ({
+            ...currentJobDetails,
+            date: lastWorkingDate,
+          }));
+        }
+
+        if (lastWorkingDate) {
+          const jobDiaryStatusResult =
+            await getEffismLiteJobDiaryStatus(lastWorkingDate);
+
+          if (jobDiaryStatusResult.isComplete) {
+            setJobDiaryCompleteStatus("success");
+            setJobDiaryCompleteMessage("Job diary completed.");
+          } else if (jobDiaryStatusResult.success) {
+            setJobDiaryCompleteStatus("idle");
+            setJobDiaryCompleteMessage("");
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsTimeLogLoading(false);
+        }
+        hasHydratedTimeRef.current = true;
+      }
     };
 
     loadTimeData();
@@ -1212,42 +1221,54 @@ export default function EffismLite() {
       return;
     }
 
+    if (loadedTaskDateRef.current === jobDetails.date) {
+      return;
+    }
+
     let isMounted = true;
 
     const loadTasks = async () => {
-      const taskList = await listEffismLiteJobs(jobDetails.date);
-      if (!isMounted) {
-        return;
-      }
+      setIsTaskListLoading(true);
+      try {
+        const taskList = await listEffismLiteJobs(jobDetails.date);
+        if (!isMounted) {
+          return;
+        }
 
-      setTasks(
-        taskList.map((task) =>
-          createEditableTask(
-            {
-              id: task.workreport_id
-                ? `effism-lite-task-${task.workreport_id}`
-                : createTaskId(),
-              workreportId: `${task.workreport_id || ""}`,
-              taskName: `${task.taskname || ""}`,
-              mainType: mapTaskMainTypeIdToLabel(
-                task.main_type ?? task.mian_type,
-              ),
-              jobNumber: `${task.job_no || ""}`,
-              estimatedTime: normalizeApiClockValue(task.est_time),
-              actualTime: normalizeApiClockValue(task.act_time),
-              outcome: `${task.desc ?? task.description ?? ""}`,
-              status: `${task.status ?? 0}%`,
-              cfDate: `${task.cf_date ?? task.cf ?? ""}`.trim(),
-              targetDate: `${task.target_date ?? task.target ?? ""}`.trim(),
-            },
-            {
-              isSaved: true,
-              isEditing: false,
-              isExpanded: false,
-            },
+        setTasks(
+          taskList.map((task) =>
+            createEditableTask(
+              {
+                id: task.workreport_id
+                  ? `effism-lite-task-${task.workreport_id}`
+                  : createTaskId(),
+                workreportId: `${task.workreport_id || ""}`,
+                taskName: `${task.taskname || ""}`,
+                mainType: mapTaskMainTypeIdToLabel(
+                  task.main_type ?? task.mian_type,
+                ),
+                jobNumber: `${task.job_no || ""}`,
+                estimatedTime: normalizeApiClockValue(task.est_time),
+                actualTime: normalizeApiClockValue(task.act_time),
+                outcome: `${task.desc ?? task.description ?? ""}`,
+                status: `${task.status ?? 0}%`,
+                cfDate: `${task.cf_date ?? task.cf ?? ""}`.trim(),
+                targetDate: `${task.target_date ?? task.target ?? ""}`.trim(),
+              },
+              {
+                isSaved: true,
+                isEditing: false,
+                isExpanded: false,
+              },
+            ),
           ),
-        ),
-      );
+        );
+        loadedTaskDateRef.current = jobDetails.date;
+      } finally {
+        if (isMounted) {
+          setIsTaskListLoading(false);
+        }
+      }
     };
 
     loadTasks();
@@ -1623,12 +1644,17 @@ export default function EffismLite() {
 
       {isTaskStep ? (
         <section className="effismLite-panelTasks">
-          <div className="effismLite-taskStack">
-            {tasks.map((task) => (
-              <article
-                key={task.id}
-                className={`effismLite-taskCard${task.isExpanded ? " is-expanded" : ""}${task.isEditing ? " is-editing" : ""}`}
-              >
+          {isTaskListLoading ? (
+            <div className="effismLite-stepLoader" role="status" aria-live="polite">
+              <span className="effismLite-spinner" aria-hidden="true" />
+            </div>
+          ) : (
+            <div className="effismLite-taskStack">
+              {tasks.map((task) => (
+                <article
+                  key={task.id}
+                  className={`effismLite-taskCard${task.isExpanded ? " is-expanded" : ""}${task.isEditing ? " is-editing" : ""}`}
+                >
                 {!task.isExpanded ? (
                   <div
                     className="effismLite-taskHeader"
@@ -2088,10 +2114,19 @@ export default function EffismLite() {
                     </div>
                   </>
                 ) : null}
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
+      ) : isTimeLogLoading ? (
+        <div
+          className="effismLite-stepLoader effismLite-stepLoaderStandalone"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="effismLite-spinner" aria-hidden="true" />
+        </div>
       ) : (
         <section className="effismLite-panel">
           {timeSaveStatus !== "idle" ? (
