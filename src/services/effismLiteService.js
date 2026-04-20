@@ -362,6 +362,17 @@ function buildTaskFormData(task, date) {
   formData.append("desc", description);
   formData.append("status", normalizedStatusValue);
 
+  const cfDate = `${task?.cfDate || ""}`.trim();
+  const targetDate = `${task?.targetDate || ""}`.trim();
+
+  if (cfDate) {
+    formData.append("cf_date", cfDate);
+  }
+
+  if (targetDate) {
+    formData.append("target_date", targetDate);
+  }
+
   return formData;
 }
 

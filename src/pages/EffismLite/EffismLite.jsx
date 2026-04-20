@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -170,11 +170,44 @@ function createEditableTask(task = {}, overrides = {}) {
     actualTime: task.actualTime || "00:00",
     outcome: task.outcome || "",
     status: normalizeStatusValue(task.status),
+    cfDate: task.cfDate || "",
+    targetDate: task.targetDate || "",
     isSaved: false,
     isEditing: true,
     isExpanded: true,
     ...overrides,
   };
+}
+
+function isEmptyDraftTask(task) {
+  if (`${task.workreportId || ""}`.trim()) {
+    return false;
+  }
+
+  if (task.isSaved) {
+    return false;
+  }
+
+  const name = `${task.taskName || ""}`.trim();
+  const mainType = `${task.mainType || ""}`.trim();
+  const jobNumber = `${task.jobNumber || ""}`.trim();
+  const outcome = `${task.outcome || ""}`.trim();
+  const cfDate = `${task.cfDate || ""}`.trim();
+  const targetDate = `${task.targetDate || ""}`.trim();
+  const est = normalizeClockInput(`${task.estimatedTime || ""}`.trim()) || "00:00";
+  const act = normalizeClockInput(`${task.actualTime || ""}`.trim()) || "00:00";
+
+  return (
+    !name &&
+    !mainType &&
+    !jobNumber &&
+    !outcome &&
+    !cfDate &&
+    !targetDate &&
+    est === "00:00" &&
+    act === "00:00" &&
+    normalizeStatusValue(task.status) === "0%"
+  );
 }
 
 function getTaskSummaryTitle(task) {
@@ -632,55 +665,128 @@ function DatePickerField({
   );
 }
 
-function DataListInput({
+function EffismLiteSearchableCombo({
   id,
   label,
   value,
   onChange,
-  list,
   options,
   placeholder,
   className = "",
   disabled = false,
+  ariaLabel,
 }) {
+  const rootRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const filteredOptions = useMemo(() => {
+    const query = `${value || ""}`.trim().toLowerCase();
+
+    if (!query) {
+      return options;
+    }
+
+    return options.filter((option) =>
+      `${option}`.toLowerCase().includes(query),
+    );
+  }, [options, value]);
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event) => {
+      if (rootRef.current?.contains(event.target)) {
+        return;
+      }
+
+      setMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown, {
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+    };
+  }, [menuOpen]);
+
+  const showMenu =
+    menuOpen && !disabled && filteredOptions.length > 0;
+
   return (
-    <label
+    <div
       className={`effismLite-field${className ? ` ${className}` : ""}`}
-      htmlFor={id}
     >
       <span className="effismLite-fieldLabel">{label}</span>
-      <div className="effismLite-inputWrap">
-        <input
-          id={id}
-          className="effismLite-input effismLite-inputWithHint"
-          type="text"
-          value={value}
-          onChange={onChange}
-          list={list}
-          placeholder={placeholder}
-          disabled={disabled}
-        />
-        <span className="effismLite-inputGlyph" aria-hidden="true">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      <div className="effismLite-searchComboRoot" ref={rootRef}>
+        <div className="effismLite-inputWrap">
+          <input
+            id={id}
+            className="effismLite-input effismLite-inputWithHint"
+            type="text"
+            value={value}
+            onChange={onChange}
+            onFocus={() => setMenuOpen(true)}
+            onBlur={() => {
+              setTimeout(() => setMenuOpen(false), 150);
+            }}
+            placeholder={placeholder}
+            disabled={disabled}
+            autoComplete="off"
+            aria-label={ariaLabel}
+            aria-expanded={showMenu}
+            aria-autocomplete="list"
+          />
+          <span className="effismLite-inputGlyph" aria-hidden="true">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          </span>
+        </div>
+
+        {showMenu ? (
+          <ul
+            className="effismLite-dropdownMenu effismLite-searchComboMenu"
+            role="listbox"
           >
-            <path d="m6 9 6 6 6-6"></path>
-          </svg>
-        </span>
+            {filteredOptions.map((option) => (
+              <li key={option} role="presentation">
+                <button
+                  type="button"
+                  className="effismLite-dropdownOption"
+                  role="option"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                  }}
+                  onClick={() => {
+                    onChange({
+                      target: { value: option },
+                    });
+                    setMenuOpen(false);
+                  }}
+                >
+                  {option}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
-      <datalist id={list}>
-        {options.map((option) => (
-          <option key={option} value={option} />
-        ))}
-      </datalist>
-    </label>
+    </div>
   );
 }
 
@@ -1139,6 +1245,8 @@ export default function EffismLite() {
               actualTime: normalizeApiClockValue(task.act_time),
               outcome: `${task.desc ?? task.description ?? ""}`,
               status: `${task.status ?? 0}%`,
+              cfDate: `${task.cf_date ?? task.cf ?? ""}`.trim(),
+              targetDate: `${task.target_date ?? task.target ?? ""}`.trim(),
             },
             {
               isSaved: true,
@@ -1266,16 +1374,22 @@ export default function EffismLite() {
   };
 
   const toggleTaskExpanded = (taskId) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId
+    setTasks((currentTasks) => {
+      const task = currentTasks.find((t) => t.id === taskId);
+
+      if (task && task.isExpanded && isEmptyDraftTask(task)) {
+        return currentTasks.filter((t) => t.id !== taskId);
+      }
+
+      return currentTasks.map((t) =>
+        t.id === taskId
           ? {
-              ...task,
-              isExpanded: !task.isExpanded,
+              ...t,
+              isExpanded: !t.isExpanded,
             }
-          : task,
-      ),
-    );
+          : t,
+      );
+    });
   };
 
   const handleSaveTask = (taskId) => {
@@ -1317,6 +1431,8 @@ export default function EffismLite() {
               actualTime: normalizeApiClockValue(task.act_time),
               outcome: `${task.desc ?? task.description ?? ""}`,
               status: `${task.status ?? 0}%`,
+              cfDate: `${task.cf_date ?? task.cf ?? ""}`.trim(),
+              targetDate: `${task.target_date ?? task.target ?? ""}`.trim(),
             },
             {
               isSaved: true,
@@ -1476,43 +1592,163 @@ export default function EffismLite() {
                 key={task.id}
                 className={`effismLite-taskCard${task.isExpanded ? " is-expanded" : ""}${task.isEditing ? " is-editing" : ""}`}
               >
-                <div
-                  className="effismLite-taskHeader"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => toggleTaskExpanded(task.id)}
-                  onKeyDown={(event) => handleTaskHeaderKeyDown(event, task.id)}
-                  aria-expanded={task.isExpanded}
-                >
-                  <div className="effismLite-taskHeaderMain">
-                    <div className="effismLite-taskHeaderTop">
-                      <span
-                        className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
-                      >
-                        {getTaskMainTypeLabel(task.mainType)}
+                {!task.isExpanded ? (
+                  <div
+                    className="effismLite-taskHeader"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => toggleTaskExpanded(task.id)}
+                    onKeyDown={(event) =>
+                      handleTaskHeaderKeyDown(event, task.id)
+                    }
+                    aria-expanded={false}
+                  >
+                    <div className="effismLite-taskHeaderMain">
+                      <div className="effismLite-taskHeaderTop">
+                        <span
+                          className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
+                        >
+                          {getTaskMainTypeLabel(task.mainType)}
+                        </span>
+
+                        <div className="effismLite-taskHeaderActions">
+                          <button
+                            type="button"
+                            className={`effismLite-taskIconButton${task.isEditing ? " is-active" : ""}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (task.isEditing) {
+                                handleSaveTask(task.id);
+                                return;
+                              }
+
+                              handleEditTask(task.id);
+                            }}
+                            aria-label={
+                              task.isEditing
+                                ? `Save ${getTaskSummaryTitle(task)}`
+                                : `Edit ${getTaskSummaryTitle(task)}`
+                            }
+                            title={task.isEditing ? "Save task" : "Edit task"}
+                          >
+                            {task.isEditing ? (
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                <path d="M17 21v-8H7v8" />
+                                <path d="M7 3v5h8" />
+                              </svg>
+                            ) : (
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
+                                <path d="m12.5 5.5 3 3" />
+                              </svg>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            className="effismLite-taskIconButton effismLite-taskChevron"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              toggleTaskExpanded(task.id);
+                            }}
+                            aria-label="Expand task"
+                            aria-expanded={false}
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <h4 className="effismLite-taskTitle">
+                        {getTaskSummaryTitle(task)}
+                      </h4>
+
+                      <span className="effismLite-taskJobNumber">
+                        {getTaskJobNumberLabel(task.jobNumber)}
                       </span>
 
-                      <div className="effismLite-taskHeaderActions">
-                        <button
-                          type="button"
-                          className={`effismLite-taskIconButton${task.isEditing ? " is-active" : ""}`}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            if (task.isEditing) {
-                              handleSaveTask(task.id);
-                              return;
-                            }
-
-                            handleEditTask(task.id);
-                          }}
-                          aria-label={
-                            task.isEditing
-                              ? `Save ${getTaskSummaryTitle(task)}`
-                              : `Edit ${getTaskSummaryTitle(task)}`
-                          }
-                          title={task.isEditing ? "Save task" : "Edit task"}
+                      <div className="effismLite-taskSummary">
+                        <span className="effismLite-taskSummaryItem">
+                          {renderTaskSummaryTime("Est ", task.estimatedTime)}
+                        </span>
+                        <span className="effismLite-taskSummaryItem">
+                          {renderTaskSummaryTime("Act ", task.actualTime)}
+                        </span>
+                        <span
+                          className={`effismLite-taskSummaryItem effismLite-taskStatusPill is-${getTaskStatusTone(task.status)}`}
                         >
-                          {task.isEditing ? (
+                          {normalizeStatusValue(task.status)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {task.isExpanded ? (
+                  <>
+                    <div className="effismLite-taskExpandedToolbar">
+                      <button
+                        type="button"
+                        className="effismLite-taskIconButton effismLite-taskChevron is-collapse"
+                        onClick={() => toggleTaskExpanded(task.id)}
+                        aria-label="Collapse task"
+                      >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m9 18 6-6-6-6"></path>
+                        </svg>
+                      </button>
+                      <div className="effismLite-taskExpandedToolbarActions">
+                        {task.isEditing ? (
+                          <button
+                            type="button"
+                            className={`effismLite-taskIconButton${task.isEditing ? " is-active" : ""}`}
+                            onClick={() => handleSaveTask(task.id)}
+                            aria-label={`Save ${getTaskSummaryTitle(task)}`}
+                            title="Save task"
+                          >
                             <svg
                               width="16"
                               height="16"
@@ -1528,7 +1764,15 @@ export default function EffismLite() {
                               <path d="M17 21v-8H7v8" />
                               <path d="M7 3v5h8" />
                             </svg>
-                          ) : (
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="effismLite-taskIconButton"
+                            onClick={() => handleEditTask(task.id)}
+                            aria-label={`Edit ${getTaskSummaryTitle(task)}`}
+                            title="Edit task"
+                          >
                             <svg
                               width="16"
                               height="16"
@@ -1543,224 +1787,191 @@ export default function EffismLite() {
                               <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
                               <path d="m12.5 5.5 3 3" />
                             </svg>
-                          )}
-                        </button>
-
-                        <button
-                          type="button"
-                          className="effismLite-taskIconButton effismLite-taskChevron"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            toggleTaskExpanded(task.id);
-                          }}
-                          aria-label={
-                            task.isExpanded ? "Collapse task" : "Expand task"
-                          }
-                          aria-expanded={task.isExpanded}
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                          >
-                            <path d="m9 18 6-6-6-6"></path>
-                          </svg>
-                        </button>
+                          </button>
+                        )}
                       </div>
                     </div>
 
-                    <h4 className="effismLite-taskTitle">
-                      {getTaskSummaryTitle(task)}
-                    </h4>
-
-                    <span className="effismLite-taskJobNumber">
-                      {getTaskJobNumberLabel(task.jobNumber)}
-                    </span>
-
-                    <div className="effismLite-taskSummary">
-                      <span className="effismLite-taskSummaryItem">
-                        {renderTaskSummaryTime("Est ", task.estimatedTime)}
-                      </span>
-                      <span className="effismLite-taskSummaryItem">
-                        {renderTaskSummaryTime("Act ", task.actualTime)}
-                      </span>
-                      <span
-                        className={`effismLite-taskSummaryItem effismLite-taskStatusPill is-${getTaskStatusTone(task.status)}`}
-                      >
-                        {normalizeStatusValue(task.status)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {task.isExpanded ? (
-                  <div className="effismLite-taskBody">
-                    <div className="effismLite-taskFields">
-                      <label
-                        className="effismLite-field effismLite-fieldWide"
-                        htmlFor={`task-name-${task.id}`}
-                      >
-                        <span className="effismLite-fieldLabel">Task Name</span>
-                        <input
-                          id={`task-name-${task.id}`}
-                          className="effismLite-input"
-                          type="text"
-                          value={task.taskName}
-                          onChange={(event) =>
-                            updateTask(task.id, "taskName", event.target.value)
-                          }
-                          placeholder="Enter task name"
-                          disabled={!task.isEditing}
-                        />
-                      </label>
-
-                      <DataListInput
-                        id={`task-main-type-${task.id}`}
-                        label="Main Type"
-                        value={task.mainType}
-                        onChange={(event) =>
-                          updateTask(task.id, "mainType", event.target.value)
-                        }
-                        list={`effism-lite-main-type-options-${task.id}`}
-                        options={MAIN_TYPE_OPTIONS}
-                        placeholder="Select or type a main type"
-                        disabled={!task.isEditing}
-                      />
-
-                      <DataListInput
-                        id={`task-job-number-${task.id}`}
-                        label="Job Number"
-                        value={task.jobNumber}
-                        onChange={(event) =>
-                          updateTask(task.id, "jobNumber", event.target.value)
-                        }
-                        list={`effism-lite-job-number-options-${task.id}`}
-                        options={JOB_NUMBER_OPTIONS}
-                        placeholder="Select or type a job number"
-                        disabled={!task.isEditing}
-                      />
-
-                      <div className="effismLite-taskTimeRow effismLite-fieldWide">
+                    <div className="effismLite-taskBody">
+                      <div className="effismLite-taskFields">
                         <label
-                          className="effismLite-field"
-                          htmlFor={`task-estimated-time-${task.id}`}
+                          className="effismLite-field effismLite-fieldWide"
+                          htmlFor={`task-name-${task.id}`}
                         >
                           <span className="effismLite-fieldLabel">
-                            Estimated Time
+                            Task Name
                           </span>
                           <input
-                            id={`task-estimated-time-${task.id}`}
+                            id={`task-name-${task.id}`}
                             className="effismLite-input"
                             type="text"
-                            inputMode="text"
-                            value={task.estimatedTime}
+                            value={task.taskName}
                             onChange={(event) =>
                               updateTask(
                                 task.id,
-                                "estimatedTime",
-                                formatClockInputAsTyped(event.target.value),
+                                "taskName",
+                                event.target.value,
                               )
                             }
-                            onBlur={() =>
-                              handleTaskTimeBlur(task.id, "estimatedTime")
-                            }
-                            placeholder="00:00"
+                            placeholder="Enter task name"
                             disabled={!task.isEditing}
                           />
                         </label>
 
-                        <label
-                          className="effismLite-field"
-                          htmlFor={`task-actual-time-${task.id}`}
-                        >
-                          <span className="effismLite-fieldLabel">
-                            Actual Time
-                          </span>
-                          <input
-                            id={`task-actual-time-${task.id}`}
-                            className="effismLite-input"
-                            type="text"
-                            inputMode="text"
-                            value={task.actualTime}
-                            onChange={(event) =>
-                              updateTask(
-                                task.id,
-                                "actualTime",
-                                formatClockInputAsTyped(event.target.value),
-                              )
-                            }
-                            onBlur={() =>
-                              handleTaskTimeBlur(task.id, "actualTime")
-                            }
-                            placeholder="00:00"
-                            disabled={!task.isEditing}
-                          />
-                        </label>
-                      </div>
-
-                      <label
-                        className="effismLite-field effismLite-fieldWide"
-                        htmlFor={`task-outcome-${task.id}`}
-                      >
-                        <span className="effismLite-fieldLabel">Outcome</span>
-                        <textarea
-                          id={`task-outcome-${task.id}`}
-                          className="effismLite-input effismLite-textarea"
-                          value={task.outcome}
+                        <EffismLiteSearchableCombo
+                          id={`task-main-type-${task.id}`}
+                          label="Main Type"
+                          value={task.mainType}
                           onChange={(event) =>
-                            updateTask(task.id, "outcome", event.target.value)
+                            updateTask(task.id, "mainType", event.target.value)
                           }
-                          placeholder="Describe the outcome"
+                          options={MAIN_TYPE_OPTIONS}
+                          placeholder="Select or type a main type"
                           disabled={!task.isEditing}
+                          ariaLabel="Main type"
                         />
-                      </label>
 
-                      <div className="effismLite-field">
-                        <span className="effismLite-fieldLabel">Status</span>
-                        <EffismLiteDropdown
-                          id={`task-status-${task.id}`}
-                          ariaLabel="Task status"
-                          value={task.status}
-                          onValueChange={(nextValue) =>
+                        <EffismLiteSearchableCombo
+                          id={`task-job-number-${task.id}`}
+                          label="Job Number"
+                          value={task.jobNumber}
+                          onChange={(event) =>
                             updateTask(
                               task.id,
-                              "status",
-                              normalizeStatusValue(nextValue),
+                              "jobNumber",
+                              event.target.value,
                             )
                           }
-                          options={STATUS_SELECT_OPTIONS}
-                          placeholder="0%"
+                          options={JOB_NUMBER_OPTIONS}
+                          placeholder="Select or type a job number"
                           disabled={!task.isEditing}
+                          ariaLabel="Job number"
                         />
+
+                        <div className="effismLite-taskTimeRow effismLite-fieldWide">
+                          <label
+                            className="effismLite-field"
+                            htmlFor={`task-estimated-time-${task.id}`}
+                          >
+                            <span className="effismLite-fieldLabel">
+                              Est Time
+                            </span>
+                            <input
+                              id={`task-estimated-time-${task.id}`}
+                              className="effismLite-input"
+                              type="text"
+                              inputMode="text"
+                              value={task.estimatedTime}
+                              onChange={(event) =>
+                                updateTask(
+                                  task.id,
+                                  "estimatedTime",
+                                  formatClockInputAsTyped(event.target.value),
+                                )
+                              }
+                              onBlur={() =>
+                                handleTaskTimeBlur(task.id, "estimatedTime")
+                              }
+                              placeholder="00:00"
+                              disabled={!task.isEditing}
+                            />
+                          </label>
+
+                          <label
+                            className="effismLite-field"
+                            htmlFor={`task-actual-time-${task.id}`}
+                          >
+                            <span className="effismLite-fieldLabel">
+                              Act Time
+                            </span>
+                            <input
+                              id={`task-actual-time-${task.id}`}
+                              className="effismLite-input"
+                              type="text"
+                              inputMode="text"
+                              value={task.actualTime}
+                              onChange={(event) =>
+                                updateTask(
+                                  task.id,
+                                  "actualTime",
+                                  formatClockInputAsTyped(event.target.value),
+                                )
+                              }
+                              onBlur={() =>
+                                handleTaskTimeBlur(task.id, "actualTime")
+                              }
+                              placeholder="00:00"
+                              disabled={!task.isEditing}
+                            />
+                          </label>
+                        </div>
+
+                        <label
+                          className="effismLite-field effismLite-fieldWide"
+                          htmlFor={`task-outcome-${task.id}`}
+                        >
+                          <span className="effismLite-fieldLabel">
+                            Outcome
+                          </span>
+                          <textarea
+                            id={`task-outcome-${task.id}`}
+                            className="effismLite-input effismLite-textarea effismLite-taskOutcomeInput"
+                            rows={1}
+                            value={task.outcome}
+                            onChange={(event) =>
+                              updateTask(task.id, "outcome", event.target.value)
+                            }
+                            placeholder="Describe the outcome"
+                            disabled={!task.isEditing}
+                          />
+                        </label>
+
+                        <div className="effismLite-field">
+                          <span className="effismLite-fieldLabel">Status</span>
+                          <EffismLiteDropdown
+                            id={`task-status-${task.id}`}
+                            ariaLabel="Task status"
+                            value={task.status}
+                            onValueChange={(nextValue) =>
+                              updateTask(
+                                task.id,
+                                "status",
+                                normalizeStatusValue(nextValue),
+                              )
+                            }
+                            options={STATUS_SELECT_OPTIONS}
+                            placeholder="0%"
+                            disabled={!task.isEditing}
+                          />
+                        </div>
+
+                        <div className="effismLite-formRow effismLite-fieldWide">
+                          <DatePickerField
+                            id={`task-cf-date-${task.id}`}
+                            label="CF date"
+                            value={task.cfDate}
+                            onChange={(event) =>
+                              updateTask(task.id, "cfDate", event.target.value)
+                            }
+                            disabled={!task.isEditing}
+                          />
+                          <DatePickerField
+                            id={`task-target-${task.id}`}
+                            label="Target"
+                            value={task.targetDate}
+                            onChange={(event) =>
+                              updateTask(
+                                task.id,
+                                "targetDate",
+                                event.target.value,
+                              )
+                            }
+                            disabled={!task.isEditing}
+                          />
+                        </div>
                       </div>
                     </div>
-
-                    <div className="effismLite-taskActions">
-                      {task.isEditing ? (
-                        <button
-                          type="button"
-                          className="effismLite-button effismLite-buttonPrimary"
-                          onClick={() => handleSaveTask(task.id)}
-                        >
-                          Save
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="effismLite-button effismLite-buttonGhost"
-                          onClick={() => handleEditTask(task.id)}
-                        >
-                          Edit
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  </>
                 ) : null}
               </article>
             ))}

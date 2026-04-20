@@ -868,16 +868,49 @@
   transition: transform 0.18s ease;
 }
 
-.effismLite-taskCard.is-expanded .effismLite-taskChevron {
-  transform: rotate(90deg);
+.effismLite-taskChevron.is-collapse {
+  transform: rotate(180deg);
+}
+
+.effismLite-taskExpandedToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.effismLite-taskExpandedToolbarActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .effismLite-taskBody {
   display: grid;
   gap: 16px;
-  margin: 8px 18px 0;
-  padding: 18px 0 18px;
-  border-top: 1px solid #edf2f7;
+  margin: 0 18px;
+  padding: 12px 0 18px;
+  border-top: 0;
+}
+
+.effismLite-searchComboRoot {
+  position: relative;
+  width: 100%;
+}
+
+.effismLite-searchComboMenu {
+  top: calc(100% + 6px);
+  z-index: 320;
+}
+
+.effismLite-taskOutcomeInput {
+  min-height: 58px;
+  padding-block: 14px;
+  line-height: 1.35;
+  resize: vertical;
 }
 
 .effismLite-taskActions {
@@ -920,6 +953,10 @@
 
   .effismLite-taskFields,
   .effismLite-summaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .effismLite-formRow {
     grid-template-columns: 1fr;
   }
 
