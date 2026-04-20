@@ -13,15 +13,18 @@ import {
   getEffismLiteJobDiaryStatus,
   getEffismLiteLastWorkingDate,
   getEffismLiteTimeRecord,
+  listEffismLiteMainTypes,
   listEffismLiteJobs,
+  listEffismLiteSubTypes,
   mapTaskMainTypeIdToLabel,
+  mapTaskSubTypeIdToLabel,
   mapApiWorkStatusToDayType,
   normalizeApiClockValue,
   saveEffismLiteTimeRecord,
 } from "../../services/effismLiteService";
 import "./EffismLite.css";
 
-const MAIN_TYPE_OPTIONS = ["Invoiceable", "Non Invoiceable"];
+const FALLBACK_MAIN_TYPE_OPTIONS = ["Invoiceable", "Non Invoiceable"];
 
 const JOB_NUMBER_OPTIONS = [
   "AES/Website/Plex/Ariesplex",
@@ -155,6 +158,7 @@ function createEditableTask(task = {}, overrides = {}) {
     workreportId: task.workreportId || "",
     taskName: task.taskName || "",
     mainType: task.mainType || "",
+    subType: task.subType || "",
     jobNumber: task.jobNumber || "",
     estimatedTime: task.estimatedTime || "00:00",
     actualTime: task.actualTime || "00:00",
@@ -734,20 +738,35 @@ function EffismLiteSearchableCombo({
             aria-expanded={showMenu}
             aria-autocomplete="list"
           />
-          <span className="effismLite-inputGlyph" aria-hidden="true">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m6 9 6 6 6-6"></path>
-            </svg>
-          </span>
+          <button
+            type="button"
+            className="effismLite-inputGlyphButton"
+            onMouseDown={(event) => {
+              event.preventDefault();
+            }}
+            onClick={() => {
+              if (!disabled) {
+                setMenuOpen((current) => !current);
+              }
+            }}
+            aria-label={menuOpen ? "Close options" : "Open options"}
+            disabled={disabled}
+          >
+            <span className="effismLite-inputGlyph" aria-hidden="true">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m6 9 6 6 6-6"></path>
+              </svg>
+            </span>
+          </button>
         </div>
 
         {showMenu ? (
@@ -939,6 +958,7 @@ function ClockPickerField({
   onChange,
   onBlur,
   placeholder = "00:00",
+  disabled = false,
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [draftHour, setDraftHour] = useState("00");
@@ -949,6 +969,10 @@ function ClockPickerField({
   const displayTime = isEditingTime ? editBuffer : `${value || ""}`;
 
   const openPicker = () => {
+    if (disabled) {
+      return;
+    }
+
     const sourceTime = isEditingTime ? editBuffer : `${value || ""}`;
     const matchedValue = `${sourceTime}`.trim().match(/^(\d{1,2})[:.](\d{2})$/);
 
@@ -977,6 +1001,9 @@ function ClockPickerField({
   };
 
   const handleTimeFocus = () => {
+    if (disabled) {
+      return;
+    }
     setIsEditingTime(true);
     setEditBuffer(`${value || ""}`);
   };
@@ -1014,6 +1041,7 @@ function ClockPickerField({
           onBlur={handleTimeBlur}
           placeholder={placeholder}
           autoComplete="off"
+          disabled={disabled}
         />
         <div className="effismLite-inputPickerGlyph">
           <button
@@ -1021,6 +1049,7 @@ function ClockPickerField({
             className="effismLite-timePickerIconButton effismLite-inputPickerGlyphButton"
             onClick={openPicker}
             aria-label={`${label} time picker`}
+            disabled={disabled}
           >
             <span className="effismLite-timePickerIcon" aria-hidden="true">
               <svg
@@ -1077,6 +1106,10 @@ export default function EffismLite() {
     siteTravel: "",
   });
   const [tasks, setTasks] = useState([]);
+  const [taskMainTypeOptions, setTaskMainTypeOptions] = useState(
+    FALLBACK_MAIN_TYPE_OPTIONS,
+  );
+  const [taskSubTypeOptions, setTaskSubTypeOptions] = useState([]);
   const [isTimeLogLoading, setIsTimeLogLoading] = useState(true);
   const [isTaskListLoading, setIsTaskListLoading] = useState(false);
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
@@ -1158,6 +1191,35 @@ export default function EffismLite() {
         clearTimeout(saveStatusHideTimerRef.current);
         saveStatusHideTimerRef.current = null;
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadTaskTypeOptions = async () => {
+      const [mainTypeOptions, subTypeOptions] = await Promise.all([
+        listEffismLiteMainTypes(),
+        listEffismLiteSubTypes(),
+      ]);
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (mainTypeOptions.length > 0) {
+        setTaskMainTypeOptions(mainTypeOptions.map((item) => item.label));
+      }
+
+      if (subTypeOptions.length > 0) {
+        setTaskSubTypeOptions(subTypeOptions.map((item) => item.label));
+      }
+    };
+
+    loadTaskTypeOptions();
+
+    return () => {
+      isMounted = false;
     };
   }, []);
 
@@ -1246,6 +1308,11 @@ export default function EffismLite() {
                 taskName: `${task.taskname || ""}`,
                 mainType: mapTaskMainTypeIdToLabel(
                   task.main_type ?? task.mian_type,
+                ),
+              subType:
+                `${task.job_type_name ?? task.sub_type_name ?? task.sub_type ?? ""}`.trim() ||
+                mapTaskSubTypeIdToLabel(
+                  task.sub_type ?? task.subtype ?? task.job_type ?? task.job_type_id,
                 ),
                 jobNumber: `${task.job_no || ""}`,
                 estimatedTime: normalizeApiClockValue(task.est_time),
@@ -1484,6 +1551,11 @@ export default function EffismLite() {
             workreportId: `${task.workreport_id || ""}`,
             taskName: `${task.taskname || ""}`,
             mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
+            subType:
+              `${task.job_type_name ?? task.sub_type_name ?? task.sub_type ?? ""}`.trim() ||
+              mapTaskSubTypeIdToLabel(
+                task.sub_type ?? task.subtype ?? task.job_type ?? task.job_type_id,
+              ),
             jobNumber: `${task.job_no || ""}`,
             estimatedTime: normalizeApiClockValue(task.est_time),
             actualTime: normalizeApiClockValue(task.act_time),
@@ -1927,10 +1999,24 @@ export default function EffismLite() {
                           onChange={(event) =>
                             updateTask(task.id, "mainType", event.target.value)
                           }
-                          options={MAIN_TYPE_OPTIONS}
+                          options={taskMainTypeOptions}
                           placeholder="Select or type a main type"
                           disabled={!task.isEditing}
                           ariaLabel="Main type"
+                        />
+
+                        <EffismLiteSearchableCombo
+                          id={`task-sub-type-${task.id}`}
+                          label="Sub Type"
+                          className="effismLite-fieldWide"
+                          value={task.subType}
+                          onChange={(event) =>
+                            updateTask(task.id, "subType", event.target.value)
+                          }
+                          options={taskSubTypeOptions}
+                          placeholder="Select or type a sub type"
+                          disabled={!task.isEditing}
+                          ariaLabel="Sub type"
                         />
 
                         <EffismLiteSearchableCombo
@@ -1951,61 +2037,41 @@ export default function EffismLite() {
                         />
 
                         <div className="effismLite-taskTimeRow effismLite-fieldWide">
-                          <label
-                            className="effismLite-field"
-                            htmlFor={`task-estimated-time-${task.id}`}
-                          >
-                            <span className="effismLite-fieldLabel">
-                              Est Time
-                            </span>
-                            <input
-                              id={`task-estimated-time-${task.id}`}
-                              className="effismLite-input"
-                              type="text"
-                              inputMode="text"
-                              value={task.estimatedTime}
-                              onChange={(event) =>
-                                updateTask(
-                                  task.id,
-                                  "estimatedTime",
-                                  formatClockInputAsTyped(event.target.value),
-                                )
-                              }
-                              onBlur={() =>
-                                handleTaskTimeBlur(task.id, "estimatedTime")
-                              }
-                              placeholder="00:00"
-                              disabled={!task.isEditing}
-                            />
-                          </label>
+                          <ClockPickerField
+                            id={`task-estimated-time-${task.id}`}
+                            label="Est Time"
+                            value={task.estimatedTime}
+                            onChange={(event) =>
+                              updateTask(
+                                task.id,
+                                "estimatedTime",
+                                formatClockInputAsTyped(event.target.value),
+                              )
+                            }
+                            onBlur={() =>
+                              handleTaskTimeBlur(task.id, "estimatedTime")
+                            }
+                            placeholder="00:00"
+                            disabled={!task.isEditing}
+                          />
 
-                          <label
-                            className="effismLite-field"
-                            htmlFor={`task-actual-time-${task.id}`}
-                          >
-                            <span className="effismLite-fieldLabel">
-                              Act Time
-                            </span>
-                            <input
-                              id={`task-actual-time-${task.id}`}
-                              className="effismLite-input"
-                              type="text"
-                              inputMode="text"
-                              value={task.actualTime}
-                              onChange={(event) =>
-                                updateTask(
-                                  task.id,
-                                  "actualTime",
-                                  formatClockInputAsTyped(event.target.value),
-                                )
-                              }
-                              onBlur={() =>
-                                handleTaskTimeBlur(task.id, "actualTime")
-                              }
-                              placeholder="00:00"
-                              disabled={!task.isEditing}
-                            />
-                          </label>
+                          <ClockPickerField
+                            id={`task-actual-time-${task.id}`}
+                            label="Act Time"
+                            value={task.actualTime}
+                            onChange={(event) =>
+                              updateTask(
+                                task.id,
+                                "actualTime",
+                                formatClockInputAsTyped(event.target.value),
+                              )
+                            }
+                            onBlur={() =>
+                              handleTaskTimeBlur(task.id, "actualTime")
+                            }
+                            placeholder="00:00"
+                            disabled={!task.isEditing}
+                          />
                         </div>
 
                         <label
@@ -2028,7 +2094,7 @@ export default function EffismLite() {
                           />
                         </label>
 
-                        <div className="effismLite-field">
+                        <div className="effismLite-field effismLite-taskStatusField">
                           <div className="effismLite-taskStatusHeader">
                             <span className="effismLite-fieldLabel">Status</span>
                             <span className="effismLite-taskStatusValue">

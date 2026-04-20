@@ -500,6 +500,29 @@
   pointer-events: none;
 }
 
+.effismLite-inputGlyphButton {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.effismLite-inputGlyphButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(21, 138, 119, 0.16);
+}
+
 .effismLite-textarea {
   min-height: 132px;
   padding-block: 14px;
@@ -837,6 +860,10 @@
   font-weight: 700;
   line-height: 1;
   margin-right: 7px;
+  padding-right: 0;
+}
+
+.effismLite-taskCard:not(.is-expanded) .effismLite-taskNumberPill {
   padding-right: 7px;
   border-right: 1px solid rgba(15, 23, 42, 0.16);
 }
@@ -881,6 +908,10 @@
 .effismLite-taskStatusSliderWrap {
   display: grid;
   gap: 8px;
+}
+
+.effismLite-taskStatusField {
+  margin-block: 12px 14px;
 }
 
 .effismLite-taskStatusHeader {

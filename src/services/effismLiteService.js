@@ -98,6 +98,83 @@ const TASK_MAIN_TYPE_ID_TO_LABEL = {
   "2": "Non Invoiceable",
 };
 
+let taskMainTypeCatalog = [];
+let taskSubTypeCatalog = [];
+
+function normalizeMainTypeOption(item) {
+  const id = `${item?.main_type_id ?? item?.id ?? ""}`.trim();
+  const label = `${item?.main_type_name ?? item?.name ?? ""}`.trim();
+
+  if (!id || !label) {
+    return null;
+  }
+
+  return {
+    id,
+    label,
+  };
+}
+
+function normalizeSubTypeOption(item) {
+  const id = `${item?.id ?? item?.sub_type_id ?? item?.job_type_id ?? ""}`.trim();
+  const label = `${item?.job_type_name ?? item?.sub_type_name ?? item?.name ?? ""}`.trim();
+
+  if (!id || !label) {
+    return null;
+  }
+
+  return {
+    id,
+    label,
+  };
+}
+
+async function listTaskCatalogByAction(actionValue, normalizeItem) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return [];
+  }
+
+  const formData = new FormData();
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=${actionValue}`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload) || !Array.isArray(payload?.data)) {
+      return [];
+    }
+
+    return payload.data
+      .map((item) => normalizeItem(item))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+export async function listEffismLiteMainTypes() {
+  const options = await listTaskCatalogByAction("mainType", normalizeMainTypeOption);
+  taskMainTypeCatalog = options;
+  return options;
+}
+
+export async function listEffismLiteSubTypes() {
+  const options = await listTaskCatalogByAction("subType", normalizeSubTypeOption);
+  taskSubTypeCatalog = options;
+  return options;
+}
+
 export function mapApiWorkStatusToDayType(value) {
   const normalizedValue = `${value || ""}`.trim().toLowerCase();
 
@@ -141,6 +218,11 @@ export function mapTaskMainTypeIdToLabel(value) {
     return "";
   }
 
+  const fromCatalog = taskMainTypeCatalog.find((item) => item.id === normalizedValue);
+  if (fromCatalog) {
+    return fromCatalog.label;
+  }
+
   if (TASK_MAIN_TYPE_ID_TO_LABEL[normalizedValue]) {
     return TASK_MAIN_TYPE_ID_TO_LABEL[normalizedValue];
   }
@@ -158,16 +240,51 @@ export function mapTaskMainTypeLabelToId(value) {
     return "";
   }
 
+  const loweredValue = normalizedValue.toLowerCase();
+  const fromCatalog = taskMainTypeCatalog.find(
+    (item) => item.label.toLowerCase() === loweredValue,
+  );
+  if (fromCatalog) {
+    return fromCatalog.id;
+  }
+
   if (TASK_MAIN_TYPE_TO_ID[normalizedValue]) {
     return TASK_MAIN_TYPE_TO_ID[normalizedValue];
   }
 
-  const lowered = normalizedValue.toLowerCase();
   const matchedKey = Object.keys(TASK_MAIN_TYPE_TO_ID).find(
-    (key) => key.toLowerCase() === lowered,
+    (key) => key.toLowerCase() === loweredValue,
   );
 
   return matchedKey ? TASK_MAIN_TYPE_TO_ID[matchedKey] : "";
+}
+
+export function mapTaskSubTypeIdToLabel(value) {
+  const normalizedValue = `${value || ""}`.trim();
+  if (!normalizedValue) {
+    return "";
+  }
+
+  const fromCatalog = taskSubTypeCatalog.find((item) => item.id === normalizedValue);
+  if (fromCatalog) {
+    return fromCatalog.label;
+  }
+
+  return "";
+}
+
+export function mapTaskSubTypeLabelToId(value) {
+  const normalizedValue = `${value || ""}`.trim();
+  if (!normalizedValue) {
+    return "";
+  }
+
+  const loweredValue = normalizedValue.toLowerCase();
+  const fromCatalog = taskSubTypeCatalog.find(
+    (item) => item.label.toLowerCase() === loweredValue,
+  );
+
+  return fromCatalog ? fromCatalog.id : "";
 }
 
 export async function getEffismLiteLastWorkingDate() {
@@ -352,6 +469,7 @@ export async function listEffismLiteJobs(dateValue) {
 function buildTaskFormData(task, date) {
   const taskName = `${task?.taskName || ""}`.trim();
   const mainTypeId = mapTaskMainTypeLabelToId(task?.mainType);
+  const subTypeId = mapTaskSubTypeLabelToId(task?.subType);
   const estimatedTime = normalizeTaskTimeForApi(task?.estimatedTime);
   const actualTime = normalizeTaskTimeForApi(task?.actualTime);
   const jobNumber = `${task?.jobNumber || ""}`.trim();
@@ -369,6 +487,9 @@ function buildTaskFormData(task, date) {
   formData.append("date", date);
   formData.append("taskname", taskName);
   formData.append("main_type", mainTypeId);
+  if (subTypeId) {
+    formData.append("sub_type", subTypeId);
+  }
   formData.append("est_time", estimatedTime);
   formData.append("act_time", actualTime || "00:00");
   formData.append("job_no", jobNumber);
