@@ -300,6 +300,24 @@ function formatDateDisplayValue(value) {
   }).format(dateValue);
 }
 
+function mapTaskErrorsFromPayload(payload) {
+  if (!payload || payload.sub_error !== true || !Array.isArray(payload.errors)) {
+    return new Map();
+  }
+
+  return payload.errors.reduce((result, entry) => {
+    const taskId =
+      `${entry?.task_id ?? entry?.workreport_id ?? entry?.work_report_id ?? entry?.id ?? ""}`.trim();
+    const reason = `${entry?.reason || ""}`.trim();
+
+    if (taskId && reason) {
+      result.set(taskId, reason);
+    }
+
+    return result;
+  }, new Map());
+}
+
 const HOURS_24_LIST = Array.from({ length: 24 }, (_, index) =>
   String(index).padStart(2, "0"),
 );
@@ -1180,6 +1198,7 @@ export default function EffismLite() {
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
   const [jobDiaryCompleteStatus, setJobDiaryCompleteStatus] = useState("idle");
   const [jobDiaryCompleteMessage, setJobDiaryCompleteMessage] = useState("");
+  const [taskErrorsByWorkreportId, setTaskErrorsByWorkreportId] = useState(new Map());
   const [showCompleteConfirmation, setShowCompleteConfirmation] = useState(false);
   const hasHydratedTimeRef = useRef(false);
   const loadedTaskDateRef = useRef("");
@@ -1416,6 +1435,19 @@ export default function EffismLite() {
     };
   }, [isTaskStep, jobDetails.date]);
 
+  useEffect(() => {
+    if (jobDiaryCompleteStatus !== "error") {
+      return;
+    }
+
+    if (taskErrorsByWorkreportId.size > 0) {
+      return;
+    }
+
+    setJobDiaryCompleteStatus("idle");
+    setJobDiaryCompleteMessage("");
+  }, [jobDiaryCompleteStatus, taskErrorsByWorkreportId]);
+
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
   const updateJobDetails = (field, value) => {
@@ -1458,6 +1490,7 @@ export default function EffismLite() {
     }
 
     setIsTimeLogLoading(true);
+    setTaskErrorsByWorkreportId(new Map());
 
     try {
       const [timeRecord, jobDiaryStatusResult] = await Promise.all([
@@ -1539,6 +1572,7 @@ export default function EffismLite() {
     if (result.success) {
       setJobDiaryCompleteStatus("success");
       setJobDiaryCompleteMessage("Job diary completed.");
+      setTaskErrorsByWorkreportId(new Map());
       return;
     }
 
@@ -1546,6 +1580,7 @@ export default function EffismLite() {
     setJobDiaryCompleteMessage(
       result.message || "Failed to complete job diary.",
     );
+    setTaskErrorsByWorkreportId(mapTaskErrorsFromPayload(result.payload));
   };
 
   const handleCancelComplete = () => {
@@ -1693,6 +1728,19 @@ export default function EffismLite() {
           : task,
       ),
     );
+
+    const savedWorkreportId = `${taskToSave.workreportId || ""}`.trim();
+    if (savedWorkreportId) {
+      setTaskErrorsByWorkreportId((currentErrors) => {
+        if (!currentErrors.has(savedWorkreportId)) {
+          return currentErrors;
+        }
+
+        const nextErrors = new Map(currentErrors);
+        nextErrors.delete(savedWorkreportId);
+        return nextErrors;
+      });
+    }
 
     const refreshedTasks = await listEffismLiteJobs(jobDetails.date);
     setTasks(
@@ -1895,10 +1943,15 @@ export default function EffismLite() {
             </div>
           ) : (
             <div className="effismLite-taskStack">
-              {tasks.map((task, taskIndex) => (
+              {tasks.map((task, taskIndex) => {
+                const taskSubError = taskErrorsByWorkreportId.get(
+                  `${task.workreportId || ""}`.trim(),
+                );
+
+                return (
                 <article
                   key={task.id}
-                  className={`effismLite-taskCard${task.isExpanded ? " is-expanded" : ""}${task.isEditing ? " is-editing" : ""}`}
+                  className={`effismLite-taskCard${task.isExpanded ? " is-expanded" : ""}${task.isEditing ? " is-editing" : ""}${taskSubError ? " is-sub-error" : ""}`}
                 >
                 {!task.isExpanded ? (
                   <div
@@ -2026,6 +2079,11 @@ export default function EffismLite() {
                           {normalizeStatusValue(task.status)}
                         </span>
                       </div>
+                      {taskSubError ? (
+                        <div className="effismLite-taskSubErrorPill" role="alert">
+                          {taskSubError}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}
@@ -2363,7 +2421,8 @@ export default function EffismLite() {
                   </>
                 ) : null}
                 </article>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
