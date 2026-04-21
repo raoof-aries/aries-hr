@@ -645,6 +645,42 @@
   line-height: 1;
 }
 
+.effismLite-taskMetricsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.effismLite-taskMetricCard {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(1, 67, 66, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #f6fbfa 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 16px rgba(15, 23, 42, 0.04);
+}
+
+.effismLite-taskMetricLabel {
+  color: #0f6d61;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.effismLite-taskMetricValue {
+  color: #123430;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
 .effismLite-completeNotice {
   text-align: center;
   padding: 10px 14px;
@@ -1171,6 +1207,18 @@
 
   .effismLite-taskToolbarButton {
     width: auto;
+  }
+
+  .effismLite-taskMetricsRow {
+    gap: 10px;
+  }
+
+  .effismLite-taskMetricCard {
+    padding: 10px 12px;
+  }
+
+  .effismLite-taskMetricValue {
+    font-size: 0.96rem;
   }
 
   .effismLite-completeButton {

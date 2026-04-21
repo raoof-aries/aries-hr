@@ -11,6 +11,7 @@ import {
   completeEffismLiteJobDiary,
   editEffismLiteJob,
   getEffismLiteJobDiaryStatus,
+  getEffismLiteJobDiarySummary,
   getEffismLiteLastWorkingDate,
   getEffismLiteTimeRecord,
   listEffismLiteMainTypes,
@@ -165,6 +166,32 @@ function normalizeStatusValue(value) {
   }
 
   return `${Math.round(percentage / 5) * 5}%`;
+}
+
+function parseClockValueToMinutes(value) {
+  const normalizedValue = normalizeClockInput(`${value || ""}`.trim());
+  const matchedValue = normalizedValue.match(/^(\d{1,2}):(\d{2})$/);
+
+  if (!matchedValue) {
+    return 0;
+  }
+
+  const hours = Number(matchedValue[1]);
+  const minutes = Number(matchedValue[2]);
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes) || minutes > 59) {
+    return 0;
+  }
+
+  return hours * 60 + minutes;
+}
+
+function formatMinutesToClock(totalMinutes) {
+  const safeMinutes = Math.max(0, Number(totalMinutes) || 0);
+  const hours = Math.floor(safeMinutes / 60);
+  const minutes = safeMinutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 function createEditableTask(task = {}, overrides = {}) {
@@ -1199,6 +1226,7 @@ export default function EffismLite() {
   const [jobDiaryCompleteStatus, setJobDiaryCompleteStatus] = useState("idle");
   const [jobDiaryCompleteMessage, setJobDiaryCompleteMessage] = useState("");
   const [taskErrorsByWorkreportId, setTaskErrorsByWorkreportId] = useState(new Map());
+  const [taskSummaryMetrics, setTaskSummaryMetrics] = useState(null);
   const [showCompleteConfirmation, setShowCompleteConfirmation] = useState(false);
   const hasHydratedTimeRef = useRef(false);
   const loadedTaskDateRef = useRef("");
@@ -1382,7 +1410,10 @@ export default function EffismLite() {
     const loadTasks = async () => {
       setIsTaskListLoading(true);
       try {
-        const taskList = await listEffismLiteJobs(jobDetails.date);
+        const [taskList, summaryMetrics] = await Promise.all([
+          listEffismLiteJobs(jobDetails.date),
+          getEffismLiteJobDiarySummary(jobDetails.date),
+        ]);
         if (!isMounted) {
           return;
         }
@@ -1420,6 +1451,7 @@ export default function EffismLite() {
             ),
           ),
         );
+        setTaskSummaryMetrics(summaryMetrics);
         loadedTaskDateRef.current = jobDetails.date;
       } finally {
         if (isMounted) {
@@ -1819,6 +1851,34 @@ export default function EffismLite() {
     return result;
   }, [tasks]);
 
+  const taskTopMetrics = useMemo(() => {
+    const totalEstimatedMinutes = tasks.reduce(
+      (total, task) => total + parseClockValueToMinutes(task.estimatedTime),
+      0,
+    );
+    const totalActualMinutes = tasks.reduce(
+      (total, task) => total + parseClockValueToMinutes(task.actualTime),
+      0,
+    );
+    const fallbackTotalAct = formatMinutesToClock(totalActualMinutes);
+    const fallbackTotalEst = formatMinutesToClock(totalEstimatedMinutes);
+
+    return [
+      {
+        label: "Total Est",
+        value: taskSummaryMetrics?.totalEst || fallbackTotalEst,
+      },
+      {
+        label: "Total Act",
+        value: taskSummaryMetrics?.totalAct || fallbackTotalAct,
+      },
+      {
+        label: "Net Time",
+        value: taskSummaryMetrics?.netTime || "--:--",
+      },
+    ];
+  }, [tasks, taskSummaryMetrics]);
+
   return (
     <div className="effismLite-page">
       <div className="effismLite-toolbar">
@@ -1933,6 +1993,17 @@ export default function EffismLite() {
             Add Task
           </button>
         </div>
+      ) : null}
+
+      {isTaskStep ? (
+        <section className="effismLite-taskMetricsRow" aria-label="Task metrics">
+          {taskTopMetrics.map((metric) => (
+            <article key={metric.label} className="effismLite-taskMetricCard">
+              <span className="effismLite-taskMetricLabel">{metric.label}</span>
+              <strong className="effismLite-taskMetricValue">{metric.value}</strong>
+            </article>
+          ))}
+        </section>
       ) : null}
 
       {isTaskStep ? (

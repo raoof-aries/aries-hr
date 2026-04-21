@@ -702,3 +702,45 @@ export async function getEffismLiteJobDiaryStatus(dateValue) {
     };
   }
 }
+
+export async function getEffismLiteJobDiarySummary(dateValue) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return null;
+  }
+
+  const normalizedDateValue = `${dateValue || ""}`.trim();
+  if (!normalizedDateValue) {
+    return null;
+  }
+
+  const formData = new FormData();
+  formData.append("date", normalizedDateValue);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=jobdiarySummary`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return null;
+    }
+
+    return {
+      netTime: normalizeApiClockValue(payload?.net_time),
+      totalAct: normalizeApiClockValue(payload?.total_act),
+      totalEst: normalizeApiClockValue(payload?.total_est),
+    };
+  } catch {
+    return null;
+  }
+}
