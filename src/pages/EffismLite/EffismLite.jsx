@@ -124,6 +124,7 @@ export default function EffismLite() {
   const hasUserEditedTimeRef = useRef(false);
   const saveStatusHideTimerRef = useRef(null);
 
+  // Initial load: hydrate date/time details and completion status.
   useEffect(() => {
     let isMounted = true;
 
@@ -202,6 +203,7 @@ export default function EffismLite() {
     };
   }, []);
 
+  // Load task type dropdown options once.
   useEffect(() => {
     let isMounted = true;
 
@@ -231,6 +233,7 @@ export default function EffismLite() {
     };
   }, []);
 
+  // Autosave time-log edits after a short debounce.
   useEffect(() => {
     if (!hasHydratedTimeRef.current) {
       return;
@@ -268,6 +271,7 @@ export default function EffismLite() {
     };
   }, [jobDetails]);
 
+  // Hide transient save badge after success/error feedback.
   useEffect(() => {
     if (timeSaveStatus !== "saved" && timeSaveStatus !== "error") {
       return;
@@ -286,6 +290,7 @@ export default function EffismLite() {
     };
   }, [timeSaveStatus]);
 
+  // Load tasks + summary whenever user enters task step for a new date.
   useEffect(() => {
     if (!isTaskStep || !jobDetails.date) {
       return;
@@ -357,6 +362,7 @@ export default function EffismLite() {
     };
   }, [isTaskStep, jobDetails.date]);
 
+  // Refresh summary metrics after diary completion.
   useEffect(() => {
     if (jobDiaryCompleteStatus !== "success" || !jobDetails.date) {
       return;
@@ -378,6 +384,7 @@ export default function EffismLite() {
     };
   }, [jobDiaryCompleteStatus, jobDetails.date]);
 
+  // Clear generic error state when no task-level API errors remain.
   useEffect(() => {
     if (jobDiaryCompleteStatus !== "error") {
       return;
@@ -391,9 +398,12 @@ export default function EffismLite() {
     setJobDiaryCompleteMessage("");
   }, [jobDiaryCompleteStatus, taskErrorsByWorkreportId]);
 
+  // Derived screen mode flags.
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
   const isSummaryMode = jobDiaryCompleteStatus === "success";
+
+  // Generic job-details updater with autosave tracking.
   const updateJobDetails = (field, value) => {
     hasUserEditedTimeRef.current = true;
     setJobDetails((currentJobDetails) => ({
@@ -406,6 +416,7 @@ export default function EffismLite() {
     updateJobDetails(field, formatClockInputAsTyped(value));
   };
 
+  // Normalize clock text when user leaves time input.
   const handleJobTimeBlur = (field) => {
     hasUserEditedTimeRef.current = true;
     setJobDetails((currentJobDetails) => ({
@@ -427,6 +438,7 @@ export default function EffismLite() {
     }));
   };
 
+  // Switch date context and rehydrate time-log data for selected date.
   const handleTimeLogDateChange = async (event) => {
     const nextDate = `${event?.target?.value || ""}`.trim();
     if (!nextDate || nextDate === jobDetails.date) {
@@ -501,6 +513,7 @@ export default function EffismLite() {
     navigate(path);
   };
 
+  // Completion flow handlers (confirm/cancel/submit).
   const handleComplete = () => {
     if (jobDiaryCompleteStatus === "loading") {
       return;
@@ -546,6 +559,7 @@ export default function EffismLite() {
     ]);
   };
 
+  // Task-level edit/update helpers.
   const updateTask = (taskId, field, value) => {
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
@@ -615,6 +629,7 @@ export default function EffismLite() {
     });
   };
 
+  // Persist a task (create or update), then refresh list from API.
   const handleSaveTask = async (taskId) => {
     const taskToSave = tasks.find((task) => task.id === taskId);
     if (!taskToSave || !jobDetails.date) {
@@ -739,6 +754,7 @@ export default function EffismLite() {
     );
   };
 
+  // Accessibility: support Enter/Space on clickable task headers.
   const handleTaskHeaderKeyDown = (event, taskId) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -746,6 +762,7 @@ export default function EffismLite() {
     }
   };
 
+  // Compute stable task numbering (saved first, drafts after).
   const taskDisplayNumberById = useMemo(() => {
     const savedIdsInOrder = tasks.filter((task) => task.isSaved).map((task) => task.id);
     const draftIdsInOrder = tasks.filter((task) => !task.isSaved).map((task) => task.id);
@@ -763,6 +780,7 @@ export default function EffismLite() {
     return result;
   }, [tasks]);
 
+  // Top-level task metrics cards.
   const taskTopMetrics = useMemo(() => {
     const totalEstimatedMinutes = tasks.reduce(
       (total, task) => total + parseClockValueToMinutes(task.estimatedTime),
@@ -791,6 +809,7 @@ export default function EffismLite() {
     ];
   }, [tasks, taskSummaryMetrics]);
 
+  // Aggregate task completion progress.
   const overallTaskProgress = useMemo(() => {
     if (!tasks.length) {
       return {
@@ -815,6 +834,7 @@ export default function EffismLite() {
     };
   }, [tasks]);
 
+  // Time-log summary metrics used by summary view.
   const timeLogMetrics = useMemo(() => {
     const metrics = [
       { label: "Date", value: formatDateDisplayValue(jobDetails.date) },
@@ -851,6 +871,7 @@ export default function EffismLite() {
 
   return (
     <div className="effismLite-page">
+      {/* Top navigation and completion action */}
       <div className="effismLite-toolbar">
         <div
           className="effismLite-tabs"
@@ -915,7 +936,9 @@ export default function EffismLite() {
       ) : null}
 
       {showCompleteConfirmation ? (
-        <div className="effismLite-completeConfirmCard" role="alertdialog">
+        <>
+          {/* Completion confirmation prompt */}
+          <div className="effismLite-completeConfirmCard" role="alertdialog">
           <p className="effismLite-completeConfirmText">
             Are you sure you want to complete this job diary?
           </p>
@@ -935,11 +958,14 @@ export default function EffismLite() {
               Complete
             </button>
           </div>
-        </div>
+          </div>
+        </>
       ) : null}
 
       {isTaskStep ? (
-        <div className="effismLite-taskToolbarRow">
+        <>
+          {/* Task section header and add-task action */}
+          <div className="effismLite-taskToolbarRow">
           <div className="effismLite-taskToolbarHeading">
             <h2 className="effismLite-taskToolbarTitle">
               Tasks{" "}
@@ -967,11 +993,14 @@ export default function EffismLite() {
               Add Task
             </button>
           ) : null}
-        </div>
+          </div>
+        </>
       ) : null}
 
       {isTaskStep ? (
-        <section className="effismLite-taskMetricsContainer" aria-label="Task metrics">
+        <>
+          {/* Task metrics and progress bar */}
+          <section className="effismLite-taskMetricsContainer" aria-label="Task metrics">
           <div className="effismLite-taskMetricsRow">
             {taskTopMetrics.map((metric) => (
               <article key={metric.label} className="effismLite-taskMetricCard">
@@ -1000,11 +1029,14 @@ export default function EffismLite() {
               {overallTaskProgress.completedCount}/{overallTaskProgress.totalCount}
             </span>
           </div>
-        </section>
+          </section>
+        </>
       ) : null}
 
       {isTaskStep ? (
-        <section className="effismLite-panelTasks">
+        <>
+          {/* Task list (collapsed/expanded cards with edit/summary modes) */}
+          <section className="effismLite-panelTasks">
           {isTaskListLoading ? (
             <div className="effismLite-stepLoader" role="status" aria-live="polite">
               <span className="effismLite-spinner" aria-hidden="true" />
@@ -1590,17 +1622,23 @@ export default function EffismLite() {
               })}
             </div>
           )}
-        </section>
+          </section>
+        </>
       ) : isTimeLogLoading ? (
-        <div
+        <>
+          {/* Loading state for time-log page */}
+          <div
           className="effismLite-stepLoader effismLite-stepLoaderStandalone"
           role="status"
           aria-live="polite"
         >
           <span className="effismLite-spinner" aria-hidden="true" />
-        </div>
+          </div>
+        </>
       ) : isSummaryMode ? (
-        <div className="effismLite-timeLogSummaryPanel">
+        <>
+          {/* Read-only time-log summary once diary is completed */}
+          <div className="effismLite-timeLogSummaryPanel">
           <div className="effismLite-summaryHeaderRow">
             <h3 className="effismLite-summarySectionTitle">Time Log Summary</h3>
             <span className="effismLite-inlineCompletePill">Completed</span>
@@ -1642,9 +1680,12 @@ export default function EffismLite() {
                 ))}
             </div>
           </section>
-        </div>
+          </div>
+        </>
       ) : (
-        <section className="effismLite-panel">
+        <>
+          {/* Editable time-log form */}
+          <section className="effismLite-panel">
           {timeSaveStatus !== "idle" ? (
             <div className="effismLite-saveStatusWrap" aria-live="polite">
               <span
@@ -1774,7 +1815,8 @@ export default function EffismLite() {
                 />
               </div>
           </div>
-        </section>
+          </section>
+        </>
       )}
     </div>
   );
