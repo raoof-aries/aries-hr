@@ -1451,6 +1451,75 @@ export default function EffismLite() {
     }));
   };
 
+  const handleTimeLogDateChange = async (event) => {
+    const nextDate = `${event?.target?.value || ""}`.trim();
+    if (!nextDate || nextDate === jobDetails.date) {
+      return;
+    }
+
+    setIsTimeLogLoading(true);
+
+    try {
+      const [timeRecord, jobDiaryStatusResult] = await Promise.all([
+        getEffismLiteTimeRecord(nextDate),
+        getEffismLiteJobDiaryStatus(nextDate),
+      ]);
+
+      hasUserEditedTimeRef.current = false;
+
+      if (timeRecord) {
+        const normalizedTimeIn = normalizeApiClockValue(timeRecord.time_in);
+        const normalizedTimeOut = normalizeApiClockValue(timeRecord.time_out);
+        const timeInValue =
+          normalizedTimeIn && normalizedTimeIn !== "00:00"
+            ? convertNativeTimeToMeridiem(normalizedTimeIn)
+            : { time: "00:00", meridiem: "AM" };
+        const timeOutValue =
+          normalizedTimeOut && normalizedTimeOut !== "00:00"
+            ? convertNativeTimeToMeridiem(normalizedTimeOut)
+            : { time: "00:00", meridiem: "PM" };
+
+        setJobDetails((currentJobDetails) => ({
+          ...currentJobDetails,
+          date: nextDate,
+          dayType: mapApiWorkStatusToDayType(timeRecord.work_status),
+          daySubtype: "",
+          timeIn: timeInValue.time,
+          timeInMeridiem: timeInValue.meridiem,
+          timeOut: timeOutValue.time,
+          timeOutMeridiem: timeOutValue.meridiem,
+          breakTime: normalizeApiClockValue(timeRecord.nwt),
+          siteTravel: normalizeApiClockValue(timeRecord.site_travel),
+        }));
+      } else {
+        setJobDetails((currentJobDetails) => ({
+          ...currentJobDetails,
+          date: nextDate,
+          dayType: "",
+          daySubtype: "",
+          timeIn: "00:00",
+          timeInMeridiem: "AM",
+          timeOut: "00:00",
+          timeOutMeridiem: "PM",
+          breakTime: "",
+          siteTravel: "",
+        }));
+      }
+
+      if (jobDiaryStatusResult.isComplete) {
+        setJobDiaryCompleteStatus("success");
+        setJobDiaryCompleteMessage("Job diary completed.");
+      } else if (jobDiaryStatusResult.success) {
+        setJobDiaryCompleteStatus("idle");
+        setJobDiaryCompleteMessage("");
+      }
+
+      loadedTaskDateRef.current = "";
+    } finally {
+      setIsTimeLogLoading(false);
+    }
+  };
+
   const goToStep = (path) => {
     navigate(path);
   };
@@ -2329,8 +2398,7 @@ export default function EffismLite() {
               className="effismLite-fieldWide"
               label="Date"
               value={jobDetails.date}
-              onChange={() => {}}
-              disabled
+              onChange={handleTimeLogDateChange}
             />
 
             <div className="effismLite-field effismLite-fieldWide">
