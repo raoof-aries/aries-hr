@@ -1,5 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   LEAVE_DAY_SUBTYPE_OPTIONS,
@@ -23,6 +22,11 @@ import {
   normalizeApiClockValue,
   saveEffismLiteTimeRecord,
 } from "../../services/effismLiteService";
+import ClockPickerField from "./components/ClockPickerField/ClockPickerField";
+import DatePickerField from "./components/DatePickerField/DatePickerField";
+import EffismLiteDropdown from "./components/EffismLiteDropdown/EffismLiteDropdown";
+import EffismLiteSearchableCombo from "./components/EffismLiteSearchableCombo/EffismLiteSearchableCombo";
+import MeridiemTimeInput from "./components/MeridiemTimeInput/MeridiemTimeInput";
 import "./EffismLite.css";
 
 const FALLBACK_MAIN_TYPE_OPTIONS = ["Invoiceable", "Non Invoiceable"];
@@ -345,352 +349,6 @@ function mapTaskErrorsFromPayload(payload) {
   }, new Map());
 }
 
-const HOURS_24_LIST = Array.from({ length: 24 }, (_, index) =>
-  String(index).padStart(2, "0"),
-);
-
-const MINUTES_LIST = Array.from({ length: 60 }, (_, index) =>
-  String(index).padStart(2, "0"),
-);
-
-const HOURS_12_LIST = Array.from({ length: 12 }, (_, index) =>
-  String(index + 1).padStart(2, "0"),
-);
-
-const MERIDIEM_OPTIONS = [
-  { value: "AM", label: "AM" },
-  { value: "PM", label: "PM" },
-];
-
-function EffismLiteDropdown({
-  id,
-  value,
-  onValueChange,
-  options,
-  placeholder = "Select",
-  disabled = false,
-  className = "",
-  triggerClassName = "",
-  menuAlign = "stretch",
-  ariaLabel,
-}) {
-  const listboxId = useId();
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef(null);
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    const handlePointerDown = (event) => {
-      if (rootRef.current?.contains(event.target)) {
-        return;
-      }
-
-      setOpen(false);
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("touchstart", handlePointerDown, {
-      passive: true,
-    });
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("touchstart", handlePointerDown);
-    };
-  }, [open]);
-
-  const selectedOption = options.find((option) => option.value === value);
-  const displayLabel = selectedOption?.label ?? placeholder;
-  const showPlaceholder = selectedOption === undefined;
-
-  return (
-    <div
-      className={`effismLite-dropdownRoot${className ? ` ${className}` : ""}`}
-      ref={rootRef}
-    >
-      <button
-        type="button"
-        id={id}
-        className={`effismLite-dropdownTrigger effismLite-input effismLite-select${triggerClassName ? ` ${triggerClassName}` : ""}${showPlaceholder ? " is-placeholder" : ""}`}
-        aria-label={ariaLabel}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={listboxId}
-        disabled={disabled}
-        onClick={() => {
-          if (!disabled) {
-            setOpen((current) => !current);
-          }
-        }}
-      >
-        {displayLabel}
-      </button>
-
-      {open && !disabled ? (
-        <ul
-          id={listboxId}
-          className={`effismLite-dropdownMenu${menuAlign === "end" ? " is-align-end" : ""}`}
-          role="listbox"
-        >
-          {options.map((option) => {
-            const isActive = option.value === value;
-
-            return (
-              <li key={`${option.value}`} role="presentation">
-                <button
-                  type="button"
-                  className={`effismLite-dropdownOption${isActive ? " is-selected" : ""}`}
-                  role="option"
-                  aria-selected={isActive}
-                  onClick={() => {
-                    onValueChange(option.value);
-                    setOpen(false);
-                  }}
-                >
-                  {option.label}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-    </div>
-  );
-}
-
-function EffismLiteTimePickerColumns({ hour, minute, hoursList, onHour, onMinute }) {
-  const hourRef = useRef(null);
-  const minuteRef = useRef(null);
-
-  useEffect(() => {
-    const hourButton = hourRef.current?.querySelector(".is-selected");
-    hourButton?.scrollIntoView({ block: "nearest" });
-  }, [hour]);
-
-  useEffect(() => {
-    const minuteButton = minuteRef.current?.querySelector(".is-selected");
-    minuteButton?.scrollIntoView({ block: "nearest" });
-  }, [minute]);
-
-  return (
-    <div className="effismLite-timePickerColumns">
-      <div className="effismLite-timePickerColumn" ref={hourRef}>
-        <span className="effismLite-timePickerColumnLabel">Hour</span>
-        <div className="effismLite-timePickerColumnScroll">
-          {hoursList.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={`effismLite-timePickerCell${item === hour ? " is-selected" : ""}`}
-              onClick={() => onHour(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="effismLite-timePickerColumn" ref={minuteRef}>
-        <span className="effismLite-timePickerColumnLabel">Minute</span>
-        <div className="effismLite-timePickerColumnScroll">
-          {MINUTES_LIST.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={`effismLite-timePickerCell${item === minute ? " is-selected" : ""}`}
-              onClick={() => onMinute(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EffismLiteMeridiemPickerColumns({
-  hour,
-  minute,
-  meridiem,
-  onHour,
-  onMinute,
-  onMeridiem,
-}) {
-  const hourRef = useRef(null);
-  const minuteRef = useRef(null);
-  const meridiemRef = useRef(null);
-
-  useEffect(() => {
-    hourRef.current?.querySelector(".is-selected")?.scrollIntoView({
-      block: "nearest",
-    });
-  }, [hour]);
-
-  useEffect(() => {
-    minuteRef.current?.querySelector(".is-selected")?.scrollIntoView({
-      block: "nearest",
-    });
-  }, [minute]);
-
-  useEffect(() => {
-    meridiemRef.current?.querySelector(".is-selected")?.scrollIntoView({
-      block: "nearest",
-    });
-  }, [meridiem]);
-
-  return (
-    <div className="effismLite-timePickerColumns effismLite-timePickerColumnsTriple">
-      <div className="effismLite-timePickerColumn" ref={hourRef}>
-        <span className="effismLite-timePickerColumnLabel">Hour</span>
-        <div className="effismLite-timePickerColumnScroll">
-          {HOURS_12_LIST.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={`effismLite-timePickerCell${item === hour ? " is-selected" : ""}`}
-              onClick={() => onHour(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="effismLite-timePickerColumn" ref={minuteRef}>
-        <span className="effismLite-timePickerColumnLabel">Minute</span>
-        <div className="effismLite-timePickerColumnScroll">
-          {MINUTES_LIST.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={`effismLite-timePickerCell${item === minute ? " is-selected" : ""}`}
-              onClick={() => onMinute(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="effismLite-timePickerColumn" ref={meridiemRef}>
-        <span className="effismLite-timePickerColumnLabel">Period</span>
-        <div className="effismLite-timePickerColumnScroll">
-          {MERIDIEM_OPTIONS.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              className={`effismLite-timePickerCell${item.value === meridiem ? " is-selected" : ""}`}
-              onClick={() => onMeridiem(item.value)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EffismLiteTimeModal({
-  open,
-  title,
-  onClose,
-  onApply,
-  children,
-}) {
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    const previousPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPaddingRight;
-    };
-  }, [open]);
-
-  if (!open) {
-    return null;
-  }
-
-  return createPortal(
-    <div
-      className="effismLite-modalBackdrop"
-      role="presentation"
-      onClick={onClose}
-    >
-      <div
-        className="effismLite-modalPanel"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="effismLite-modalHead">
-          <span className="effismLite-modalTitle">{title}</span>
-          <button
-            type="button"
-            className="effismLite-modalClose"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="effismLite-modalBody">{children}</div>
-
-        <div className="effismLite-modalActions">
-          <button
-            type="button"
-            className="effismLite-button effismLite-buttonGhost"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="effismLite-button effismLite-buttonPrimary"
-            onClick={onApply}
-          >
-            Apply
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
 function convertNativeTimeToMeridiem(value) {
   const matchedValue = `${value || ""}`.match(/^(\d{2}):(\d{2})$/);
 
@@ -717,485 +375,6 @@ function convertNativeTimeToMeridiem(value) {
     time: `${String(normalizedHours).padStart(2, "0")}:${minutes}`,
     meridiem,
   };
-}
-
-function DatePickerField({
-  id,
-  label,
-  value,
-  onChange,
-  className = "",
-  disabled = false,
-}) {
-  return (
-    <label
-      className={`effismLite-field${className ? ` ${className}` : ""}`}
-      htmlFor={id}
-    >
-      <span className="effismLite-fieldLabel">{label}</span>
-      <div className="effismLite-pickerField">
-        <span className="effismLite-pickerValue">
-          {formatDateDisplayValue(value)}
-        </span>
-
-        <span className="effismLite-pickerIcon" aria-hidden="true">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M8 2v4"></path>
-            <path d="M16 2v4"></path>
-            <rect width="18" height="18" x="3" y="4" rx="2"></rect>
-            <path d="M3 10h18"></path>
-          </svg>
-        </span>
-
-        <input
-          id={id}
-          className="effismLite-pickerNativeInput"
-          type="date"
-          value={value}
-          onChange={onChange}
-          disabled={disabled}
-          readOnly={disabled}
-        />
-      </div>
-    </label>
-  );
-}
-
-function EffismLiteSearchableCombo({
-  id,
-  label,
-  value,
-  onChange,
-  options,
-  placeholder,
-  className = "",
-  disabled = false,
-  ariaLabel,
-}) {
-  const rootRef = useRef(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const filteredOptions = useMemo(() => {
-    const query = `${value || ""}`.trim().toLowerCase();
-
-    if (!query) {
-      return options;
-    }
-
-    return options.filter((option) =>
-      `${option}`.toLowerCase().includes(query),
-    );
-  }, [options, value]);
-
-  useEffect(() => {
-    if (!menuOpen) {
-      return undefined;
-    }
-
-    const handlePointerDown = (event) => {
-      if (rootRef.current?.contains(event.target)) {
-        return;
-      }
-
-      setMenuOpen(false);
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("touchstart", handlePointerDown, {
-      passive: true,
-    });
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("touchstart", handlePointerDown);
-    };
-  }, [menuOpen]);
-
-  const showMenu =
-    menuOpen && !disabled && filteredOptions.length > 0;
-
-  return (
-    <div
-      className={`effismLite-field${className ? ` ${className}` : ""}`}
-    >
-      <span className="effismLite-fieldLabel">{label}</span>
-      <div className="effismLite-searchComboRoot" ref={rootRef}>
-        <div className="effismLite-inputWrap">
-          <input
-            id={id}
-            className="effismLite-input effismLite-inputWithHint"
-            type="text"
-            value={value}
-            onChange={onChange}
-            onFocus={() => setMenuOpen(true)}
-            onBlur={() => {
-              setTimeout(() => setMenuOpen(false), 150);
-            }}
-            placeholder={placeholder}
-            disabled={disabled}
-            autoComplete="off"
-            aria-label={ariaLabel}
-            aria-expanded={showMenu}
-            aria-autocomplete="list"
-          />
-          <button
-            type="button"
-            className="effismLite-inputGlyphButton"
-            onMouseDown={(event) => {
-              event.preventDefault();
-            }}
-            onClick={() => {
-              if (!disabled) {
-                setMenuOpen((current) => !current);
-              }
-            }}
-            aria-label={menuOpen ? "Close options" : "Open options"}
-            disabled={disabled}
-          >
-            <span className="effismLite-inputGlyph" aria-hidden="true">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </span>
-          </button>
-        </div>
-
-        {showMenu ? (
-          <ul
-            className="effismLite-dropdownMenu effismLite-searchComboMenu"
-            role="listbox"
-          >
-            {filteredOptions.map((option) => (
-              <li key={option} role="presentation">
-                <button
-                  type="button"
-                  className="effismLite-dropdownOption"
-                  role="option"
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                  }}
-                  onClick={() => {
-                    onChange({
-                      target: { value: option },
-                    });
-                    setMenuOpen(false);
-                  }}
-                >
-                  {option}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function MeridiemTimeInput({
-  id,
-  label,
-  timeValue,
-  meridiemValue,
-  onTimeChange,
-  onMeridiemChange,
-  onBlur,
-  className = "",
-}) {
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [draftHour, setDraftHour] = useState("12");
-  const [draftMinute, setDraftMinute] = useState("00");
-  const [draftMeridiem, setDraftMeridiem] = useState("AM");
-  const [isEditingTime, setIsEditingTime] = useState(false);
-  const [editBuffer, setEditBuffer] = useState("");
-
-  const displayMeridiem = `${meridiemValue || "AM"}`.toUpperCase();
-  const displayTime = isEditingTime
-    ? editBuffer
-    : `${timeValue || ""}`;
-
-  const openPicker = () => {
-    const sourceTime = isEditingTime ? editBuffer : `${timeValue || ""}`;
-    const matchedTime = `${sourceTime}`.trim().match(/^(\d{1,2})[:.](\d{2})$/);
-
-    if (matchedTime) {
-      const rawHour = matchedTime[1].padStart(2, "0");
-      setDraftHour(rawHour === "00" ? "12" : rawHour);
-      setDraftMinute(matchedTime[2]);
-    } else {
-      setDraftHour("12");
-      setDraftMinute("00");
-    }
-
-    setDraftMeridiem(displayMeridiem);
-    setPickerOpen(true);
-  };
-
-  const applyPicker = () => {
-    const next = `${draftHour}:${draftMinute}`;
-    onTimeChange({
-      target: {
-        value: next,
-      },
-    });
-    onMeridiemChange({
-      target: {
-        value: draftMeridiem,
-      },
-    });
-    if (isEditingTime) {
-      setEditBuffer(next);
-    }
-    setPickerOpen(false);
-  };
-
-  const handleTimeFocus = () => {
-    setIsEditingTime(true);
-    setEditBuffer(`${timeValue || ""}`);
-  };
-
-  const handleTimeChange = (event) => {
-    setEditBuffer(formatClockInputAsTyped(event.target.value));
-  };
-
-  const handleTimeBlur = () => {
-    const trimmed = editBuffer.trim();
-    const normalized = normalizeClockInput(trimmed);
-    const committed = normalized || trimmed;
-    setIsEditingTime(false);
-    onTimeChange({
-      target: { value: committed },
-    });
-    setEditBuffer(committed);
-    onBlur();
-  };
-
-  return (
-    <div className={`effismLite-field${className ? ` ${className}` : ""}`}>
-      <label className="effismLite-fieldLabel" htmlFor={id}>
-        {label}
-      </label>
-      <div className="effismLite-timeControl">
-        <div className="effismLite-timeValueWrap">
-          <input
-            id={id}
-            className="effismLite-timeValue"
-            type="text"
-            inputMode="numeric"
-            value={displayTime}
-            onChange={handleTimeChange}
-            onFocus={handleTimeFocus}
-            onBlur={handleTimeBlur}
-            placeholder="00:00"
-            autoComplete="off"
-          />
-          <div className="effismLite-timePickerTrigger">
-            <button
-              type="button"
-              className="effismLite-timePickerIconButton"
-              onClick={openPicker}
-              aria-label={`${label} time picker`}
-            >
-              <span className="effismLite-timePickerIcon" aria-hidden="true">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="9"></circle>
-                  <path d="M12 7v5l3 3"></path>
-                </svg>
-              </span>
-            </button>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="effismLite-timeMeridiem"
-          onClick={openPicker}
-          aria-label={`${label} period ${displayMeridiem}, open time picker`}
-        >
-          {displayMeridiem}
-        </button>
-      </div>
-
-      <EffismLiteTimeModal
-        open={pickerOpen}
-        title={`${label} — time`}
-        onClose={() => setPickerOpen(false)}
-        onApply={applyPicker}
-      >
-        <EffismLiteMeridiemPickerColumns
-          hour={draftHour}
-          minute={draftMinute}
-          meridiem={draftMeridiem}
-          onHour={setDraftHour}
-          onMinute={setDraftMinute}
-          onMeridiem={setDraftMeridiem}
-        />
-      </EffismLiteTimeModal>
-    </div>
-  );
-}
-
-function ClockPickerField({
-  id,
-  label,
-  value,
-  onChange,
-  onBlur,
-  placeholder = "00:00",
-  disabled = false,
-}) {
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [draftHour, setDraftHour] = useState("00");
-  const [draftMinute, setDraftMinute] = useState("00");
-  const [isEditingTime, setIsEditingTime] = useState(false);
-  const [editBuffer, setEditBuffer] = useState("");
-
-  const displayTime = isEditingTime ? editBuffer : `${value || ""}`;
-
-  const openPicker = () => {
-    if (disabled) {
-      return;
-    }
-
-    const sourceTime = isEditingTime ? editBuffer : `${value || ""}`;
-    const matchedValue = `${sourceTime}`.trim().match(/^(\d{1,2})[:.](\d{2})$/);
-
-    if (matchedValue) {
-      setDraftHour(String(matchedValue[1]).padStart(2, "0"));
-      setDraftMinute(matchedValue[2]);
-    } else {
-      setDraftHour("00");
-      setDraftMinute("00");
-    }
-
-    setPickerOpen(true);
-  };
-
-  const applyPicker = () => {
-    const next = `${draftHour}:${draftMinute}`;
-    onChange({
-      target: {
-        value: next,
-      },
-    });
-    if (isEditingTime) {
-      setEditBuffer(next);
-    }
-    setPickerOpen(false);
-  };
-
-  const handleTimeFocus = () => {
-    if (disabled) {
-      return;
-    }
-    setIsEditingTime(true);
-    setEditBuffer(`${value || ""}`);
-  };
-
-  const handleTimeChange = (event) => {
-    setEditBuffer(formatClockInputAsTyped(event.target.value));
-  };
-
-  const handleTimeBlur = () => {
-    const trimmed = editBuffer.trim();
-    const normalized = normalizeClockInput(trimmed);
-    const committed = normalized || trimmed;
-    setIsEditingTime(false);
-    onChange({
-      target: { value: committed },
-    });
-    setEditBuffer(committed);
-    onBlur();
-  };
-
-  return (
-    <div className="effismLite-field">
-      <label className="effismLite-fieldLabel" htmlFor={id}>
-        {label}
-      </label>
-      <div className="effismLite-inputWrap">
-        <input
-          id={id}
-          className="effismLite-input effismLite-timeOnlyInput"
-          type="text"
-          inputMode="numeric"
-          value={displayTime}
-          onChange={handleTimeChange}
-          onFocus={handleTimeFocus}
-          onBlur={handleTimeBlur}
-          placeholder={placeholder}
-          autoComplete="off"
-          disabled={disabled}
-        />
-        <div className="effismLite-inputPickerGlyph">
-          <button
-            type="button"
-            className="effismLite-timePickerIconButton effismLite-inputPickerGlyphButton"
-            onClick={openPicker}
-            aria-label={`${label} time picker`}
-            disabled={disabled}
-          >
-            <span className="effismLite-timePickerIcon" aria-hidden="true">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="9"></circle>
-                <path d="M12 7v5l3 3"></path>
-              </svg>
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <EffismLiteTimeModal
-        open={pickerOpen}
-        title={`${label} — time (24h)`}
-        onClose={() => setPickerOpen(false)}
-        onApply={applyPicker}
-      >
-        <EffismLiteTimePickerColumns
-          hour={draftHour}
-          minute={draftMinute}
-          hoursList={HOURS_24_LIST}
-          onHour={setDraftHour}
-          onMinute={setDraftMinute}
-        />
-      </EffismLiteTimeModal>
-    </div>
-  );
 }
 
 export default function EffismLite() {
@@ -2549,6 +1728,8 @@ export default function EffismLite() {
                             }
                             placeholder="00:00"
                             disabled={!task.isEditing}
+                            formatClockInputAsTyped={formatClockInputAsTyped}
+                            normalizeClockInput={normalizeClockInput}
                           />
 
                           <ClockPickerField
@@ -2567,6 +1748,8 @@ export default function EffismLite() {
                             }
                             placeholder="00:00"
                             disabled={!task.isEditing}
+                            formatClockInputAsTyped={formatClockInputAsTyped}
+                            normalizeClockInput={normalizeClockInput}
                           />
                         </div>
 
@@ -2583,6 +1766,7 @@ export default function EffismLite() {
                             )
                           }
                           disabled={!task.isEditing}
+                          formatDisplayValue={formatDateDisplayValue}
                         />
 
                         <label
@@ -2649,6 +1833,7 @@ export default function EffismLite() {
                             updateTask(task.id, "cfDate", event.target.value)
                           }
                           disabled={!task.isEditing}
+                          formatDisplayValue={formatDateDisplayValue}
                         />
                           </>
                         )}
@@ -2771,6 +1956,7 @@ export default function EffismLite() {
                 label="Date"
                 value={jobDetails.date}
                 onChange={handleTimeLogDateChange}
+                formatDisplayValue={formatDateDisplayValue}
               />
 
               <div className="effismLite-field effismLite-fieldWide">
@@ -2830,6 +2016,8 @@ export default function EffismLite() {
                   updateJobDetails("timeInMeridiem", event.target.value)
                 }
                 onBlur={() => handleJobTimeBlur("timeIn")}
+                formatClockInputAsTyped={formatClockInputAsTyped}
+                normalizeClockInput={normalizeClockInput}
               />
 
               <MeridiemTimeInput
@@ -2845,6 +2033,8 @@ export default function EffismLite() {
                   updateJobDetails("timeOutMeridiem", event.target.value)
                 }
                 onBlur={() => handleJobTimeBlur("timeOut")}
+                formatClockInputAsTyped={formatClockInputAsTyped}
+                normalizeClockInput={normalizeClockInput}
               />
 
               <div className="effismLite-formRow effismLite-fieldWide">
@@ -2856,6 +2046,8 @@ export default function EffismLite() {
                     handleJobClockChange("breakTime", event.target.value)
                   }
                   onBlur={() => handleJobTimeBlur("breakTime")}
+                  formatClockInputAsTyped={formatClockInputAsTyped}
+                  normalizeClockInput={normalizeClockInput}
                 />
 
                 <ClockPickerField
@@ -2866,6 +2058,8 @@ export default function EffismLite() {
                     handleJobClockChange("siteTravel", event.target.value)
                   }
                   onBlur={() => handleJobTimeBlur("siteTravel")}
+                  formatClockInputAsTyped={formatClockInputAsTyped}
+                  normalizeClockInput={normalizeClockInput}
                 />
               </div>
           </div>
