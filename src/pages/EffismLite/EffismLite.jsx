@@ -1468,6 +1468,27 @@ export default function EffismLite() {
   }, [isTaskStep, jobDetails.date]);
 
   useEffect(() => {
+    if (jobDiaryCompleteStatus !== "success" || !jobDetails.date) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadSummaryMetrics = async () => {
+      const summaryMetrics = await getEffismLiteJobDiarySummary(jobDetails.date);
+      if (isMounted) {
+        setTaskSummaryMetrics(summaryMetrics);
+      }
+    };
+
+    loadSummaryMetrics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [jobDiaryCompleteStatus, jobDetails.date]);
+
+  useEffect(() => {
     if (jobDiaryCompleteStatus !== "error") {
       return;
     }
@@ -1482,6 +1503,7 @@ export default function EffismLite() {
 
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
+  const isSummaryMode = jobDiaryCompleteStatus === "success";
   const updateJobDetails = (field, value) => {
     hasUserEditedTimeRef.current = true;
     setJobDetails((currentJobDetails) => ({
@@ -1903,6 +1925,40 @@ export default function EffismLite() {
     };
   }, [tasks]);
 
+  const timeLogMetrics = useMemo(() => {
+    const metrics = [
+      { label: "Date", value: formatDateDisplayValue(jobDetails.date) },
+      { label: "Day Type", value: jobDetails.dayType || "-" },
+      {
+        label: "Duty Start",
+        value: `${jobDetails.timeIn || "--:--"} ${jobDetails.timeInMeridiem || "AM"}`,
+      },
+      {
+        label: "Duty End",
+        value: `${jobDetails.timeOut || "--:--"} ${jobDetails.timeOutMeridiem || "PM"}`,
+      },
+      { label: "Break", value: jobDetails.breakTime || "--:--" },
+      { label: "Site Travel", value: jobDetails.siteTravel || "--:--" },
+    ];
+
+    if (jobDetails.dayType === "off" || jobDetails.dayType === "leave") {
+      metrics.push({
+        label: jobDetails.dayType === "off" ? "OFF Type" : "Leave Type",
+        value: jobDetails.daySubtype || "-",
+      });
+    }
+
+    if (isSummaryMode) {
+      metrics.push(
+        { label: "Net Time", value: taskSummaryMetrics?.netTime || "--:--" },
+        { label: "Total Est", value: taskSummaryMetrics?.totalEst || "--:--" },
+        { label: "Total Act", value: taskSummaryMetrics?.totalAct || "--:--" },
+      );
+    }
+
+    return metrics;
+  }, [isSummaryMode, jobDetails, taskSummaryMetrics]);
+
   return (
     <div className="effismLite-page">
       <div className="effismLite-toolbar">
@@ -2003,19 +2059,21 @@ export default function EffismLite() {
             </h2>
           </div>
 
-          <button
-            type="button"
-            className="effismLite-button effismLite-buttonGhost effismLite-taskToolbarButton"
-            onClick={handleAddTask}
-          >
-            <span
-              className="effismLite-taskToolbarButtonIcon"
-              aria-hidden="true"
+          {!isSummaryMode ? (
+            <button
+              type="button"
+              className="effismLite-button effismLite-buttonGhost effismLite-taskToolbarButton"
+              onClick={handleAddTask}
             >
-              +
-            </span>
-            Add Task
-          </button>
+              <span
+                className="effismLite-taskToolbarButtonIcon"
+                aria-hidden="true"
+              >
+                +
+              </span>
+              Add Task
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -2095,6 +2153,7 @@ export default function EffismLite() {
                         </div>
 
                         <div className="effismLite-taskHeaderActions">
+                          {!isSummaryMode ? (
                           <button
                             type="button"
                             className={`effismLite-taskIconButton${task.isEditing ? " is-active" : ""}`}
@@ -2147,6 +2206,7 @@ export default function EffismLite() {
                               </svg>
                             )}
                           </button>
+                          ) : null}
 
                           <button
                             type="button"
@@ -2244,7 +2304,7 @@ export default function EffismLite() {
                         {taskDisplayNumberById.get(task.id) ?? taskIndex + 1}
                       </span>
                       <div className="effismLite-taskExpandedToolbarActions">
-                        {task.isEditing ? (
+                        {!isSummaryMode ? task.isEditing ? (
                           <button
                             type="button"
                             className={`effismLite-taskIconButton${task.isEditing ? " is-active" : ""}`}
@@ -2305,12 +2365,77 @@ export default function EffismLite() {
                               <path d="m12.5 5.5 3 3" />
                             </svg>
                           </button>
-                        )}
+                        ) : null}
                       </div>
                     </div>
 
                     <div className="effismLite-taskBody">
                       <div className="effismLite-taskFields">
+                        {isSummaryMode ? (
+                          <div className="effismLite-taskSummaryDetails">
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">Task Name</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {task.taskName || "-"}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">Main Type</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {task.mainType || "-"}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">Sub Type</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {task.subType || "-"}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">Job Number</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {task.jobNumber || "-"}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">Est Time</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {task.estimatedTime || "--:--"}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">Act Time</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {task.actualTime || "--:--"}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">Status</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {normalizeStatusValue(task.status)}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">CF Date</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {formatDateDisplayValue(task.cfDate)}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow">
+                              <span className="effismLite-taskSummaryLabel">Target</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {formatDateDisplayValue(task.targetDate)}
+                              </span>
+                            </div>
+                            <div className="effismLite-taskSummaryRow is-outcome">
+                              <span className="effismLite-taskSummaryLabel">Outcome</span>
+                              <span className="effismLite-taskSummaryValue">
+                                {task.outcome || "-"}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
                         {task.saveError ? (
                           <div className="effismLite-taskSaveError" role="alert">
                             {task.saveError}
@@ -2502,8 +2627,11 @@ export default function EffismLite() {
                           }
                           disabled={!task.isEditing}
                         />
+                          </>
+                        )}
                       </div>
 
+                      {!isSummaryMode ? (
                       <div className="effismLite-taskActions">
                         {task.isEditing ? (
                           <button
@@ -2534,6 +2662,7 @@ export default function EffismLite() {
                           </button>
                         )}
                       </div>
+                      ) : null}
                     </div>
                   </>
                 ) : null}
@@ -2550,6 +2679,47 @@ export default function EffismLite() {
           aria-live="polite"
         >
           <span className="effismLite-spinner" aria-hidden="true" />
+        </div>
+      ) : isSummaryMode ? (
+        <div className="effismLite-timeLogSummaryPanel">
+          <h3 className="effismLite-summarySectionTitle">Time Log Summary</h3>
+
+          <section className="effismLite-timeLogSummaryShell">
+            <div className="effismLite-timeLogSummaryList">
+              {timeLogMetrics
+                .filter(
+                  (metric) =>
+                    !["Net Time", "Total Est", "Total Act"].includes(metric.label),
+                )
+                .map((metric) => (
+                  <article
+                    key={metric.label}
+                    className="effismLite-timeLogSummaryItem"
+                  >
+                    <span className="effismLite-timeLogSummaryLabel">{metric.label}</span>
+                    <strong className="effismLite-timeLogSummaryValue">{metric.value}</strong>
+                  </article>
+                ))}
+            </div>
+          </section>
+
+          <section className="effismLite-timeTotalsShell">
+            <div className="effismLite-timeTotalsGrid">
+              {timeLogMetrics
+                .filter((metric) =>
+                  ["Total Est", "Total Act", "Net Time"].includes(metric.label),
+                )
+                .map((metric) => (
+                  <article
+                    key={metric.label}
+                    className={`effismLite-timeLogSummaryItem${metric.label === "Net Time" ? " is-full-width" : ""}`}
+                  >
+                    <span className="effismLite-timeLogSummaryLabel">{metric.label}</span>
+                    <strong className="effismLite-timeLogSummaryValue">{metric.value}</strong>
+                  </article>
+                ))}
+            </div>
+          </section>
         </div>
       ) : (
         <section className="effismLite-panel">
@@ -2569,120 +2739,109 @@ export default function EffismLite() {
           ) : null}
 
           <div className="effismLite-formGrid">
-            <DatePickerField
-              id="effism-lite-date"
-              className="effismLite-fieldWide"
-              label="Date"
-              value={jobDetails.date}
-              onChange={handleTimeLogDateChange}
-            />
-
-            <div className="effismLite-field effismLite-fieldWide">
-              <span className="effismLite-fieldLabel">Day Type</span>
-              <EffismLiteDropdown
-                id="effism-lite-day-type"
-                ariaLabel="Day type"
-                value={jobDetails.dayType}
-                onValueChange={handleDayTypeChange}
-                options={DAY_TYPE_SELECT_OPTIONS}
-                placeholder="Select day type"
+              <DatePickerField
+                id="effism-lite-date"
+                className="effismLite-fieldWide"
+                label="Date"
+                value={jobDetails.date}
+                onChange={handleTimeLogDateChange}
               />
-            </div>
 
-            {showOffTypeField ? (
               <div className="effismLite-field effismLite-fieldWide">
-                <span className="effismLite-fieldLabel">OFF Type</span>
+                <span className="effismLite-fieldLabel">Day Type</span>
                 <EffismLiteDropdown
-                  id="effism-lite-off-type"
-                  ariaLabel="OFF type"
-                  value={jobDetails.daySubtype}
-                  onValueChange={(nextValue) =>
-                    updateJobDetails("daySubtype", nextValue)
-                  }
-                  options={OFF_SUBTYPE_SELECT_OPTIONS}
-                  placeholder="Select"
+                  id="effism-lite-day-type"
+                  ariaLabel="Day type"
+                  value={jobDetails.dayType}
+                  onValueChange={handleDayTypeChange}
+                  options={DAY_TYPE_SELECT_OPTIONS}
+                  placeholder="Select day type"
                 />
               </div>
-            ) : null}
 
-            {showLeaveTypeField ? (
-              <div className="effismLite-field effismLite-fieldWide">
-                <span className="effismLite-fieldLabel">Leave Type</span>
-                <EffismLiteDropdown
-                  id="effism-lite-leave-type"
-                  ariaLabel="Leave type"
-                  value={jobDetails.daySubtype}
-                  onValueChange={(nextValue) =>
-                    updateJobDetails("daySubtype", nextValue)
+              {showOffTypeField ? (
+                <div className="effismLite-field effismLite-fieldWide">
+                  <span className="effismLite-fieldLabel">OFF Type</span>
+                  <EffismLiteDropdown
+                    id="effism-lite-off-type"
+                    ariaLabel="OFF type"
+                    value={jobDetails.daySubtype}
+                    onValueChange={(nextValue) =>
+                      updateJobDetails("daySubtype", nextValue)
+                    }
+                    options={OFF_SUBTYPE_SELECT_OPTIONS}
+                    placeholder="Select"
+                  />
+                </div>
+              ) : null}
+
+              {showLeaveTypeField ? (
+                <div className="effismLite-field effismLite-fieldWide">
+                  <span className="effismLite-fieldLabel">Leave Type</span>
+                  <EffismLiteDropdown
+                    id="effism-lite-leave-type"
+                    ariaLabel="Leave type"
+                    value={jobDetails.daySubtype}
+                    onValueChange={(nextValue) =>
+                      updateJobDetails("daySubtype", nextValue)
+                    }
+                    options={LEAVE_SUBTYPE_SELECT_OPTIONS}
+                    placeholder="Select"
+                  />
+                </div>
+              ) : null}
+
+              <MeridiemTimeInput
+                id="effism-lite-duty-start"
+                className="effismLite-fieldWide"
+                label="Duty Start"
+                timeValue={jobDetails.timeIn}
+                meridiemValue={jobDetails.timeInMeridiem}
+                onTimeChange={(event) =>
+                  handleJobClockChange("timeIn", event.target.value)
+                }
+                onMeridiemChange={(event) =>
+                  updateJobDetails("timeInMeridiem", event.target.value)
+                }
+                onBlur={() => handleJobTimeBlur("timeIn")}
+              />
+
+              <MeridiemTimeInput
+                id="effism-lite-duty-end"
+                className="effismLite-fieldWide"
+                label="Duty End"
+                timeValue={jobDetails.timeOut}
+                meridiemValue={jobDetails.timeOutMeridiem}
+                onTimeChange={(event) =>
+                  handleJobClockChange("timeOut", event.target.value)
+                }
+                onMeridiemChange={(event) =>
+                  updateJobDetails("timeOutMeridiem", event.target.value)
+                }
+                onBlur={() => handleJobTimeBlur("timeOut")}
+              />
+
+              <div className="effismLite-formRow effismLite-fieldWide">
+                <ClockPickerField
+                  id="effism-lite-break"
+                  label="Break"
+                  value={jobDetails.breakTime}
+                  onChange={(event) =>
+                    handleJobClockChange("breakTime", event.target.value)
                   }
-                  options={LEAVE_SUBTYPE_SELECT_OPTIONS}
-                  placeholder="Select"
+                  onBlur={() => handleJobTimeBlur("breakTime")}
+                />
+
+                <ClockPickerField
+                  id="effism-lite-site-travel"
+                  label="Site Travel"
+                  value={jobDetails.siteTravel}
+                  onChange={(event) =>
+                    handleJobClockChange("siteTravel", event.target.value)
+                  }
+                  onBlur={() => handleJobTimeBlur("siteTravel")}
                 />
               </div>
-            ) : null}
-
-            <MeridiemTimeInput
-              id="effism-lite-duty-start"
-              className="effismLite-fieldWide"
-              label="Duty Start"
-              timeValue={jobDetails.timeIn}
-              meridiemValue={jobDetails.timeInMeridiem}
-              onTimeChange={(event) =>
-                handleJobClockChange("timeIn", event.target.value)
-              }
-              onMeridiemChange={(event) =>
-                updateJobDetails("timeInMeridiem", event.target.value)
-              }
-              onBlur={() => handleJobTimeBlur("timeIn")}
-            />
-
-            <MeridiemTimeInput
-              id="effism-lite-duty-end"
-              className="effismLite-fieldWide"
-              label="Duty End"
-              timeValue={jobDetails.timeOut}
-              meridiemValue={jobDetails.timeOutMeridiem}
-              onTimeChange={(event) =>
-                handleJobClockChange("timeOut", event.target.value)
-              }
-              onMeridiemChange={(event) =>
-                updateJobDetails("timeOutMeridiem", event.target.value)
-              }
-              onBlur={() => handleJobTimeBlur("timeOut")}
-            />
-
-            <div className="effismLite-formRow effismLite-fieldWide">
-              <ClockPickerField
-                id="effism-lite-break"
-                label="Break"
-                value={jobDetails.breakTime}
-                onChange={(event) =>
-                  handleJobClockChange("breakTime", event.target.value)
-                }
-                onBlur={() => handleJobTimeBlur("breakTime")}
-              />
-
-              <ClockPickerField
-                id="effism-lite-site-travel"
-                label="Site Travel"
-                value={jobDetails.siteTravel}
-                onChange={(event) =>
-                  handleJobClockChange("siteTravel", event.target.value)
-                }
-                onBlur={() => handleJobTimeBlur("siteTravel")}
-              />
-            </div>
-
-            {/* <div className="effismLite-formActions effismLite-fieldWide">
-              <button
-                type="button"
-                className="effismLite-button effismLite-buttonSoftAction"
-                onClick={handleComplete}
-                disabled={jobDiaryCompleteStatus === "loading"}
-              >
-                Complete
-              </button>
-            </div> */}
           </div>
         </section>
       )}
