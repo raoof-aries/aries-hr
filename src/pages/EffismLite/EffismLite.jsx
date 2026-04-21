@@ -2020,36 +2020,36 @@ export default function EffismLite() {
       ) : null}
 
       {isTaskStep ? (
-        <section className="effismLite-taskMetricsRow" aria-label="Task metrics">
-          {taskTopMetrics.map((metric) => (
-            <article key={metric.label} className="effismLite-taskMetricCard">
-              <span className="effismLite-taskMetricLabel">{metric.label}</span>
-              <strong className="effismLite-taskMetricValue">{metric.value}</strong>
-            </article>
-          ))}
-        </section>
-      ) : null}
-
-      {isTaskStep ? (
-        <div className="effismLite-taskProgressRow" aria-live="polite">
-          <div
-            className="effismLite-taskProgressTrack"
-            role="progressbar"
-            aria-label="Task completion progress"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={overallTaskProgress.percentage}
-          >
-            <span
-              className="effismLite-taskProgressFill"
-              style={{ width: `${overallTaskProgress.percentage}%` }}
-              aria-hidden="true"
-            />
+        <section className="effismLite-taskMetricsContainer" aria-label="Task metrics">
+          <div className="effismLite-taskMetricsRow">
+            {taskTopMetrics.map((metric) => (
+              <article key={metric.label} className="effismLite-taskMetricCard">
+                <span className="effismLite-taskMetricLabel">{metric.label}</span>
+                <strong className="effismLite-taskMetricValue">{metric.value}</strong>
+              </article>
+            ))}
           </div>
-          <span className="effismLite-taskProgressCount">
-            {overallTaskProgress.completedCount}/{overallTaskProgress.totalCount}
-          </span>
-        </div>
+
+          <div className="effismLite-taskProgressRow" aria-live="polite">
+            <div
+              className="effismLite-taskProgressTrack"
+              role="progressbar"
+              aria-label="Task completion progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={overallTaskProgress.percentage}
+            >
+              <span
+                className="effismLite-taskProgressFill"
+                style={{ width: `${overallTaskProgress.percentage}%` }}
+                aria-hidden="true"
+              />
+            </div>
+            <span className="effismLite-taskProgressCount">
+              {overallTaskProgress.completedCount}/{overallTaskProgress.totalCount}
+            </span>
+          </div>
+        </section>
       ) : null}
 
       {isTaskStep ? (
