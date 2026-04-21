@@ -681,6 +681,40 @@
   line-height: 1.1;
 }
 
+.effismLite-taskProgressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.effismLite-taskProgressTrack {
+  position: relative;
+  flex: 1 1 auto;
+  height: 10px;
+  border-radius: 999px;
+  background: #e4ecef;
+  overflow: hidden;
+}
+
+.effismLite-taskProgressFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2ab282 0%, #158a77 100%);
+}
+
+.effismLite-taskProgressCount {
+  flex: 0 0 auto;
+  min-width: 42px;
+  text-align: right;
+  color: #0f6d61;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
 .effismLite-completeNotice {
   text-align: center;
   padding: 10px 14px;
@@ -1219,6 +1253,10 @@
 
   .effismLite-taskMetricValue {
     font-size: 0.96rem;
+  }
+
+  .effismLite-taskProgressRow {
+    gap: 8px;
   }
 
   .effismLite-completeButton {

@@ -1879,6 +1879,30 @@ export default function EffismLite() {
     ];
   }, [tasks, taskSummaryMetrics]);
 
+  const overallTaskProgress = useMemo(() => {
+    if (!tasks.length) {
+      return {
+        percentage: 0,
+        completedCount: 0,
+        totalCount: 0,
+      };
+    }
+
+    const completedCount = tasks.filter(
+      (task) => Number.parseInt(normalizeStatusValue(task.status), 10) >= 100,
+    ).length;
+    const totalStatus = tasks.reduce(
+      (sum, task) => sum + Number.parseInt(normalizeStatusValue(task.status), 10),
+      0,
+    );
+
+    return {
+      percentage: Math.round(totalStatus / tasks.length),
+      completedCount,
+      totalCount: tasks.length,
+    };
+  }, [tasks]);
+
   return (
     <div className="effismLite-page">
       <div className="effismLite-toolbar">
@@ -2004,6 +2028,28 @@ export default function EffismLite() {
             </article>
           ))}
         </section>
+      ) : null}
+
+      {isTaskStep ? (
+        <div className="effismLite-taskProgressRow" aria-live="polite">
+          <div
+            className="effismLite-taskProgressTrack"
+            role="progressbar"
+            aria-label="Task completion progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={overallTaskProgress.percentage}
+          >
+            <span
+              className="effismLite-taskProgressFill"
+              style={{ width: `${overallTaskProgress.percentage}%` }}
+              aria-hidden="true"
+            />
+          </div>
+          <span className="effismLite-taskProgressCount">
+            {overallTaskProgress.completedCount}/{overallTaskProgress.totalCount}
+          </span>
+        </div>
       ) : null}
 
       {isTaskStep ? (
