@@ -67,6 +67,21 @@ function createTaskId() {
     .slice(2, 8)}`;
 }
 
+function getTaskComparableSnapshot(task) {
+  return JSON.stringify({
+    taskName: `${task?.taskName ?? ""}`,
+    mainType: `${task?.mainType ?? ""}`,
+    subType: `${task?.subType ?? ""}`,
+    jobNumber: `${task?.jobNumber ?? ""}`,
+    estimatedTime: `${task?.estimatedTime ?? ""}`,
+    actualTime: `${task?.actualTime ?? ""}`,
+    outcome: `${task?.outcome ?? ""}`,
+    status: normalizeStatusValue(task?.status),
+    cfDate: `${task?.cfDate ?? ""}`,
+    targetDate: `${task?.targetDate ?? ""}`,
+  });
+}
+
 function normalizeClockInput(value) {
   const trimmedValue = value.trim();
 
@@ -153,7 +168,7 @@ function normalizeStatusValue(value) {
 }
 
 function createEditableTask(task = {}, overrides = {}) {
-  return {
+  const baseTask = {
     id: task.id || createTaskId(),
     workreportId: task.workreportId || "",
     taskName: task.taskName || "",
@@ -171,7 +186,19 @@ function createEditableTask(task = {}, overrides = {}) {
     isSaved: false,
     isEditing: true,
     isExpanded: true,
+    editSnapshot: "",
+    isDirty: false,
+  };
+
+  const nextTask = {
+    ...baseTask,
     ...overrides,
+  };
+
+  return {
+    ...nextTask,
+    editSnapshot: nextTask.editSnapshot || getTaskComparableSnapshot(nextTask),
+    isDirty: Boolean(nextTask.isDirty),
   };
 }
 
@@ -244,15 +271,24 @@ function getTaskJobNumberLabel(value) {
   return value || "No job number";
 }
 
+function normalizeApiDateValue(value) {
+  const normalizedValue = `${value || ""}`.trim();
+  if (!normalizedValue || normalizedValue === "0000-00-00") {
+    return "";
+  }
+  return normalizedValue;
+}
+
 function formatDateDisplayValue(value) {
-  if (!value) {
+  const normalizedValue = normalizeApiDateValue(value);
+  if (!normalizedValue) {
     return "Select date";
   }
 
-  const [year, month, day] = value.split("-").map(Number);
+  const [year, month, day] = normalizedValue.split("-").map(Number);
 
   if (!year || !month || !day) {
-    return value;
+    return normalizedValue;
   }
 
   const dateValue = new Date(year, month - 1, day);
@@ -536,6 +572,27 @@ function EffismLiteTimeModal({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+    };
+  }, [open]);
+
   if (!open) {
     return null;
   }
@@ -601,6 +658,13 @@ function convertNativeTimeToMeridiem(value) {
 
   const hours = Number(matchedValue[1]);
   const minutes = matchedValue[2];
+
+  if (hours === 0 && minutes === "00") {
+    return {
+      time: "00:00",
+      meridiem: "AM",
+    };
+  }
   const meridiem = hours >= 12 ? "PM" : "AM";
   const normalizedHours = hours % 12 || 12;
 
@@ -828,7 +892,8 @@ function MeridiemTimeInput({
     const matchedTime = `${sourceTime}`.trim().match(/^(\d{1,2})[:.](\d{2})$/);
 
     if (matchedTime) {
-      setDraftHour(matchedTime[1].padStart(2, "0"));
+      const rawHour = matchedTime[1].padStart(2, "0");
+      setDraftHour(rawHour === "00" ? "12" : rawHour);
       setDraftMinute(matchedTime[2]);
     } else {
       setDraftHour("12");
@@ -1098,9 +1163,9 @@ export default function EffismLite() {
     date: "",
     dayType: "",
     daySubtype: "",
-    timeIn: "",
+    timeIn: "00:00",
     timeInMeridiem: "AM",
-    timeOut: "",
+    timeOut: "00:00",
     timeOutMeridiem: "PM",
     breakTime: "",
     siteTravel: "",
@@ -1138,8 +1203,14 @@ export default function EffismLite() {
         if (timeRecord) {
           const normalizedTimeIn = normalizeApiClockValue(timeRecord.time_in);
           const normalizedTimeOut = normalizeApiClockValue(timeRecord.time_out);
-          const timeInValue = convertNativeTimeToMeridiem(normalizedTimeIn);
-          const timeOutValue = convertNativeTimeToMeridiem(normalizedTimeOut);
+          const timeInValue =
+            normalizedTimeIn && normalizedTimeIn !== "00:00"
+              ? convertNativeTimeToMeridiem(normalizedTimeIn)
+              : { time: "00:00", meridiem: "AM" };
+          const timeOutValue =
+            normalizedTimeOut && normalizedTimeOut !== "00:00"
+              ? convertNativeTimeToMeridiem(normalizedTimeOut)
+              : { time: "00:00", meridiem: "PM" };
 
           setJobDetails((currentJobDetails) => ({
             ...currentJobDetails,
@@ -1319,8 +1390,8 @@ export default function EffismLite() {
                 actualTime: normalizeApiClockValue(task.act_time),
                 outcome: `${task.desc ?? task.description ?? ""}`,
                 status: `${task.status ?? 0}%`,
-                cfDate: `${task.cf_date ?? task.cf ?? ""}`.trim(),
-                targetDate: `${task.target_date ?? task.target ?? ""}`.trim(),
+                cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
+                targetDate: normalizeApiDateValue(task.target_date ?? task.target),
               },
               {
                 isSaved: true,
@@ -1435,6 +1506,10 @@ export default function EffismLite() {
               ...task,
               [field]: value,
               saveError: "",
+              isDirty: task.isEditing
+                ? getTaskComparableSnapshot({ ...task, [field]: value }) !==
+                  task.editSnapshot
+                : false,
             }
           : task,
       ),
@@ -1469,6 +1544,14 @@ export default function EffismLite() {
           return {
             ...t,
             isExpanded: shouldExpand,
+            isEditing:
+              !shouldExpand && t.isSaved && t.isEditing && !t.isDirty
+                ? false
+                : t.isEditing,
+            isDirty:
+              !shouldExpand && t.isSaved && t.isEditing && !t.isDirty
+                ? false
+                : t.isDirty,
           };
         }
 
@@ -1535,6 +1618,8 @@ export default function EffismLite() {
               isEditing: false,
               isExpanded: false,
               saveError: "",
+              isDirty: false,
+              editSnapshot: getTaskComparableSnapshot(task),
             }
           : task,
       ),
@@ -1561,8 +1646,8 @@ export default function EffismLite() {
             actualTime: normalizeApiClockValue(task.act_time),
             outcome: `${task.desc ?? task.description ?? ""}`,
             status: `${task.status ?? 0}%`,
-            cfDate: `${task.cf_date ?? task.cf ?? ""}`.trim(),
-            targetDate: `${task.target_date ?? task.target ?? ""}`.trim(),
+            cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
+            targetDate: normalizeApiDateValue(task.target_date ?? task.target),
           },
           {
             isSaved: true,
@@ -1582,6 +1667,8 @@ export default function EffismLite() {
               ...task,
               isEditing: true,
               isExpanded: true,
+              isDirty: false,
+              editSnapshot: getTaskComparableSnapshot(task),
             }
           : {
               ...task,
@@ -1597,6 +1684,23 @@ export default function EffismLite() {
       toggleTaskExpanded(taskId);
     }
   };
+
+  const taskDisplayNumberById = useMemo(() => {
+    const savedIdsInOrder = tasks.filter((task) => task.isSaved).map((task) => task.id);
+    const draftIdsInOrder = tasks.filter((task) => !task.isSaved).map((task) => task.id);
+    const savedCount = savedIdsInOrder.length;
+    const result = new Map();
+
+    savedIdsInOrder.forEach((id, index) => {
+      result.set(id, index + 1);
+    });
+
+    draftIdsInOrder.forEach((id, index) => {
+      result.set(id, savedCount + index + 1);
+    });
+
+    return result;
+  }, [tasks]);
 
   return (
     <div className="effismLite-page">
@@ -1742,7 +1846,7 @@ export default function EffismLite() {
                       <div className="effismLite-taskHeaderTop">
                         <div className="effismLite-taskHeaderMeta">
                           <span className="effismLite-taskNumberPill">
-                            {taskIndex + 1}
+                            {taskDisplayNumberById.get(task.id) ?? taskIndex + 1}
                           </span>
                           <span
                             className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
@@ -1893,7 +1997,7 @@ export default function EffismLite() {
                         </svg>
                       </button>
                       <span className="effismLite-taskNumberPill">
-                        {taskIndex + 1}
+                        {taskDisplayNumberById.get(task.id) ?? taskIndex + 1}
                       </span>
                       <div className="effismLite-taskExpandedToolbarActions">
                         {task.isEditing ? (
@@ -2074,6 +2178,21 @@ export default function EffismLite() {
                           />
                         </div>
 
+                        <DatePickerField
+                          id={`task-target-${task.id}`}
+                          label="Target"
+                          className="effismLite-fieldWide"
+                          value={task.targetDate}
+                          onChange={(event) =>
+                            updateTask(
+                              task.id,
+                              "targetDate",
+                              event.target.value,
+                            )
+                          }
+                          disabled={!task.isEditing}
+                        />
+
                         <label
                           className="effismLite-field effismLite-fieldWide"
                           htmlFor={`task-outcome-${task.id}`}
@@ -2129,30 +2248,16 @@ export default function EffismLite() {
                           </div>
                         </div>
 
-                        <div className="effismLite-formRow effismLite-fieldWide">
-                          <DatePickerField
-                            id={`task-cf-date-${task.id}`}
-                            label="CF date"
-                            value={task.cfDate}
-                            onChange={(event) =>
-                              updateTask(task.id, "cfDate", event.target.value)
-                            }
-                            disabled={!task.isEditing}
-                          />
-                          <DatePickerField
-                            id={`task-target-${task.id}`}
-                            label="Target"
-                            value={task.targetDate}
-                            onChange={(event) =>
-                              updateTask(
-                                task.id,
-                                "targetDate",
-                                event.target.value,
-                              )
-                            }
-                            disabled={!task.isEditing}
-                          />
-                        </div>
+                        <DatePickerField
+                          id={`task-cf-date-${task.id}`}
+                          label="CF date"
+                          className="effismLite-fieldWide"
+                          value={task.cfDate}
+                          onChange={(event) =>
+                            updateTask(task.id, "cfDate", event.target.value)
+                          }
+                          disabled={!task.isEditing}
+                        />
                       </div>
 
                       <div className="effismLite-taskActions">

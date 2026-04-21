@@ -840,6 +840,14 @@
   overflow-wrap: anywhere;
 }
 
+.effismLite-taskCard:not(.is-expanded) .effismLite-taskTitle {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+}
+
 .effismLite-taskTypePill {
   display: inline-block;
   color: #1f7a5b;

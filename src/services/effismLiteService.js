@@ -466,7 +466,7 @@ export async function listEffismLiteJobs(dateValue) {
   }
 }
 
-function buildTaskFormData(task, date) {
+function buildTaskFormData(task, date, options = {}) {
   const taskName = `${task?.taskName || ""}`.trim();
   const mainTypeId = mapTaskMainTypeLabelToId(task?.mainType);
   const subTypeId = mapTaskSubTypeLabelToId(task?.subType);
@@ -497,14 +497,15 @@ function buildTaskFormData(task, date) {
   formData.append("desc", description);
   formData.append("status", normalizedStatusValue);
 
+  const includeBlankDates = options?.includeBlankDates === true;
   const cfDate = `${task?.cfDate || ""}`.trim();
   const targetDate = `${task?.targetDate || ""}`.trim();
 
-  if (cfDate) {
+  if (includeBlankDates || cfDate) {
     formData.append("cf_date", cfDate);
   }
 
-  if (targetDate) {
+  if (includeBlankDates || targetDate) {
     formData.append("target_date", targetDate);
   }
 
@@ -557,7 +558,7 @@ export async function editEffismLiteJob(task, date) {
     return null;
   }
 
-  const formData = buildTaskFormData(task, date);
+  const formData = buildTaskFormData(task, date, { includeBlankDates: true });
   if (!formData) {
     return null;
   }
