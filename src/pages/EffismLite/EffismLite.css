@@ -42,17 +42,22 @@
   justify-content: space-between;
   gap: 12px;
   width: 100%;
+  padding: 0 0.35rem;
 }
 
 .effismLite-taskToolbarHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   flex: 1 1 auto;
   min-width: 0;
 }
 
 .effismLite-taskToolbarTitle {
-  color: var(--apple-blue);
+  color: #0f6d61;
   font-size: 1.08rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.2;
 }
@@ -752,11 +757,35 @@
 }
 
 .effismLite-summarySectionTitle {
-  margin: 0 0 8px;
+  margin: 0;
   color: #0f6d61;
-  font-size: 0.78rem;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.effismLite-summaryHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 0.35rem;
+}
+
+.effismLite-inlineCompletePill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  color: #1f8f4c;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -822,6 +851,29 @@
 
 .effismLite-timeTotalsGrid .effismLite-timeLogSummaryItem.is-full-width {
   grid-column: 1 / -1;
+}
+
+.effismLite-timeTotalsGrid .effismLite-timeLogSummaryItem.is-net-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.effismLite-timeTotalsGrid
+  .effismLite-timeLogSummaryItem.is-net-time
+  .effismLite-timeLogSummaryLabel {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.effismLite-timeTotalsGrid
+  .effismLite-timeLogSummaryItem.is-net-time
+  .effismLite-timeLogSummaryValue {
+  font-size: 1.18rem;
+  font-weight: 800;
+  line-height: 1.1;
 }
 
 .effismLite-completeConfirmCard {
@@ -1204,21 +1256,39 @@
 
 .effismLite-taskSummaryDetails {
   display: grid;
-  gap: 0;
+  gap: 10px;
   border-top: 1px solid rgba(1, 67, 66, 0.08);
+  padding-top: 10px;
 }
 
-.effismLite-taskSummaryRow {
+.effismLite-taskSummaryGrid,
+.effismLite-taskSummaryMetricsGrid {
   display: grid;
-  gap: 4px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(1, 67, 66, 0.08);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.effismLite-taskSummaryCard {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(1, 67, 66, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfa 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 6px 14px rgba(15, 23, 42, 0.04);
+}
+
+.effismLite-taskSummaryCard.is-full-width {
+  grid-column: 1 / -1;
 }
 
 .effismLite-taskSummaryLabel {
   color: #0f6d61;
-  font-size: 0.68rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1231,8 +1301,31 @@
   white-space: pre-wrap;
 }
 
-.effismLite-taskSummaryRow.is-outcome .effismLite-taskSummaryValue {
-  min-height: 44px;
+.effismLite-taskSummaryStatusCard {
+  gap: 10px;
+}
+
+.effismLite-taskSummaryStatusTrack {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #e4ecef;
+  overflow: hidden;
+}
+
+.effismLite-taskSummaryStatusFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2ab282 0%, #158a77 100%);
+}
+
+.effismLite-taskSummaryStatusText {
+  color: #123430;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .effismLite-searchComboRoot {

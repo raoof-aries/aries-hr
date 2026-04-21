@@ -2012,7 +2012,7 @@ export default function EffismLite() {
         </div>
       </div>
 
-      {jobDiaryCompleteStatus === "success" ? (
+      {jobDiaryCompleteStatus === "success" && !isSummaryMode ? (
         <div className="effismLite-completeNotice is-success" role="status">
           Job diary completed.
         </div>
@@ -2057,6 +2057,9 @@ export default function EffismLite() {
                 ({tasks.length})
               </span>
             </h2>
+            {isSummaryMode ? (
+              <span className="effismLite-inlineCompletePill">Completed</span>
+            ) : null}
           </div>
 
           {!isSummaryMode ? (
@@ -2122,6 +2125,14 @@ export default function EffismLite() {
                 const taskSubError = taskErrorsByWorkreportId.get(
                   `${task.workreportId || ""}`.trim(),
                 );
+                const hasJobNumber = Boolean(`${task.jobNumber || ""}`.trim());
+                const hasCfDate = Boolean(normalizeApiDateValue(task.cfDate));
+                const hasTargetDate = Boolean(normalizeApiDateValue(task.targetDate));
+                const statusPercentage = Number.parseInt(
+                  normalizeStatusValue(task.status),
+                  10,
+                );
+                const hasOutcome = Boolean(`${task.outcome || ""}`.trim());
 
                 return (
                 <article
@@ -2373,66 +2384,78 @@ export default function EffismLite() {
                       <div className="effismLite-taskFields">
                         {isSummaryMode ? (
                           <div className="effismLite-taskSummaryDetails">
-                            <div className="effismLite-taskSummaryRow">
-                              <span className="effismLite-taskSummaryLabel">Task Name</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {task.taskName || "-"}
-                              </span>
+                            <div className="effismLite-taskSummaryGrid">
+                              <div className="effismLite-taskSummaryCard is-full-width">
+                                <span className="effismLite-taskSummaryLabel">Task Name</span>
+                                <span className="effismLite-taskSummaryValue">{task.taskName || "-"}</span>
+                              </div>
+                              <div className="effismLite-taskSummaryCard is-full-width">
+                                <span className="effismLite-taskSummaryLabel">Main Type</span>
+                                <span className="effismLite-taskSummaryValue">{task.mainType || "-"}</span>
+                              </div>
+                              <div className="effismLite-taskSummaryCard is-full-width">
+                                <span className="effismLite-taskSummaryLabel">Sub Type</span>
+                                <span className="effismLite-taskSummaryValue">{task.subType || "-"}</span>
+                              </div>
+                              {hasJobNumber ? (
+                                <div className="effismLite-taskSummaryCard is-full-width">
+                                  <span className="effismLite-taskSummaryLabel">Job Number</span>
+                                  <span className="effismLite-taskSummaryValue">{task.jobNumber}</span>
+                                </div>
+                              ) : null}
                             </div>
-                            <div className="effismLite-taskSummaryRow">
-                              <span className="effismLite-taskSummaryLabel">Main Type</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {task.mainType || "-"}
-                              </span>
+
+                            <div className="effismLite-taskSummaryMetricsGrid">
+                              <div className="effismLite-taskSummaryCard">
+                                <span className="effismLite-taskSummaryLabel">Est Time</span>
+                                <span className="effismLite-taskSummaryValue">{task.estimatedTime || "--:--"}</span>
+                              </div>
+                              <div className="effismLite-taskSummaryCard">
+                                <span className="effismLite-taskSummaryLabel">Act Time</span>
+                                <span className="effismLite-taskSummaryValue">{task.actualTime || "--:--"}</span>
+                              </div>
                             </div>
-                            <div className="effismLite-taskSummaryRow">
-                              <span className="effismLite-taskSummaryLabel">Sub Type</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {task.subType || "-"}
-                              </span>
-                            </div>
-                            <div className="effismLite-taskSummaryRow">
-                              <span className="effismLite-taskSummaryLabel">Job Number</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {task.jobNumber || "-"}
-                              </span>
-                            </div>
-                            <div className="effismLite-taskSummaryRow">
-                              <span className="effismLite-taskSummaryLabel">Est Time</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {task.estimatedTime || "--:--"}
-                              </span>
-                            </div>
-                            <div className="effismLite-taskSummaryRow">
-                              <span className="effismLite-taskSummaryLabel">Act Time</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {task.actualTime || "--:--"}
-                              </span>
-                            </div>
-                            <div className="effismLite-taskSummaryRow">
+
+                            <div className="effismLite-taskSummaryCard effismLite-taskSummaryStatusCard">
                               <span className="effismLite-taskSummaryLabel">Status</span>
-                              <span className="effismLite-taskSummaryValue">
+                              <div className="effismLite-taskSummaryStatusTrack" aria-hidden="true">
+                                <span
+                                  className="effismLite-taskSummaryStatusFill"
+                                  style={{ width: `${statusPercentage}%` }}
+                                />
+                              </div>
+                              <span className="effismLite-taskSummaryStatusText">
                                 {normalizeStatusValue(task.status)}
                               </span>
                             </div>
-                            <div className="effismLite-taskSummaryRow">
-                              <span className="effismLite-taskSummaryLabel">CF Date</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {formatDateDisplayValue(task.cfDate)}
-                              </span>
-                            </div>
-                            <div className="effismLite-taskSummaryRow">
-                              <span className="effismLite-taskSummaryLabel">Target</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {formatDateDisplayValue(task.targetDate)}
-                              </span>
-                            </div>
-                            <div className="effismLite-taskSummaryRow is-outcome">
-                              <span className="effismLite-taskSummaryLabel">Outcome</span>
-                              <span className="effismLite-taskSummaryValue">
-                                {task.outcome || "-"}
-                              </span>
-                            </div>
+
+                            {hasCfDate || hasTargetDate ? (
+                              <div className="effismLite-taskSummaryGrid">
+                                {hasCfDate ? (
+                                  <div className="effismLite-taskSummaryCard">
+                                    <span className="effismLite-taskSummaryLabel">CF Date</span>
+                                    <span className="effismLite-taskSummaryValue">
+                                      {formatDateDisplayValue(task.cfDate)}
+                                    </span>
+                                  </div>
+                                ) : null}
+                                {hasTargetDate ? (
+                                  <div className="effismLite-taskSummaryCard">
+                                    <span className="effismLite-taskSummaryLabel">Target</span>
+                                    <span className="effismLite-taskSummaryValue">
+                                      {formatDateDisplayValue(task.targetDate)}
+                                    </span>
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : null}
+
+                            {hasOutcome ? (
+                              <div className="effismLite-taskSummaryCard">
+                                <span className="effismLite-taskSummaryLabel">Outcome</span>
+                                <span className="effismLite-taskSummaryValue">{task.outcome}</span>
+                              </div>
+                            ) : null}
                           </div>
                         ) : (
                           <>
@@ -2682,7 +2705,10 @@ export default function EffismLite() {
         </div>
       ) : isSummaryMode ? (
         <div className="effismLite-timeLogSummaryPanel">
-          <h3 className="effismLite-summarySectionTitle">Time Log Summary</h3>
+          <div className="effismLite-summaryHeaderRow">
+            <h3 className="effismLite-summarySectionTitle">Time Log Summary</h3>
+            <span className="effismLite-inlineCompletePill">Completed</span>
+          </div>
 
           <section className="effismLite-timeLogSummaryShell">
             <div className="effismLite-timeLogSummaryList">
@@ -2712,7 +2738,7 @@ export default function EffismLite() {
                 .map((metric) => (
                   <article
                     key={metric.label}
-                    className={`effismLite-timeLogSummaryItem${metric.label === "Net Time" ? " is-full-width" : ""}`}
+                    className={`effismLite-timeLogSummaryItem${metric.label === "Net Time" ? " is-full-width is-net-time" : ""}`}
                   >
                     <span className="effismLite-timeLogSummaryLabel">{metric.label}</span>
                     <strong className="effismLite-timeLogSummaryValue">{metric.value}</strong>
