@@ -1058,6 +1058,7 @@ export default function EffismLite() {
                 const taskSubError = taskErrorsByWorkreportId.get(
                   `${task.workreportId || ""}`.trim(),
                 );
+                const isNewTask = !task.isSaved;
                 const hasJobNumber = Boolean(`${task.jobNumber || ""}`.trim());
                 const hasCfDate = Boolean(normalizeApiDateValue(task.cfDate));
                 const hasTargetDate = Boolean(normalizeApiDateValue(task.targetDate));
@@ -1439,6 +1440,7 @@ export default function EffismLite() {
                         <EffismLiteSearchableCombo
                           id={`task-main-type-${task.id}`}
                           label="Main Type"
+                          className={isNewTask ? "effismLite-fieldWide" : ""}
                           value={task.mainType}
                           onChange={(event) =>
                             updateTask(task.id, "mainType", event.target.value)
@@ -1466,6 +1468,7 @@ export default function EffismLite() {
                         <EffismLiteSearchableCombo
                           id={`task-job-number-${task.id}`}
                           label="Job Number"
+                          className={isNewTask ? "effismLite-fieldWide" : ""}
                           value={task.jobNumber}
                           onChange={(event) =>
                             updateTask(
@@ -1480,7 +1483,9 @@ export default function EffismLite() {
                           ariaLabel="Job number"
                         />
 
-                        <div className="effismLite-taskTimeRow effismLite-fieldWide">
+                        <div
+                          className={`effismLite-taskTimeRow effismLite-fieldWide${isNewTask ? " is-single-field" : ""}`}
+                        >
                           <ClockPickerField
                             id={`task-estimated-time-${task.id}`}
                             label="Est Time"
@@ -1501,109 +1506,115 @@ export default function EffismLite() {
                             normalizeClockInput={normalizeClockInput}
                           />
 
-                          <ClockPickerField
-                            id={`task-actual-time-${task.id}`}
-                            label="Act Time"
-                            value={task.actualTime}
-                            onChange={(event) =>
-                              updateTask(
-                                task.id,
-                                "actualTime",
-                                formatClockInputAsTyped(event.target.value),
-                              )
-                            }
-                            onBlur={() =>
-                              handleTaskTimeBlur(task.id, "actualTime")
-                            }
-                            placeholder="00:00"
-                            disabled={!task.isEditing}
-                            formatClockInputAsTyped={formatClockInputAsTyped}
-                            normalizeClockInput={normalizeClockInput}
-                          />
-                        </div>
-
-                        <DatePickerField
-                          id={`task-target-${task.id}`}
-                          label="Target"
-                          className="effismLite-fieldWide"
-                          value={task.targetDate}
-                          onChange={(event) =>
-                            updateTask(
-                              task.id,
-                              "targetDate",
-                              event.target.value,
-                            )
-                          }
-                          disabled={!task.isEditing}
-                          formatDisplayValue={formatDateDisplayValue}
-                        />
-
-                        <label
-                          className="effismLite-field effismLite-fieldWide"
-                          htmlFor={`task-outcome-${task.id}`}
-                        >
-                          <span className="effismLite-fieldLabel">
-                            Outcome
-                          </span>
-                          <textarea
-                            id={`task-outcome-${task.id}`}
-                            className="effismLite-input effismLite-textarea effismLite-taskOutcomeInput"
-                            rows={1}
-                            value={task.outcome}
-                            onChange={(event) =>
-                              updateTask(task.id, "outcome", event.target.value)
-                            }
-                            placeholder="Describe the outcome"
-                            disabled={!task.isEditing}
-                          />
-                        </label>
-
-                        <div className="effismLite-field effismLite-taskStatusField">
-                          <div className="effismLite-taskStatusHeader">
-                            <span className="effismLite-fieldLabel">Status</span>
-                            <span className="effismLite-taskStatusValue">
-                              {normalizeStatusValue(task.status)}
-                            </span>
-                          </div>
-                          <div className="effismLite-taskStatusSliderWrap">
-                            <input
-                              id={`task-status-${task.id}`}
-                              className="effismLite-taskStatusSlider"
-                              type="range"
-                              min="0"
-                              max="100"
-                              step="5"
-                              value={Number.parseInt(normalizeStatusValue(task.status), 10)}
-                              style={{
-                                "--effismLite-status-progress": `${Number.parseInt(
-                                  normalizeStatusValue(task.status),
-                                  10,
-                                )}%`,
-                              }}
+                          {!isNewTask ? (
+                            <ClockPickerField
+                              id={`task-actual-time-${task.id}`}
+                              label="Act Time"
+                              value={task.actualTime}
                               onChange={(event) =>
                                 updateTask(
                                   task.id,
-                                  "status",
-                                  normalizeStatusValue(`${event.target.value}%`),
+                                  "actualTime",
+                                  formatClockInputAsTyped(event.target.value),
+                                )
+                              }
+                              onBlur={() =>
+                                handleTaskTimeBlur(task.id, "actualTime")
+                              }
+                              placeholder="00:00"
+                              disabled={!task.isEditing}
+                              formatClockInputAsTyped={formatClockInputAsTyped}
+                              normalizeClockInput={normalizeClockInput}
+                            />
+                          ) : null}
+                        </div>
+
+                        {!isNewTask ? (
+                          <>
+                            <DatePickerField
+                              id={`task-target-${task.id}`}
+                              label="Target"
+                              className="effismLite-fieldWide"
+                              value={task.targetDate}
+                              onChange={(event) =>
+                                updateTask(
+                                  task.id,
+                                  "targetDate",
+                                  event.target.value,
                                 )
                               }
                               disabled={!task.isEditing}
-                              aria-label="Task status"
+                              formatDisplayValue={formatDateDisplayValue}
                             />
-                          </div>
-                        </div>
 
-                        <DatePickerField
-                          id={`task-cf-date-${task.id}`}
-                          label="CF date"
-                          className="effismLite-fieldWide"
-                          value={task.cfDate}
-                          onChange={(event) =>
-                            updateTask(task.id, "cfDate", event.target.value)
-                          }
-                          disabled={!task.isEditing}
-                          formatDisplayValue={formatDateDisplayValue}
-                        />
+                            <label
+                              className="effismLite-field effismLite-fieldWide"
+                              htmlFor={`task-outcome-${task.id}`}
+                            >
+                              <span className="effismLite-fieldLabel">
+                                Outcome
+                              </span>
+                              <textarea
+                                id={`task-outcome-${task.id}`}
+                                className="effismLite-input effismLite-textarea effismLite-taskOutcomeInput"
+                                rows={1}
+                                value={task.outcome}
+                                onChange={(event) =>
+                                  updateTask(task.id, "outcome", event.target.value)
+                                }
+                                placeholder="Describe the outcome"
+                                disabled={!task.isEditing}
+                              />
+                            </label>
+
+                            <div className="effismLite-field effismLite-taskStatusField">
+                              <div className="effismLite-taskStatusHeader">
+                                <span className="effismLite-fieldLabel">Status</span>
+                                <span className="effismLite-taskStatusValue">
+                                  {normalizeStatusValue(task.status)}
+                                </span>
+                              </div>
+                              <div className="effismLite-taskStatusSliderWrap">
+                                <input
+                                  id={`task-status-${task.id}`}
+                                  className="effismLite-taskStatusSlider"
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  step="5"
+                                  value={Number.parseInt(normalizeStatusValue(task.status), 10)}
+                                  style={{
+                                    "--effismLite-status-progress": `${Number.parseInt(
+                                      normalizeStatusValue(task.status),
+                                      10,
+                                    )}%`,
+                                  }}
+                                  onChange={(event) =>
+                                    updateTask(
+                                      task.id,
+                                      "status",
+                                      normalizeStatusValue(`${event.target.value}%`),
+                                    )
+                                  }
+                                  disabled={!task.isEditing}
+                                  aria-label="Task status"
+                                />
+                              </div>
+                            </div>
+
+                            <DatePickerField
+                              id={`task-cf-date-${task.id}`}
+                              label="CF date"
+                              className="effismLite-fieldWide"
+                              value={task.cfDate}
+                              onChange={(event) =>
+                                updateTask(task.id, "cfDate", event.target.value)
+                              }
+                              disabled={!task.isEditing}
+                              formatDisplayValue={formatDateDisplayValue}
+                            />
+                          </>
+                        ) : null}
                           </>
                         )}
                       </div>

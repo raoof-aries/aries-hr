@@ -1255,6 +1255,10 @@
   gap: 14px;
 }
 
+.effismLite-taskTimeRow.is-single-field {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .effismLite-taskChevron {
   transition: transform 0.18s ease;
 }
