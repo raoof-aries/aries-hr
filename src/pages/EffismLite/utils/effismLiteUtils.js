@@ -132,7 +132,10 @@ export function getTaskSummaryTitle(task) {
 }
 
 export function renderTaskSummaryTime(label, value) {
-  return `${label}: ${value || "--"}`;
+  return {
+    label: `${label || ""}`.trim(),
+    value: value || "--",
+  };
 }
 
 export function getTaskStatusTone(statusValue) {

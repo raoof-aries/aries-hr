@@ -1066,6 +1066,11 @@ export default function EffismLite() {
                   10,
                 );
                 const hasOutcome = Boolean(`${task.outcome || ""}`.trim());
+                const estimatedSummary = renderTaskSummaryTime(
+                  "Est",
+                  task.estimatedTime,
+                );
+                const actualSummary = renderTaskSummaryTime("Act", task.actualTime);
 
                 return (
                 <article
@@ -1189,10 +1194,20 @@ export default function EffismLite() {
 
                       <div className="effismLite-taskSummary">
                         <span className="effismLite-taskSummaryItem">
-                          {renderTaskSummaryTime("Est ", task.estimatedTime)}
+                          <span className="effismLite-taskSummaryMetaLabel">
+                            {estimatedSummary.label} :
+                          </span>
+                          <span className="effismLite-taskSummaryMetaValue">
+                            {estimatedSummary.value}
+                          </span>
                         </span>
                         <span className="effismLite-taskSummaryItem">
-                          {renderTaskSummaryTime("Act ", task.actualTime)}
+                          <span className="effismLite-taskSummaryMetaLabel">
+                            {actualSummary.label} :
+                          </span>
+                          <span className="effismLite-taskSummaryMetaValue">
+                            {actualSummary.value}
+                          </span>
                         </span>
                         <span
                           className={`effismLite-taskSummaryItem effismLite-taskStatusPill is-${getTaskStatusTone(task.status)}`}

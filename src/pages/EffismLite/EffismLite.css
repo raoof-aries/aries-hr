@@ -1130,14 +1130,26 @@
 .effismLite-taskSummaryItem {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   min-height: 32px;
   padding: 0 12px;
   border-radius: 999px;
   background: rgba(15, 109, 97, 0.08);
   color: #0c6d61;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.25;
+}
+
+.effismLite-taskSummaryMetaLabel {
+  color: #0c6d61;
+  font-weight: 500;
+}
+
+.effismLite-taskSummaryMetaValue {
+  color: #0c6d61;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .effismLite-taskStatusPill.is-pending {
