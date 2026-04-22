@@ -1677,15 +1677,27 @@ export default function EffismLite() {
                   (metric) =>
                     !["Net Time", "Total Est", "Total Act"].includes(metric.label),
                 )
-                .map((metric) => (
-                  <article
-                    key={metric.label}
-                    className="effismLite-timeLogSummaryItem"
-                  >
-                    <span className="effismLite-timeLogSummaryLabel">{metric.label}</span>
-                    <strong className="effismLite-timeLogSummaryValue">{metric.value}</strong>
-                  </article>
-                ))}
+                .map((metric) =>
+                  metric.label === "Date" ? (
+                    <DatePickerField
+                      key={metric.label}
+                      id="effism-lite-summary-date"
+                      className="effismLite-timeLogSummaryDateField"
+                      label="Date"
+                      value={jobDetails.date}
+                      onChange={handleTimeLogDateChange}
+                      formatDisplayValue={formatDateDisplayValue}
+                    />
+                  ) : (
+                    <article
+                      key={metric.label}
+                      className="effismLite-timeLogSummaryItem"
+                    >
+                      <span className="effismLite-timeLogSummaryLabel">{metric.label}</span>
+                      <strong className="effismLite-timeLogSummaryValue">{metric.value}</strong>
+                    </article>
+                  ),
+                )}
             </div>
           </section>
 
