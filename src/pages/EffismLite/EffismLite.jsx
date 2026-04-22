@@ -701,38 +701,49 @@ export default function EffismLite() {
       });
     }
 
-    const refreshedTasks = await listEffismLiteJobs(jobDetails.date);
-    setTasks(
-      refreshedTasks.map((task) =>
-        createEditableTask(
-          {
-            id: task.workreport_id
-              ? `effism-lite-task-${task.workreport_id}`
-              : createTaskId(),
-            workreportId: `${task.workreport_id || ""}`,
-            taskName: `${task.taskname || ""}`,
-            mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
-            subType:
-              `${task.job_type_name ?? task.sub_type_name ?? task.sub_type ?? ""}`.trim() ||
-              mapTaskSubTypeIdToLabel(
-                task.sub_type ?? task.subtype ?? task.job_type ?? task.job_type_id,
-              ),
-            jobNumber: `${task.job_no || ""}`,
-            estimatedTime: normalizeApiClockValue(task.est_time),
-            actualTime: normalizeApiClockValue(task.act_time),
-            outcome: `${task.desc ?? task.description ?? ""}`,
-            status: `${task.status ?? 0}%`,
-            cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
-            targetDate: normalizeApiDateValue(task.target_date ?? task.target),
-          },
-          {
-            isSaved: true,
-            isEditing: false,
-            isExpanded: false,
-          },
+    const [refreshedTasksResult, refreshedSummaryMetricsResult] =
+      await Promise.allSettled([
+        listEffismLiteJobs(jobDetails.date),
+        getEffismLiteJobDiarySummary(jobDetails.date),
+      ]);
+
+    if (refreshedTasksResult.status === "fulfilled") {
+      setTasks(
+        refreshedTasksResult.value.map((task) =>
+          createEditableTask(
+            {
+              id: task.workreport_id
+                ? `effism-lite-task-${task.workreport_id}`
+                : createTaskId(),
+              workreportId: `${task.workreport_id || ""}`,
+              taskName: `${task.taskname || ""}`,
+              mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
+              subType:
+                `${task.job_type_name ?? task.sub_type_name ?? task.sub_type ?? ""}`.trim() ||
+                mapTaskSubTypeIdToLabel(
+                  task.sub_type ?? task.subtype ?? task.job_type ?? task.job_type_id,
+                ),
+              jobNumber: `${task.job_no || ""}`,
+              estimatedTime: normalizeApiClockValue(task.est_time),
+              actualTime: normalizeApiClockValue(task.act_time),
+              outcome: `${task.desc ?? task.description ?? ""}`,
+              status: `${task.status ?? 0}%`,
+              cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
+              targetDate: normalizeApiDateValue(task.target_date ?? task.target),
+            },
+            {
+              isSaved: true,
+              isEditing: false,
+              isExpanded: false,
+            },
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    if (refreshedSummaryMetricsResult.status === "fulfilled") {
+      setTaskSummaryMetrics(refreshedSummaryMetricsResult.value);
+    }
   };
 
   const handleEditTask = (taskId) => {
