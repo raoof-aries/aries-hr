@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /salary/
+  RewriteBase /hrms1/
 
   RewriteRule ^index\.html$ - [L]
 
@@ -9,4 +9,13 @@
   RewriteRule ^ - [L]
 
   RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Always revalidate the app shell and service worker so devices discover new builds.
+  <FilesMatch "^(index\.html|sw\.js|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
 </IfModule>
