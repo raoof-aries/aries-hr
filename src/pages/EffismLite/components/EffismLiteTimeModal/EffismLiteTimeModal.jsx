@@ -29,18 +29,35 @@ export default function EffismLiteTimeModal({
       return undefined;
     }
 
-    const previousOverflow = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPosition = document.body.style.position;
+    const previousBodyTop = document.body.style.top;
+    const previousBodyWidth = document.body.style.width;
     const previousPaddingRight = document.body.style.paddingRight;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
 
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.body.dataset.disablePullRefresh = "true";
+
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      delete document.body.dataset.disablePullRefresh;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.position = previousBodyPosition;
+      document.body.style.top = previousBodyTop;
+      document.body.style.width = previousBodyWidth;
       document.body.style.paddingRight = previousPaddingRight;
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
@@ -49,13 +66,19 @@ export default function EffismLiteTimeModal({
   }
 
   return createPortal(
-    <div className="effismLite-modalBackdrop" role="presentation" onClick={onClose}>
+    <div
+      className="effismLite-modalBackdrop"
+      role="presentation"
+      onClick={onClose}
+      data-disable-pull-refresh
+    >
       <div
         className="effismLite-modalPanel"
         role="dialog"
         aria-modal="true"
         aria-label={title}
         onClick={(event) => event.stopPropagation()}
+        data-disable-pull-refresh
       >
         <div className="effismLite-modalHead">
           <span className="effismLite-modalTitle">{title}</span>
@@ -69,7 +92,7 @@ export default function EffismLiteTimeModal({
           </button>
         </div>
 
-        <div className="effismLite-modalBody">{children}</div>
+        <div className="effismLite-modalBody" data-disable-pull-refresh>{children}</div>
 
         <div className="effismLite-modalActions">
           <button
