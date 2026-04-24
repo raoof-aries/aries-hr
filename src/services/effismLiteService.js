@@ -81,8 +81,16 @@ function mapDayTypeToApiWorkStatus(value) {
     return "work";
   }
 
+  if (normalizedValue === "site-job") {
+    return "site";
+  }
+
+  if (normalizedValue === "off") {
+    return "OFF";
+  }
+
   if (normalizedValue === "work-from-home") {
-    return "wfh";
+    return "WFH";
   }
 
   return normalizedValue;
@@ -129,6 +137,35 @@ function normalizeSubTypeOption(item) {
   };
 }
 
+function normalizeDayTypeOption(item) {
+  const apiValue = `${item?.value ?? item?.work_status ?? item?.id ?? ""}`.trim();
+  const label = `${item?.name ?? item?.label ?? ""}`.trim();
+
+  if (!apiValue || !label) {
+    return null;
+  }
+
+  return {
+    value: mapApiWorkStatusToDayType(apiValue),
+    label,
+    apiValue,
+  };
+}
+
+function normalizeDayLeaveTypeOption(item) {
+  const value = `${item?.leave_type_name ?? item?.value ?? item?.id ?? ""}`.trim();
+  const label = `${item?.name ?? item?.label ?? ""}`.trim();
+
+  if (!value || !label) {
+    return null;
+  }
+
+  return {
+    value,
+    label,
+  };
+}
+
 async function listTaskCatalogByAction(actionValue, normalizeItem) {
   const { apiBaseUrl } = await getRuntimeConfig();
   if (!apiBaseUrl) {
@@ -136,6 +173,40 @@ async function listTaskCatalogByAction(actionValue, normalizeItem) {
   }
 
   const formData = new FormData();
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=${actionValue}`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload) || !Array.isArray(payload?.data)) {
+      return [];
+    }
+
+    return payload.data
+      .map((item) => normalizeItem(item))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function listCatalogByAction(actionValue, normalizeItem, buildFormData) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return [];
+  }
+
+  const formData = buildFormData ? buildFormData() : new FormData();
 
   try {
     const response = await fetch(`${apiBaseUrl}?action=${actionValue}`, {
@@ -175,6 +246,31 @@ export async function listEffismLiteSubTypes() {
   return options;
 }
 
+export function getApiWorkStatusForDayType(value) {
+  return mapDayTypeToApiWorkStatus(value);
+}
+
+export async function listEffismLiteDayTypes() {
+  return listCatalogByAction("getDayType", normalizeDayTypeOption);
+}
+
+export async function listEffismLiteDayLeaveTypes(workStatus) {
+  const apiWorkStatus = mapDayTypeToApiWorkStatus(workStatus);
+  if (!apiWorkStatus) {
+    return [];
+  }
+
+  return listCatalogByAction(
+    "getDayLeaveTypes",
+    normalizeDayLeaveTypeOption,
+    () => {
+      const formData = new FormData();
+      formData.append("work_status", apiWorkStatus);
+      return formData;
+    },
+  );
+}
+
 export function mapApiWorkStatusToDayType(value) {
   const normalizedValue = `${value || ""}`.trim().toLowerCase();
 
@@ -184,6 +280,10 @@ export function mapApiWorkStatusToDayType(value) {
 
   if (normalizedValue === "wfh") {
     return "work-from-home";
+  }
+
+  if (normalizedValue === "site") {
+    return "site";
   }
 
   return normalizedValue;
@@ -400,7 +500,11 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
     formData.append("site_travel", siteTravel);
   }
 
-  if (![workStatus, timeIn, timeOut, nwt, siteTravel].some(Boolean)) {
+  if ((workStatus === "OFF" || workStatus === "leave") && jobDetails.daySubtype) {
+    formData.append("leave_type_name", jobDetails.daySubtype);
+  }
+
+  if (![workStatus, timeIn, timeOut, nwt, siteTravel, jobDetails.daySubtype].some(Boolean)) {
     return null;
   }
 

@@ -13,6 +13,8 @@ import {
   getEffismLiteJobDiarySummary,
   getEffismLiteLastWorkingDate,
   getEffismLiteTimeRecord,
+  listEffismLiteDayLeaveTypes,
+  listEffismLiteDayTypes,
   listEffismLiteMainTypes,
   listEffismLiteJobs,
   listEffismLiteSubTypes,
@@ -110,6 +112,13 @@ export default function EffismLite() {
     FALLBACK_MAIN_TYPE_OPTIONS,
   );
   const [taskSubTypeOptions, setTaskSubTypeOptions] = useState([]);
+  const [dayTypeOptions, setDayTypeOptions] = useState(DAY_TYPE_SELECT_OPTIONS);
+  const [offSubtypeOptions, setOffSubtypeOptions] = useState(
+    OFF_SUBTYPE_SELECT_OPTIONS,
+  );
+  const [leaveSubtypeOptions, setLeaveSubtypeOptions] = useState(
+    LEAVE_SUBTYPE_SELECT_OPTIONS,
+  );
   const [isTimeLogLoading, setIsTimeLogLoading] = useState(true);
   const [isTaskListLoading, setIsTaskListLoading] = useState(false);
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
@@ -154,6 +163,7 @@ export default function EffismLite() {
             ...currentJobDetails,
             date: `${timeRecord.date_log || lastWorkingDate || ""}`,
             dayType: mapApiWorkStatusToDayType(timeRecord.work_status),
+            daySubtype: `${timeRecord.leave_type_name ?? timeRecord.leave_type ?? ""}`,
             timeIn: timeInValue.time,
             timeInMeridiem: timeInValue.meridiem,
             timeOut: timeOutValue.time,
@@ -202,6 +212,56 @@ export default function EffismLite() {
       }
     };
   }, []);
+
+  // Load day type dropdown options from API, with local fallbacks kept for offline/dev.
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadDayTypeOptions = async () => {
+      const options = await listEffismLiteDayTypes();
+
+      if (isMounted && options.length > 0) {
+        setDayTypeOptions([{ value: "", label: "Select day type" }, ...options]);
+      }
+    };
+
+    loadDayTypeOptions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Load subtype options only when the selected day type needs the second API.
+  useEffect(() => {
+    if (jobDetails.dayType !== "off" && jobDetails.dayType !== "leave") {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadDaySubtypeOptions = async () => {
+      const options = await listEffismLiteDayLeaveTypes(jobDetails.dayType);
+
+      if (!isMounted || options.length === 0) {
+        return;
+      }
+
+      const selectOptions = [{ value: "", label: "Select" }, ...options];
+
+      if (jobDetails.dayType === "off") {
+        setOffSubtypeOptions(selectOptions);
+      } else {
+        setLeaveSubtypeOptions(selectOptions);
+      }
+    };
+
+    loadDaySubtypeOptions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [jobDetails.dayType]);
 
   // Load task type dropdown options once.
   useEffect(() => {
@@ -402,6 +462,17 @@ export default function EffismLite() {
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
   const isSummaryMode = jobDiaryCompleteStatus === "success";
+  const selectedDayTypeLabel =
+    dayTypeOptions.find((option) => option.value === jobDetails.dayType)?.label ||
+    jobDetails.dayType ||
+    "-";
+  const selectedDaySubtypeLabel =
+    (jobDetails.dayType === "off"
+      ? offSubtypeOptions
+      : leaveSubtypeOptions
+    ).find((option) => option.value === jobDetails.daySubtype)?.label ||
+    jobDetails.daySubtype ||
+    "-";
 
   // Generic job-details updater with autosave tracking.
   const updateJobDetails = (field, value) => {
@@ -472,7 +543,7 @@ export default function EffismLite() {
           ...currentJobDetails,
           date: nextDate,
           dayType: mapApiWorkStatusToDayType(timeRecord.work_status),
-          daySubtype: "",
+          daySubtype: `${timeRecord.leave_type_name ?? timeRecord.leave_type ?? ""}`,
           timeIn: timeInValue.time,
           timeInMeridiem: timeInValue.meridiem,
           timeOut: timeOutValue.time,
@@ -849,7 +920,7 @@ export default function EffismLite() {
   const timeLogMetrics = useMemo(() => {
     const metrics = [
       { label: "Date", value: formatDateDisplayValue(jobDetails.date) },
-      { label: "Day Type", value: jobDetails.dayType || "-" },
+      { label: "Day Type", value: selectedDayTypeLabel },
       {
         label: "Duty Start",
         value: `${jobDetails.timeIn || "--:--"} ${jobDetails.timeInMeridiem || "AM"}`,
@@ -865,7 +936,7 @@ export default function EffismLite() {
     if (jobDetails.dayType === "off" || jobDetails.dayType === "leave") {
       metrics.push({
         label: jobDetails.dayType === "off" ? "OFF Type" : "Leave Type",
-        value: jobDetails.daySubtype || "-",
+        value: selectedDaySubtypeLabel,
       });
     }
 
@@ -878,7 +949,7 @@ export default function EffismLite() {
     }
 
     return metrics;
-  }, [isSummaryMode, jobDetails, taskSummaryMetrics]);
+  }, [isSummaryMode, jobDetails, selectedDaySubtypeLabel, selectedDayTypeLabel, taskSummaryMetrics]);
 
   return (
     <div className="effismLite-page">
@@ -1767,7 +1838,7 @@ export default function EffismLite() {
                   ariaLabel="Day type"
                   value={jobDetails.dayType}
                   onValueChange={handleDayTypeChange}
-                  options={DAY_TYPE_SELECT_OPTIONS}
+                  options={dayTypeOptions}
                   placeholder="Select day type"
                 />
               </div>
@@ -1782,7 +1853,7 @@ export default function EffismLite() {
                     onValueChange={(nextValue) =>
                       updateJobDetails("daySubtype", nextValue)
                     }
-                    options={OFF_SUBTYPE_SELECT_OPTIONS}
+                    options={offSubtypeOptions}
                     placeholder="Select"
                   />
                 </div>
@@ -1798,7 +1869,7 @@ export default function EffismLite() {
                     onValueChange={(nextValue) =>
                       updateJobDetails("daySubtype", nextValue)
                     }
-                    options={LEAVE_SUBTYPE_SELECT_OPTIONS}
+                    options={leaveSubtypeOptions}
                     placeholder="Select"
                   />
                 </div>

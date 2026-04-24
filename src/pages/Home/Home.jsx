@@ -10,8 +10,27 @@ import {
   NON_EFFISM_DAY_TYPE_OPTIONS,
   OFF_DAY_SUBTYPE_OPTIONS,
 } from "../../data/attendanceOptions";
+import {
+  listEffismLiteDayLeaveTypes,
+  listEffismLiteDayTypes,
+} from "../../services/effismLiteService";
 import { getIsRegularUser } from "../../utils/userMode";
 import "./Home.css";
+
+const DAY_TYPE_SELECT_OPTIONS = [
+  { value: "", label: "Select day type" },
+  ...NON_EFFISM_DAY_TYPE_OPTIONS,
+];
+
+const OFF_SUBTYPE_SELECT_OPTIONS = [
+  { value: "", label: "Select" },
+  ...OFF_DAY_SUBTYPE_OPTIONS,
+];
+
+const LEAVE_SUBTYPE_SELECT_OPTIONS = [
+  { value: "", label: "Select" },
+  ...LEAVE_DAY_SUBTYPE_OPTIONS,
+];
 
 export default function Home() {
   const [isOnBreak, setIsOnBreak] = useState(false);
@@ -19,6 +38,13 @@ export default function Home() {
   const [timeOut, setTimeOut] = useState("");
   const [dayType, setDayType] = useState("");
   const [daySubtype, setDaySubtype] = useState("");
+  const [dayTypeOptions, setDayTypeOptions] = useState(DAY_TYPE_SELECT_OPTIONS);
+  const [offSubtypeOptions, setOffSubtypeOptions] = useState(
+    OFF_SUBTYPE_SELECT_OPTIONS,
+  );
+  const [leaveSubtypeOptions, setLeaveSubtypeOptions] = useState(
+    LEAVE_SUBTYPE_SELECT_OPTIONS,
+  );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
   const implementedModuleIds = new Set(["break", "salary", "effism-lite"]);
@@ -46,6 +72,54 @@ export default function Home() {
       window.removeEventListener(BREAK_STATUS_UPDATED_EVENT, loadBreakStatus);
     };
   }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadDayTypeOptions = async () => {
+      const options = await listEffismLiteDayTypes();
+
+      if (isActive && options.length > 0) {
+        setDayTypeOptions([{ value: "", label: "Select day type" }, ...options]);
+      }
+    };
+
+    loadDayTypeOptions();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (dayType !== "off" && dayType !== "leave") {
+      return;
+    }
+
+    let isActive = true;
+
+    const loadDaySubtypeOptions = async () => {
+      const options = await listEffismLiteDayLeaveTypes(dayType);
+
+      if (!isActive || options.length === 0) {
+        return;
+      }
+
+      const selectOptions = [{ value: "", label: "Select" }, ...options];
+
+      if (dayType === "off") {
+        setOffSubtypeOptions(selectOptions);
+      } else {
+        setLeaveSubtypeOptions(selectOptions);
+      }
+    };
+
+    loadDaySubtypeOptions();
+
+    return () => {
+      isActive = false;
+    };
+  }, [dayType]);
 
   const quickAccessItems = [
     {
@@ -324,8 +398,7 @@ export default function Home() {
                 value={dayType}
                 onChange={handleDayTypeChange}
               >
-                <option value="">Select day type</option>
-                {NON_EFFISM_DAY_TYPE_OPTIONS.map((option) => (
+                {dayTypeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -341,8 +414,7 @@ export default function Home() {
                   value={daySubtype}
                   onChange={(event) => setDaySubtype(event.target.value)}
                 >
-                  <option value="">Select</option>
-                  {OFF_DAY_SUBTYPE_OPTIONS.map((option) => (
+                  {offSubtypeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
@@ -359,8 +431,7 @@ export default function Home() {
                   value={daySubtype}
                   onChange={(event) => setDaySubtype(event.target.value)}
                 >
-                  <option value="">Select</option>
-                  {LEAVE_DAY_SUBTYPE_OPTIONS.map((option) => (
+                  {leaveSubtypeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
