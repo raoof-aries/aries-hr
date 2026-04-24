@@ -123,33 +123,6 @@ export default function Home() {
 
   const quickAccessItems = [
     {
-      id: "effism-lite",
-      title: "EFFISM Lite",
-      description: "Time log and task entry",
-      route: "/effism-lite",
-      icon: (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          <path d="M8 7h8"></path>
-          <path d="M8 11h8"></path>
-          <path d="M8 15h5"></path>
-        </svg>
-      ),
-      bgColor: "#E7F5F1",
-      iconColor: "#0D6C5F",
-      shadowColor: "rgba(1, 67, 66, 0.14)",
-    },
-    {
       id: "break",
       title: "Break",
       statusBadge: isOnBreak ? "Break Initiated" : null,
@@ -176,6 +149,33 @@ export default function Home() {
         ? "rgba(198, 69, 69, 0.16)"
         : "rgba(1, 67, 66, 0.14)",
       cardTone: isOnBreak ? "warning" : null,
+    },
+    {
+      id: "effism-lite",
+      title: "EFFISM Lite",
+      description: "Time log and task entry",
+      route: "/effism-lite",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          <path d="M8 7h8"></path>
+          <path d="M8 11h8"></path>
+          <path d="M8 15h5"></path>
+        </svg>
+      ),
+      bgColor: "#E7F5F1",
+      iconColor: "#0D6C5F",
+      shadowColor: "rgba(1, 67, 66, 0.14)",
     },
     {
       id: "salary",
