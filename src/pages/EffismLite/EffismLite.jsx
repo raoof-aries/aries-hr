@@ -114,6 +114,16 @@ const DAY_TYPE_SELECT_OPTIONS = [
   ...NON_EFFISM_DAY_TYPE_OPTIONS,
 ];
 
+const TIME_LOG_EXTRA_FIELDS = [
+  { field: "workHome", label: "Work Home" },
+  { field: "night", label: "Night" },
+  { field: "health", label: "Health" },
+  { field: "family", label: "Family" },
+  { field: "friends", label: "Friends" },
+  { field: "sleep", label: "Sleep" },
+  { field: "travel", label: "Travel" },
+];
+
 const OFF_SUBTYPE_SELECT_OPTIONS = [
   { value: "", label: "Select" },
   ...OFF_DAY_SUBTYPE_OPTIONS,
@@ -154,6 +164,13 @@ export default function EffismLite() {
     timeOutMeridiem: "PM",
     breakTime: "",
     siteTravel: "",
+    workHome: "",
+    night: "",
+    health: "",
+    family: "",
+    friends: "",
+    sleep: "",
+    travel: "",
   });
   const [tasks, setTasks] = useState([]);
   const [taskMainTypeOptions, setTaskMainTypeOptions] = useState(
@@ -218,6 +235,13 @@ export default function EffismLite() {
             timeOutMeridiem: timeOutValue.meridiem,
             breakTime: normalizeApiClockValue(timeRecord.nwt),
             siteTravel: normalizeApiClockValue(timeRecord.site_travel),
+            workHome: normalizeApiClockValue(timeRecord.work_home),
+            night: normalizeApiClockValue(timeRecord.night),
+            health: normalizeApiClockValue(timeRecord.health),
+            family: normalizeApiClockValue(timeRecord.family),
+            friends: normalizeApiClockValue(timeRecord.friends),
+            sleep: normalizeApiClockValue(timeRecord.sleep),
+            travel: normalizeApiClockValue(timeRecord.travel),
           }));
         } else {
           setJobDetails((currentJobDetails) => ({
@@ -607,6 +631,13 @@ export default function EffismLite() {
           timeOutMeridiem: timeOutValue.meridiem,
           breakTime: normalizeApiClockValue(timeRecord.nwt),
           siteTravel: normalizeApiClockValue(timeRecord.site_travel),
+          workHome: normalizeApiClockValue(timeRecord.work_home),
+          night: normalizeApiClockValue(timeRecord.night),
+          health: normalizeApiClockValue(timeRecord.health),
+          family: normalizeApiClockValue(timeRecord.family),
+          friends: normalizeApiClockValue(timeRecord.friends),
+          sleep: normalizeApiClockValue(timeRecord.sleep),
+          travel: normalizeApiClockValue(timeRecord.travel),
         }));
       } else {
         setJobDetails((currentJobDetails) => ({
@@ -620,6 +651,13 @@ export default function EffismLite() {
           timeOutMeridiem: "PM",
           breakTime: "",
           siteTravel: "",
+          workHome: "",
+          night: "",
+          health: "",
+          family: "",
+          friends: "",
+          sleep: "",
+          travel: "",
         }));
       }
 
@@ -971,6 +1009,10 @@ export default function EffismLite() {
       },
       { label: "Break", value: jobDetails.breakTime || "--:--" },
       { label: "Site Travel", value: jobDetails.siteTravel || "--:--" },
+      ...TIME_LOG_EXTRA_FIELDS.map((fieldConfig) => ({
+        label: fieldConfig.label,
+        value: jobDetails[fieldConfig.field] || "--:--",
+      })),
     ];
 
     if (jobDetails.dayType === "off" || jobDetails.dayType === "leave") {
@@ -2041,6 +2083,21 @@ export default function EffismLite() {
                   normalizeClockInput={normalizeClockInput}
                 />
               </div>
+
+              {TIME_LOG_EXTRA_FIELDS.map((fieldConfig) => (
+                <ClockPickerField
+                  key={fieldConfig.field}
+                  id={`effism-lite-${fieldConfig.field}`}
+                  label={fieldConfig.label}
+                  value={jobDetails[fieldConfig.field]}
+                  onChange={(event) =>
+                    handleJobClockChange(fieldConfig.field, event.target.value)
+                  }
+                  onBlur={() => handleJobTimeBlur(fieldConfig.field)}
+                  formatClockInputAsTyped={formatClockInputAsTyped}
+                  normalizeClockInput={normalizeClockInput}
+                />
+              ))}
           </div>
           </section>
         </>

@@ -96,6 +96,17 @@ function mapDayTypeToApiWorkStatus(value) {
   return normalizedValue;
 }
 
+const TIME_LOG_EXTRA_FIELD_API_KEYS = {
+  workHome: "work_home",
+  night: "night",
+  health: "health",
+  family: "family",
+  friends: "friends",
+  sleep: "sleep",
+  travel: "travel",
+};
+
+
 const TASK_MAIN_TYPE_TO_ID = {
   Invoiceable: "1",
   "Non Invoiceable": "2",
@@ -472,6 +483,12 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
   );
   const nwt = normalizeDurationForApi(jobDetails.breakTime);
   const siteTravel = normalizeDurationForApi(jobDetails.siteTravel);
+  const extraTimeValues = Object.entries(TIME_LOG_EXTRA_FIELD_API_KEYS).map(
+    ([field, apiKey]) => ({
+      apiKey,
+      value: normalizeDurationForApi(jobDetails[field]),
+    }),
+  );
 
   if (!jobDetails.date) {
     return null;
@@ -500,11 +517,27 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
     formData.append("site_travel", siteTravel);
   }
 
+  extraTimeValues.forEach(({ apiKey, value }) => {
+    if (value) {
+      formData.append(apiKey, value);
+    }
+  });
+
   if ((workStatus === "OFF" || workStatus === "leave") && jobDetails.daySubtype) {
     formData.append("leave_type_name", jobDetails.daySubtype);
   }
 
-  if (![workStatus, timeIn, timeOut, nwt, siteTravel, jobDetails.daySubtype].some(Boolean)) {
+  if (
+    ![
+      workStatus,
+      timeIn,
+      timeOut,
+      nwt,
+      siteTravel,
+      jobDetails.daySubtype,
+      ...extraTimeValues.map((entry) => entry.value),
+    ].some(Boolean)
+  ) {
     return null;
   }
 
