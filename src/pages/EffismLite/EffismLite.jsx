@@ -96,6 +96,14 @@ const TASK_CATEGORY_LABELS = {
   [TASK_CATEGORY.DELEGATED]: "Delegate",
 };
 
+const TASK_FILTER_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: TASK_CATEGORY.JOB, label: "Today" },
+  { value: TASK_CATEGORY.ROUTINE, label: "Routine" },
+  { value: TASK_CATEGORY.CF, label: "CF" },
+  { value: TASK_CATEGORY.DELEGATED, label: "Delegate" },
+];
+
 function getTaskCategoryLabel(category) {
   return TASK_CATEGORY_LABELS[category] || "";
 }
@@ -211,6 +219,7 @@ export default function EffismLite() {
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
   const [jobDiaryCompleteStatus, setJobDiaryCompleteStatus] = useState("idle");
   const [jobDiaryCompleteMessage, setJobDiaryCompleteMessage] = useState("");
+  const [taskFilter, setTaskFilter] = useState("all");
   const [taskErrorsByWorkreportId, setTaskErrorsByWorkreportId] = useState(new Map());
   const [taskSummaryMetrics, setTaskSummaryMetrics] = useState(null);
   const [showCompleteConfirmation, setShowCompleteConfirmation] = useState(false);
@@ -971,6 +980,23 @@ export default function EffismLite() {
     [tasks],
   );
 
+  const filteredTaskSections = useMemo(
+    () =>
+      taskFilter === "all"
+        ? taskSections
+        : taskSections.filter((section) => section.category === taskFilter),
+    [taskFilter, taskSections],
+  );
+
+  const filteredTaskCount = useMemo(
+    () =>
+      filteredTaskSections.reduce(
+        (total, section) => total + section.tasks.length,
+        0,
+      ),
+    [filteredTaskSections],
+  );
+
   // Top-level task metrics cards.
   const taskTopMetrics = useMemo(() => {
     const totalEstimatedMinutes = tasks.reduce(
@@ -1165,7 +1191,7 @@ export default function EffismLite() {
             <h2 className="effismLite-taskToolbarTitle">
               Tasks{" "}
               <span className="effismLite-taskToolbarCount">
-                ({tasks.length})
+                ({taskFilter === "all" ? tasks.length : filteredTaskCount})
               </span>
             </h2>
             {isSummaryMode ? (
@@ -1225,6 +1251,25 @@ export default function EffismLite() {
             </span>
           </div>
           </section>
+
+          <div
+            className="effismLite-taskFilterToggle"
+            role="tablist"
+            aria-label="Task type filter"
+          >
+            {TASK_FILTER_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`effismLite-taskFilterButton${taskFilter === option.value ? " is-active" : ""}`}
+                onClick={() => setTaskFilter(option.value)}
+                role="tab"
+                aria-selected={taskFilter === option.value}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </>
       ) : null}
 
@@ -1238,7 +1283,8 @@ export default function EffismLite() {
             </div>
           ) : (
             <div className="effismLite-taskSectionStack">
-              {taskSections.map((section) => (
+              {filteredTaskSections.length > 0 ? (
+              filteredTaskSections.map((section) => (
                 <section
                   key={section.category}
                   className="effismLite-taskGroup"
@@ -1932,7 +1978,12 @@ export default function EffismLite() {
               })}
                   </div>
                 </section>
-              ))}
+              ))
+              ) : (
+                <div className="effismLite-emptyTasks">
+                  No tasks in this view.
+                </div>
+              )}
             </div>
           )}
           </section>

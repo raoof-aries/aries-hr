@@ -67,6 +67,54 @@
   font-weight: 700;
 }
 
+.effismLite-taskFilterToggle {
+  display: grid;
+  grid-template-columns: 0.9fr 1fr 1.15fr 0.8fr 1.25fr;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  min-height: 38px;
+  padding: 3px;
+  border-radius: 14px;
+  border: 1px solid rgba(1, 67, 66, 0.08);
+  background: #f2f8f6;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.effismLite-taskFilterButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: #6d8782;
+  font: inherit;
+  font-size: clamp(0.74rem, 2.9vw, 0.84rem);
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.effismLite-taskFilterButton:hover {
+  color: var(--apple-blue);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.effismLite-taskFilterButton.is-active {
+  background: #ffffff;
+  color: var(--apple-blue);
+  box-shadow: 0 4px 10px rgba(1, 67, 66, 0.08);
+}
+
 .effismLite-tabs {
   display: inline-grid;
   grid-template-columns: repeat(2, max-content);
@@ -1008,7 +1056,7 @@
   margin: 0;
   color: #425466;
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 650;
   line-height: 1.2;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1028,6 +1076,17 @@
   font-size: 0.72rem;
   font-weight: 800;
   line-height: 1;
+}
+
+.effismLite-emptyTasks {
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px dashed #cddbd8;
+  background: #f7fbfa;
+  color: #6d8782;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
 }
 
 .effismLite-taskCard {
@@ -1567,7 +1626,7 @@
   }
 
   .effismLite-taskToolbarRow {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: center;
   }
 
