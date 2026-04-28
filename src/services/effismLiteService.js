@@ -97,11 +97,11 @@ function mapDayTypeToApiWorkStatus(value) {
 }
 
 const TIME_LOG_EXTRA_FIELD_API_KEYS = {
-  workHome: "work_home",
+  workHome: "home",
   night: "night",
   health: "health",
   family: "family",
-  friends: "friends",
+  friends: "friend",
   sleep: "sleep",
   travel: "travel",
 };
