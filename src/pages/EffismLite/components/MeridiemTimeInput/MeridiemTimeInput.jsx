@@ -14,6 +14,8 @@ export default function MeridiemTimeInput({
   formatClockInputAsTyped,
   normalizeClockInput,
   className = "",
+  defaultPickerTime = "12:00",
+  defaultPickerMeridiem = "AM",
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [draftHour, setDraftHour] = useState("12");
@@ -28,8 +30,17 @@ export default function MeridiemTimeInput({
   const openPicker = () => {
     const sourceTime = isEditingTime ? editBuffer : `${timeValue || ""}`;
     const matchedTime = `${sourceTime}`.trim().match(/^(\d{1,2})[:.](\d{2})$/);
+    const defaultMatchedTime = `${defaultPickerTime || "12:00"}`
+      .trim()
+      .match(/^(\d{1,2})[:.](\d{2})$/);
+    const isUnsetTime =
+      !`${sourceTime}`.trim() || normalizeClockInput(`${sourceTime}`.trim()) === "00:00";
 
-    if (matchedTime) {
+    if (isUnsetTime && defaultMatchedTime) {
+      const rawHour = defaultMatchedTime[1].padStart(2, "0");
+      setDraftHour(rawHour === "00" ? "12" : rawHour);
+      setDraftMinute(defaultMatchedTime[2]);
+    } else if (matchedTime) {
       const rawHour = matchedTime[1].padStart(2, "0");
       setDraftHour(rawHour === "00" ? "12" : rawHour);
       setDraftMinute(matchedTime[2]);
@@ -38,7 +49,9 @@ export default function MeridiemTimeInput({
       setDraftMinute("00");
     }
 
-    setDraftMeridiem(displayMeridiem);
+    setDraftMeridiem(
+      isUnsetTime ? `${defaultPickerMeridiem || "AM"}`.toUpperCase() : displayMeridiem,
+    );
     setPickerOpen(true);
   };
 

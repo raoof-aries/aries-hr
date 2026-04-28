@@ -2040,6 +2040,8 @@ export default function EffismLite() {
                 onBlur={() => handleJobTimeBlur("timeIn")}
                 formatClockInputAsTyped={formatClockInputAsTyped}
                 normalizeClockInput={normalizeClockInput}
+                defaultPickerTime="08:00"
+                defaultPickerMeridiem="AM"
               />
 
               <MeridiemTimeInput
@@ -2057,6 +2059,8 @@ export default function EffismLite() {
                 onBlur={() => handleJobTimeBlur("timeOut")}
                 formatClockInputAsTyped={formatClockInputAsTyped}
                 normalizeClockInput={normalizeClockInput}
+                defaultPickerTime="06:00"
+                defaultPickerMeridiem="PM"
               />
             </div>
 
