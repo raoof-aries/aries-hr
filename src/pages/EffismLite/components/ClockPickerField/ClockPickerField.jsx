@@ -8,6 +8,7 @@ import "./ClockPickerField.css";
 export default function ClockPickerField({
   id,
   label,
+  className = "",
   value,
   onChange,
   onBlur,
@@ -81,7 +82,7 @@ export default function ClockPickerField({
   };
 
   return (
-    <div className="effismLite-field">
+    <div className={`effismLite-field${className ? ` ${className}` : ""}`}>
       <label className="effismLite-fieldLabel" htmlFor={id}>
         {label}
       </label>

@@ -1954,7 +1954,7 @@ export default function EffismLite() {
       ) : (
         <>
           {/* Editable time-log form */}
-          <section className="effismLite-panel">
+          <section className="effismLite-timeLogFormSection">
           {timeSaveStatus !== "idle" ? (
             <div className="effismLite-saveStatusWrap" aria-live="polite">
               <span
@@ -1970,7 +1970,8 @@ export default function EffismLite() {
             </div>
           ) : null}
 
-          <div className="effismLite-formGrid">
+          <div className="effismLite-timeLogCardStack">
+            <div className="effismLite-timeLogCard">
               <DatePickerField
                 id="effism-lite-date"
                 className="effismLite-fieldWide"
@@ -2057,34 +2058,34 @@ export default function EffismLite() {
                 formatClockInputAsTyped={formatClockInputAsTyped}
                 normalizeClockInput={normalizeClockInput}
               />
+            </div>
 
-              <div className="effismLite-formRow effismLite-fieldWide">
-                <ClockPickerField
-                  id="effism-lite-break"
-                  label="Break"
-                  value={jobDetails.breakTime}
-                  onChange={(event) =>
-                    handleJobClockChange("breakTime", event.target.value)
-                  }
-                  onBlur={() => handleJobTimeBlur("breakTime")}
-                  formatClockInputAsTyped={formatClockInputAsTyped}
-                  normalizeClockInput={normalizeClockInput}
-                />
+            <div className="effismLite-timeLogCard">
+              <ClockPickerField
+                id="effism-lite-break"
+                label="Break"
+                value={jobDetails.breakTime}
+                onChange={(event) =>
+                  handleJobClockChange("breakTime", event.target.value)
+                }
+                onBlur={() => handleJobTimeBlur("breakTime")}
+                formatClockInputAsTyped={formatClockInputAsTyped}
+                normalizeClockInput={normalizeClockInput}
+              />
 
-                <ClockPickerField
-                  id="effism-lite-site-travel"
-                  label="Site Travel"
-                  value={jobDetails.siteTravel}
-                  onChange={(event) =>
-                    handleJobClockChange("siteTravel", event.target.value)
-                  }
-                  onBlur={() => handleJobTimeBlur("siteTravel")}
-                  formatClockInputAsTyped={formatClockInputAsTyped}
-                  normalizeClockInput={normalizeClockInput}
-                />
-              </div>
+              <ClockPickerField
+                id="effism-lite-site-travel"
+                label="Site Travel"
+                value={jobDetails.siteTravel}
+                onChange={(event) =>
+                  handleJobClockChange("siteTravel", event.target.value)
+                }
+                onBlur={() => handleJobTimeBlur("siteTravel")}
+                formatClockInputAsTyped={formatClockInputAsTyped}
+                normalizeClockInput={normalizeClockInput}
+              />
 
-              {TIME_LOG_EXTRA_FIELDS.map((fieldConfig) => (
+              {TIME_LOG_EXTRA_FIELDS.slice(0, 2).map((fieldConfig) => (
                 <ClockPickerField
                   key={fieldConfig.field}
                   id={`effism-lite-${fieldConfig.field}`}
@@ -2098,6 +2099,25 @@ export default function EffismLite() {
                   normalizeClockInput={normalizeClockInput}
                 />
               ))}
+            </div>
+
+            <div className="effismLite-timeLogCard">
+              {TIME_LOG_EXTRA_FIELDS.slice(2).map((fieldConfig, fieldIndex) => (
+                <ClockPickerField
+                  key={fieldConfig.field}
+                  id={`effism-lite-${fieldConfig.field}`}
+                  className={fieldIndex === 0 ? "effismLite-fieldWide" : ""}
+                  label={fieldConfig.label}
+                  value={jobDetails[fieldConfig.field]}
+                  onChange={(event) =>
+                    handleJobClockChange(fieldConfig.field, event.target.value)
+                  }
+                  onBlur={() => handleJobTimeBlur(fieldConfig.field)}
+                  formatClockInputAsTyped={formatClockInputAsTyped}
+                  normalizeClockInput={normalizeClockInput}
+                />
+              ))}
+            </div>
           </div>
           </section>
         </>

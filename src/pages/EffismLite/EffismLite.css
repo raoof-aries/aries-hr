@@ -185,6 +185,27 @@
   gap: 14px;
 }
 
+.effismLite-timeLogCardStack {
+  display: grid;
+  gap: 14px;
+}
+
+.effismLite-timeLogFormSection {
+  display: grid;
+  gap: 12px;
+}
+
+.effismLite-timeLogCard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid #e7edf4;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
 .effismLite-formRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
