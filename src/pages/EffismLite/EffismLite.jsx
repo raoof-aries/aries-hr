@@ -102,6 +102,13 @@ function normalizeTaskListPayload(payload) {
   ];
 }
 
+function getTaskCategoryLabel(category) {
+  if (category === TASK_CATEGORY.ROUTINE) return "Routine";
+  if (category === TASK_CATEGORY.CF) return "CF";
+  if (category === TASK_CATEGORY.DELEGATED) return "Delegated";
+  return "";
+}
+
 const DAY_TYPE_SELECT_OPTIONS = [
   { value: "", label: "Select day type" },
   ...NON_EFFISM_DAY_TYPE_OPTIONS,
@@ -1167,6 +1174,7 @@ export default function EffismLite() {
                 const isCfTask = task.jobCategory === TASK_CATEGORY.CF;
                 const isDelegatedTask = task.jobCategory === TASK_CATEGORY.DELEGATED;
                 const isStoredTask = isRoutineTask || isCfTask || isDelegatedTask;
+                const taskCategoryLabel = getTaskCategoryLabel(task.jobCategory);
                 const canEditTaskIdentity = task.isEditing && !isStoredTask;
                 const canEditTargetDate =
                   task.isEditing &&
@@ -1214,6 +1222,13 @@ export default function EffismLite() {
                           >
                             {getTaskMainTypeLabel(task.mainType)}
                           </span>
+                          {taskCategoryLabel ? (
+                            <span
+                              className={`effismLite-taskCategoryPill is-${task.jobCategory}`}
+                            >
+                              {taskCategoryLabel}
+                            </span>
+                          ) : null}
                         </div>
 
                         <div className="effismLite-taskHeaderActions">
@@ -1378,9 +1393,18 @@ export default function EffismLite() {
                           <path d="m9 18 6-6-6-6"></path>
                         </svg>
                       </button>
-                      <span className="effismLite-taskNumberPill">
-                        {taskDisplayNumberById.get(task.id) ?? taskIndex + 1}
-                      </span>
+                      <div className="effismLite-taskExpandedMeta">
+                        <span className="effismLite-taskNumberPill">
+                          {taskDisplayNumberById.get(task.id) ?? taskIndex + 1}
+                        </span>
+                        {taskCategoryLabel ? (
+                          <span
+                            className={`effismLite-taskCategoryPill is-${task.jobCategory}`}
+                          >
+                            {taskCategoryLabel}
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="effismLite-taskExpandedToolbarActions">
                         {!isSummaryMode ? task.isEditing ? (
                           <button
