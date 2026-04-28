@@ -223,6 +223,7 @@ export default function EffismLite() {
   const autosaveTimerRef = useRef(null);
   const hasUserEditedTimeRef = useRef(false);
   const saveStatusHideTimerRef = useRef(null);
+  const pendingNewTaskFocusRef = useRef("");
 
   // Initial load: hydrate date/time details and completion status.
   useEffect(() => {
@@ -550,6 +551,29 @@ export default function EffismLite() {
     setJobDiaryCompleteMessage("");
   }, [jobDiaryCompleteStatus, taskErrorsByWorkreportId]);
 
+  // After adding a draft, bring the created card into view and place the cursor.
+  useEffect(() => {
+    if (!isTaskStep || isTaskListLoading || !pendingNewTaskFocusRef.current) {
+      return;
+    }
+
+    const taskId = pendingNewTaskFocusRef.current;
+    const taskCard = document.getElementById(`effism-lite-task-card-${taskId}`);
+
+    if (!taskCard) {
+      return;
+    }
+
+    pendingNewTaskFocusRef.current = "";
+    taskCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById(`task-name-${taskId}`)
+        ?.focus({ preventScroll: true });
+    });
+  }, [isTaskStep, isTaskListLoading, tasks, taskFilter]);
+
   // Derived screen mode flags.
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
@@ -766,6 +790,12 @@ export default function EffismLite() {
       isExpanded: true,
     });
 
+    pendingNewTaskFocusRef.current = newTask.id;
+    setTaskFilter((currentFilter) =>
+      currentFilter === "all" || currentFilter === TASK_CATEGORY.JOB
+        ? currentFilter
+        : TASK_CATEGORY.JOB,
+    );
     setTasks((currentTasks) => [
       newTask,
       ...currentTasks.map((task) => ({
@@ -1357,6 +1387,7 @@ export default function EffismLite() {
                 return (
                 <article
                   key={task.id}
+                  id={`effism-lite-task-card-${task.id}`}
                   className={`effismLite-taskCard${task.isExpanded ? " is-expanded" : ""}${task.isEditing ? " is-editing" : ""}${taskSubError ? " is-sub-error" : ""}`}
                 >
                 {!task.isExpanded ? (
