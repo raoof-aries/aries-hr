@@ -19,6 +19,7 @@ import {
   listEffismLiteDayLeaveTypes,
   listEffismLiteDayTypes,
   listEffismLiteMainTypes,
+  listEffismLiteJobNumbers,
   listEffismLiteJobs,
   listEffismLiteSubTypes,
   mapTaskMainTypeIdToLabel,
@@ -56,13 +57,6 @@ import {
 import "./EffismLite.css";
 
 const FALLBACK_MAIN_TYPE_OPTIONS = ["Invoiceable", "Non Invoiceable"];
-
-const JOB_NUMBER_OPTIONS = [
-  "AES/Website/Plex/Ariesplex",
-  "Effism/2020/ESOL/EFFISM",
-  "AES/JN/2022/BIZEVENTS",
-  "ESOL/AMR/WEBS/24",
-];
 
 const TASK_CATEGORY = {
   JOB: "job",
@@ -207,6 +201,7 @@ export default function EffismLite() {
     FALLBACK_MAIN_TYPE_OPTIONS,
   );
   const [taskSubTypeOptions, setTaskSubTypeOptions] = useState([]);
+  const [jobNumberOptions, setJobNumberOptions] = useState([]);
   const [dayTypeOptions, setDayTypeOptions] = useState(DAY_TYPE_SELECT_OPTIONS);
   const [offSubtypeOptions, setOffSubtypeOptions] = useState(
     OFF_SUBTYPE_SELECT_OPTIONS,
@@ -365,6 +360,30 @@ export default function EffismLite() {
       isMounted = false;
     };
   }, [jobDetails.dayType]);
+
+  // Load job numbers for the selected diary date.
+  useEffect(() => {
+    if (!jobDetails.date) {
+      setJobNumberOptions([]);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadJobNumberOptions = async () => {
+      const options = await listEffismLiteJobNumbers(jobDetails.date);
+
+      if (isMounted) {
+        setJobNumberOptions(options);
+      }
+    };
+
+    loadJobNumberOptions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [jobDetails.date]);
 
   // Load task type dropdown options once.
   useEffect(() => {
@@ -1793,7 +1812,7 @@ export default function EffismLite() {
                                 event.target.value,
                               )
                             }
-                            options={JOB_NUMBER_OPTIONS}
+                            options={jobNumberOptions}
                             placeholder="Select or type a job number"
                             disabled={!task.isEditing}
                             ariaLabel="Job number"

@@ -177,6 +177,19 @@ function normalizeDayLeaveTypeOption(item) {
   };
 }
 
+function normalizeJobNumberOption(item) {
+  const jobNumber =
+    typeof item === "string" || typeof item === "number"
+      ? `${item}`.trim()
+      : `${item?.job_no ?? item?.jobNumber ?? item?.job_number ?? item?.value ?? ""}`.trim();
+
+  if (!jobNumber) {
+    return null;
+  }
+
+  return jobNumber;
+}
+
 async function listTaskCatalogByAction(actionValue, normalizeItem) {
   const { apiBaseUrl } = await getRuntimeConfig();
   if (!apiBaseUrl) {
@@ -277,6 +290,23 @@ export async function listEffismLiteDayLeaveTypes(workStatus) {
     () => {
       const formData = new FormData();
       formData.append("work_status", apiWorkStatus);
+      return formData;
+    },
+  );
+}
+
+export async function listEffismLiteJobNumbers(dateValue) {
+  const normalizedDateValue = `${dateValue || ""}`.trim();
+  if (!normalizedDateValue) {
+    return [];
+  }
+
+  return listCatalogByAction(
+    "getJobNumbers",
+    normalizeJobNumberOption,
+    () => {
+      const formData = new FormData();
+      formData.append("date", normalizedDateValue);
       return formData;
     },
   );

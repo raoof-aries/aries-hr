@@ -1093,6 +1093,11 @@
   background: #ffffff;
 }
 
+.effismLite-taskCard.is-expanded,
+.effismLite-taskCard.is-editing {
+  overflow: visible;
+}
+
 .effismLite-taskCard.is-editing {
   border-width: 2px;
   border-color: var(--apple-blue);
@@ -1510,6 +1515,7 @@
 .effismLite-searchComboRoot {
   position: relative;
   width: 100%;
+  z-index: 20;
 }
 
 .effismLite-searchComboMenu {

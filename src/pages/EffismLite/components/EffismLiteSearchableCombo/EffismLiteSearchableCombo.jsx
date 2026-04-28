@@ -14,8 +14,13 @@ export default function EffismLiteSearchableCombo({
 }) {
   const rootRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showAllOptions, setShowAllOptions] = useState(false);
 
   const filteredOptions = useMemo(() => {
+    if (showAllOptions) {
+      return options;
+    }
+
     const query = `${value || ""}`.trim().toLowerCase();
 
     if (!query) {
@@ -23,7 +28,7 @@ export default function EffismLiteSearchableCombo({
     }
 
     return options.filter((option) => `${option}`.toLowerCase().includes(query));
-  }, [options, value]);
+  }, [options, showAllOptions, value]);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -36,6 +41,7 @@ export default function EffismLiteSearchableCombo({
       }
 
       setMenuOpen(false);
+      setShowAllOptions(false);
     };
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -61,10 +67,19 @@ export default function EffismLiteSearchableCombo({
             className="effismLite-input effismLite-inputWithHint"
             type="text"
             value={value}
-            onChange={onChange}
-            onFocus={() => setMenuOpen(true)}
+            onChange={(event) => {
+              setShowAllOptions(false);
+              onChange(event);
+            }}
+            onFocus={() => {
+              setMenuOpen(true);
+              setShowAllOptions(false);
+            }}
             onBlur={() => {
-              setTimeout(() => setMenuOpen(false), 150);
+              setTimeout(() => {
+                setMenuOpen(false);
+                setShowAllOptions(false);
+              }, 150);
             }}
             placeholder={placeholder}
             disabled={disabled}
@@ -82,6 +97,7 @@ export default function EffismLiteSearchableCombo({
             onClick={() => {
               if (!disabled) {
                 setMenuOpen((current) => !current);
+                setShowAllOptions(true);
               }
             }}
             aria-label={menuOpen ? "Close options" : "Open options"}
@@ -120,6 +136,7 @@ export default function EffismLiteSearchableCombo({
                       target: { value: option },
                     });
                     setMenuOpen(false);
+                    setShowAllOptions(false);
                   }}
                 >
                   {option}
