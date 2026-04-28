@@ -1117,28 +1117,33 @@
 
 .effismLite-taskCategoryPill {
   display: inline-block;
-  color: #6f8598;
-  font-size: 0.72rem;
+  color: #7b8794;
+  font-size: 0.7rem;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
   margin-left: 8px;
-  padding-left: 8px;
-  border-left: 1px solid rgba(15, 23, 42, 0.16);
+}
+
+.effismLite-taskCategoryPill::before {
+  content: "/";
+  margin-right: 8px;
+  color: rgba(111, 133, 152, 0.55);
+  font-weight: 600;
 }
 
 .effismLite-taskCategoryPill.is-cf {
-  color: #5f6f7c;
+  color: #7b8794;
 }
 
 .effismLite-taskCategoryPill.is-routine {
-  color: #5f6f7c;
+  color: #7b8794;
 }
 
 .effismLite-taskCategoryPill.is-delegated {
-  color: #5f6f7c;
+  color: #7b8794;
 }
 
 .effismLite-taskCard:not(.is-expanded) .effismLite-taskNumberPill {
@@ -1147,11 +1152,11 @@
 }
 
 .effismLite-taskTypePill.is-invoiceable {
-  color: #1f7a5b;
+  color: #26735c;
 }
 
 .effismLite-taskTypePill.is-non-invoiceable {
-  color: #b84d4d;
+  color: #a34545;
 }
 
 .effismLite-taskSummary {
