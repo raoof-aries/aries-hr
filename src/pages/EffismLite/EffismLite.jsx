@@ -8,7 +8,10 @@ import {
 import {
   addEffismLiteJob,
   completeEffismLiteJobDiary,
+  editEffismLiteCFJob,
+  editEffismLiteDelegatedJob,
   editEffismLiteJob,
+  editEffismLiteRoutineJob,
   getEffismLiteJobDiaryStatus,
   getEffismLiteJobDiarySummary,
   getEffismLiteLastWorkingDate,
@@ -60,6 +63,44 @@ const JOB_NUMBER_OPTIONS = [
   "AES/JN/2022/BIZEVENTS",
   "ESOL/AMR/WEBS/24",
 ];
+
+const TASK_CATEGORY = {
+  JOB: "job",
+  ROUTINE: "routine",
+  CF: "cf",
+  DELEGATED: "delegated",
+};
+
+function normalizeTaskListPayload(payload) {
+  if (Array.isArray(payload)) {
+    return payload.map((task) => ({ task, category: TASK_CATEGORY.JOB }));
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  return [
+    ...(Array.isArray(payload.routineJobs)
+      ? payload.routineJobs.map((task) => ({
+          task,
+          category: TASK_CATEGORY.ROUTINE,
+        }))
+      : []),
+    ...(Array.isArray(payload.cfJobs)
+      ? payload.cfJobs.map((task) => ({ task, category: TASK_CATEGORY.CF }))
+      : []),
+    ...(Array.isArray(payload.delegatedJobs)
+      ? payload.delegatedJobs.map((task) => ({
+          task,
+          category: TASK_CATEGORY.DELEGATED,
+        }))
+      : []),
+    ...(Array.isArray(payload.jobs)
+      ? payload.jobs.map((task) => ({ task, category: TASK_CATEGORY.JOB }))
+      : []),
+  ];
+}
 
 const DAY_TYPE_SELECT_OPTIONS = [
   { value: "", label: "Select day type" },
@@ -374,37 +415,7 @@ export default function EffismLite() {
         }
 
         setTasks(
-          taskList.map((task) =>
-            createEditableTask(
-              {
-                id: task.workreport_id
-                  ? `effism-lite-task-${task.workreport_id}`
-                  : createTaskId(),
-                workreportId: `${task.workreport_id || ""}`,
-                taskName: `${task.taskname || ""}`,
-                mainType: mapTaskMainTypeIdToLabel(
-                  task.main_type ?? task.mian_type,
-                ),
-              subType:
-                `${task.job_type_name ?? task.sub_type_name ?? task.sub_type ?? ""}`.trim() ||
-                mapTaskSubTypeIdToLabel(
-                  task.sub_type ?? task.subtype ?? task.job_type ?? task.job_type_id,
-                ),
-                jobNumber: `${task.job_no || ""}`,
-                estimatedTime: normalizeApiClockValue(task.est_time),
-                actualTime: normalizeApiClockValue(task.act_time),
-                outcome: `${task.desc ?? task.description ?? ""}`,
-                status: `${task.status ?? 0}%`,
-                cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
-                targetDate: normalizeApiDateValue(task.target_date ?? task.target),
-              },
-              {
-                isSaved: true,
-                isEditing: false,
-                isExpanded: false,
-              },
-            ),
-          ),
+          normalizeTaskListPayload(taskList).map(mapApiTaskToEditableTask),
         );
         setTaskSummaryMetrics(summaryMetrics);
         loadedTaskDateRef.current = jobDetails.date;
@@ -473,6 +484,45 @@ export default function EffismLite() {
     ).find((option) => option.value === jobDetails.daySubtype)?.label ||
     jobDetails.daySubtype ||
     "-";
+
+  const mapApiTaskToEditableTask = ({ task, category }) => {
+    const isRoutineTask = category === TASK_CATEGORY.ROUTINE;
+    const workreportId = `${task.workreport_id || ""}`;
+    const routineJobId = `${task.id || ""}`;
+    const taskIdSource = isRoutineTask ? routineJobId : workreportId;
+    const taskIdPrefix = isRoutineTask
+      ? "effism-lite-routine-task"
+      : `effism-lite-${category}-task`;
+
+    return createEditableTask(
+      {
+        id: taskIdSource ? `${taskIdPrefix}-${taskIdSource}` : createTaskId(),
+        jobCategory: category,
+        routineJobId,
+        workreportId,
+        taskName: `${task.taskname ?? task.job_name ?? ""}`,
+        mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type) ||
+          `${task.main_type_name ?? ""}`,
+        subType:
+          `${task.job_type_name ?? task.sub_type_name ?? task.sub_type ?? ""}`.trim() ||
+          mapTaskSubTypeIdToLabel(
+            task.sub_type ?? task.subtype ?? task.job_type ?? task.job_type_id,
+          ),
+        jobNumber: `${task.job_no || ""}`,
+        estimatedTime: normalizeApiClockValue(task.est_time),
+        actualTime: normalizeApiClockValue(task.act_time),
+        outcome: `${task.desc ?? task.description ?? task.remarks ?? ""}`,
+        status: `${task.status ?? 0}%`,
+        cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
+        targetDate: normalizeApiDateValue(task.target_date ?? task.target),
+      },
+      {
+        isSaved: true,
+        isEditing: false,
+        isExpanded: false,
+      },
+    );
+  };
 
   // Generic job-details updater with autosave tracking.
   const updateJobDetails = (field, value) => {
@@ -721,9 +771,18 @@ export default function EffismLite() {
       ),
     );
 
-    const payload = normalizedTask.workreportId
-      ? await editEffismLiteJob(normalizedTask, jobDetails.date)
-      : await addEffismLiteJob(normalizedTask, jobDetails.date);
+    let payload = null;
+    if (normalizedTask.jobCategory === TASK_CATEGORY.ROUTINE) {
+      payload = await editEffismLiteRoutineJob(normalizedTask, jobDetails.date);
+    } else if (normalizedTask.jobCategory === TASK_CATEGORY.CF) {
+      payload = await editEffismLiteCFJob(normalizedTask, jobDetails.date);
+    } else if (normalizedTask.jobCategory === TASK_CATEGORY.DELEGATED) {
+      payload = await editEffismLiteDelegatedJob(normalizedTask, jobDetails.date);
+    } else {
+      payload = normalizedTask.workreportId
+        ? await editEffismLiteJob(normalizedTask, jobDetails.date)
+        : await addEffismLiteJob(normalizedTask, jobDetails.date);
+    }
 
     if (!payload) {
       setTasks((currentTasks) =>
@@ -733,7 +792,7 @@ export default function EffismLite() {
                 ...task,
                 isSaving: false,
                 saveError:
-                  "Could not save this task. Please check required fields (Task Name, Main Type, Est Time) and try again.",
+                  "Could not save this task. Please check required fields and try again.",
               }
             : task,
         ),
@@ -780,34 +839,8 @@ export default function EffismLite() {
 
     if (refreshedTasksResult.status === "fulfilled") {
       setTasks(
-        refreshedTasksResult.value.map((task) =>
-          createEditableTask(
-            {
-              id: task.workreport_id
-                ? `effism-lite-task-${task.workreport_id}`
-                : createTaskId(),
-              workreportId: `${task.workreport_id || ""}`,
-              taskName: `${task.taskname || ""}`,
-              mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type),
-              subType:
-                `${task.job_type_name ?? task.sub_type_name ?? task.sub_type ?? ""}`.trim() ||
-                mapTaskSubTypeIdToLabel(
-                  task.sub_type ?? task.subtype ?? task.job_type ?? task.job_type_id,
-                ),
-              jobNumber: `${task.job_no || ""}`,
-              estimatedTime: normalizeApiClockValue(task.est_time),
-              actualTime: normalizeApiClockValue(task.act_time),
-              outcome: `${task.desc ?? task.description ?? ""}`,
-              status: `${task.status ?? 0}%`,
-              cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
-              targetDate: normalizeApiDateValue(task.target_date ?? task.target),
-            },
-            {
-              isSaved: true,
-              isEditing: false,
-              isExpanded: false,
-            },
-          ),
+        normalizeTaskListPayload(refreshedTasksResult.value).map(
+          mapApiTaskToEditableTask,
         ),
       );
     }
@@ -1130,6 +1163,16 @@ export default function EffismLite() {
                   `${task.workreportId || ""}`.trim(),
                 );
                 const isNewTask = !task.isSaved;
+                const isRoutineTask = task.jobCategory === TASK_CATEGORY.ROUTINE;
+                const isCfTask = task.jobCategory === TASK_CATEGORY.CF;
+                const isDelegatedTask = task.jobCategory === TASK_CATEGORY.DELEGATED;
+                const isStoredTask = isRoutineTask || isCfTask || isDelegatedTask;
+                const canEditTaskIdentity = task.isEditing && !isStoredTask;
+                const canEditTargetDate =
+                  task.isEditing &&
+                  !isRoutineTask &&
+                  !isDelegatedTask &&
+                  (!isCfTask || !normalizeApiDateValue(task.targetDate));
                 const hasJobNumber = Boolean(`${task.jobNumber || ""}`.trim());
                 const hasCfDate = Boolean(normalizeApiDateValue(task.cfDate));
                 const hasTargetDate = Boolean(normalizeApiDateValue(task.targetDate));
@@ -1260,9 +1303,11 @@ export default function EffismLite() {
                         {getTaskSummaryTitle(task)}
                       </h4>
 
-                      <span className="effismLite-taskJobNumber">
-                        {getTaskJobNumberLabel(task.jobNumber)}
-                      </span>
+                      {hasJobNumber ? (
+                        <span className="effismLite-taskJobNumber">
+                          {getTaskJobNumberLabel(task.jobNumber)}
+                        </span>
+                      ) : null}
 
                       <div className="effismLite-taskSummary">
                         <span className="effismLite-taskSummaryItem">
@@ -1281,11 +1326,13 @@ export default function EffismLite() {
                             {actualSummary.value}
                           </span>
                         </span>
-                        <span
-                          className={`effismLite-taskSummaryItem effismLite-taskStatusPill is-${getTaskStatusTone(task.status)}`}
-                        >
-                          {normalizeStatusValue(task.status)}
-                        </span>
+                        {!isRoutineTask ? (
+                          <span
+                            className={`effismLite-taskSummaryItem effismLite-taskStatusPill is-${getTaskStatusTone(task.status)}`}
+                          >
+                            {normalizeStatusValue(task.status)}
+                          </span>
+                        ) : null}
                       </div>
                       {taskSubError ? (
                         <div className="effismLite-taskSubErrorPill" role="alert">
@@ -1409,14 +1456,25 @@ export default function EffismLite() {
                                 <span className="effismLite-taskSummaryLabel">Task Name</span>
                                 <span className="effismLite-taskSummaryValue">{task.taskName || "-"}</span>
                               </div>
-                              <div className="effismLite-taskSummaryCard is-full-width">
-                                <span className="effismLite-taskSummaryLabel">Main Type</span>
-                                <span className="effismLite-taskSummaryValue">{task.mainType || "-"}</span>
-                              </div>
-                              <div className="effismLite-taskSummaryCard is-full-width">
-                                <span className="effismLite-taskSummaryLabel">Sub Type</span>
-                                <span className="effismLite-taskSummaryValue">{task.subType || "-"}</span>
-                              </div>
+                              {isRoutineTask ? (
+                                <div className="effismLite-taskSummaryCard is-full-width">
+                                  <span className="effismLite-taskSummaryLabel">Type</span>
+                                  <span className="effismLite-taskSummaryValue">
+                                    {task.subType || task.mainType || "-"}
+                                  </span>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="effismLite-taskSummaryCard is-full-width">
+                                    <span className="effismLite-taskSummaryLabel">Main Type</span>
+                                    <span className="effismLite-taskSummaryValue">{task.mainType || "-"}</span>
+                                  </div>
+                                  <div className="effismLite-taskSummaryCard is-full-width">
+                                    <span className="effismLite-taskSummaryLabel">Sub Type</span>
+                                    <span className="effismLite-taskSummaryValue">{task.subType || "-"}</span>
+                                  </div>
+                                </>
+                              )}
                               {hasJobNumber ? (
                                 <div className="effismLite-taskSummaryCard is-full-width">
                                   <span className="effismLite-taskSummaryLabel">Job Number</span>
@@ -1436,18 +1494,20 @@ export default function EffismLite() {
                               </div>
                             </div>
 
-                            <div className="effismLite-taskSummaryCard effismLite-taskSummaryStatusCard">
-                              <span className="effismLite-taskSummaryLabel">Status</span>
-                              <div className="effismLite-taskSummaryStatusTrack" aria-hidden="true">
-                                <span
-                                  className="effismLite-taskSummaryStatusFill"
-                                  style={{ width: `${statusPercentage}%` }}
-                                />
+                            {!isRoutineTask ? (
+                              <div className="effismLite-taskSummaryCard effismLite-taskSummaryStatusCard">
+                                <span className="effismLite-taskSummaryLabel">Status</span>
+                                <div className="effismLite-taskSummaryStatusTrack" aria-hidden="true">
+                                  <span
+                                    className="effismLite-taskSummaryStatusFill"
+                                    style={{ width: `${statusPercentage}%` }}
+                                  />
+                                </div>
+                                <span className="effismLite-taskSummaryStatusText">
+                                  {normalizeStatusValue(task.status)}
+                                </span>
                               </div>
-                              <span className="effismLite-taskSummaryStatusText">
-                                {normalizeStatusValue(task.status)}
-                              </span>
-                            </div>
+                            ) : null}
 
                             {hasCfDate || hasTargetDate ? (
                               <div className="effismLite-taskSummaryGrid">
@@ -1504,55 +1564,76 @@ export default function EffismLite() {
                               )
                             }
                             placeholder="Enter task name"
-                            disabled={!task.isEditing}
+                            disabled={!canEditTaskIdentity}
                           />
                         </label>
 
-                        <EffismLiteSearchableCombo
-                          id={`task-main-type-${task.id}`}
-                          label="Main Type"
-                          className={isNewTask ? "effismLite-fieldWide" : ""}
-                          value={task.mainType}
-                          onChange={(event) =>
-                            updateTask(task.id, "mainType", event.target.value)
-                          }
-                          options={taskMainTypeOptions}
-                          placeholder="Select or type a main type"
-                          disabled={!task.isEditing}
-                          ariaLabel="Main type"
-                        />
+                        {isRoutineTask ? (
+                          <label
+                            className="effismLite-field effismLite-fieldWide"
+                            htmlFor={`task-type-${task.id}`}
+                          >
+                            <span className="effismLite-fieldLabel">Type</span>
+                            <input
+                              id={`task-type-${task.id}`}
+                              className="effismLite-input"
+                              type="text"
+                              value={task.subType || task.mainType}
+                              readOnly
+                              disabled
+                            />
+                          </label>
+                        ) : (
+                          <>
+                            <EffismLiteSearchableCombo
+                              id={`task-main-type-${task.id}`}
+                              label="Main Type"
+                              className={isNewTask ? "effismLite-fieldWide" : ""}
+                              value={task.mainType}
+                              onChange={(event) =>
+                                updateTask(task.id, "mainType", event.target.value)
+                              }
+                              options={taskMainTypeOptions}
+                              placeholder="Select or type a main type"
+                              disabled={!canEditTaskIdentity}
+                              ariaLabel="Main type"
+                            />
 
-                        <EffismLiteSearchableCombo
-                          id={`task-sub-type-${task.id}`}
-                          label="Sub Type"
-                          className="effismLite-fieldWide"
-                          value={task.subType}
-                          onChange={(event) =>
-                            updateTask(task.id, "subType", event.target.value)
-                          }
-                          options={taskSubTypeOptions}
-                          placeholder="Select or type a sub type"
-                          disabled={!task.isEditing}
-                          ariaLabel="Sub type"
-                        />
+                            <EffismLiteSearchableCombo
+                              id={`task-sub-type-${task.id}`}
+                              label="Sub Type"
+                              className="effismLite-fieldWide"
+                              value={task.subType}
+                              onChange={(event) =>
+                                updateTask(task.id, "subType", event.target.value)
+                              }
+                              options={taskSubTypeOptions}
+                              placeholder="Select or type a sub type"
+                              disabled={!canEditTaskIdentity}
+                              ariaLabel="Sub type"
+                            />
+                          </>
+                        )}
 
-                        <EffismLiteSearchableCombo
-                          id={`task-job-number-${task.id}`}
-                          label="Job Number"
-                          className={isNewTask ? "effismLite-fieldWide" : ""}
-                          value={task.jobNumber}
-                          onChange={(event) =>
-                            updateTask(
-                              task.id,
-                              "jobNumber",
-                              event.target.value,
-                            )
-                          }
-                          options={JOB_NUMBER_OPTIONS}
-                          placeholder="Select or type a job number"
-                          disabled={!task.isEditing}
-                          ariaLabel="Job number"
-                        />
+                        {!isStoredTask ? (
+                          <EffismLiteSearchableCombo
+                            id={`task-job-number-${task.id}`}
+                            label="Job Number"
+                            className={isNewTask ? "effismLite-fieldWide" : ""}
+                            value={task.jobNumber}
+                            onChange={(event) =>
+                              updateTask(
+                                task.id,
+                                "jobNumber",
+                                event.target.value,
+                              )
+                            }
+                            options={JOB_NUMBER_OPTIONS}
+                            placeholder="Select or type a job number"
+                            disabled={!task.isEditing}
+                            ariaLabel="Job number"
+                          />
+                        ) : null}
 
                         <div
                           className={`effismLite-taskTimeRow effismLite-fieldWide${isNewTask ? " is-single-field" : ""}`}
@@ -1601,6 +1682,28 @@ export default function EffismLite() {
                         </div>
 
                         {!isNewTask ? (
+                          <label
+                            className="effismLite-field effismLite-fieldWide"
+                            htmlFor={`task-outcome-${task.id}`}
+                          >
+                            <span className="effismLite-fieldLabel">
+                              Outcome
+                            </span>
+                            <textarea
+                              id={`task-outcome-${task.id}`}
+                              className="effismLite-input effismLite-textarea effismLite-taskOutcomeInput"
+                              rows={1}
+                              value={task.outcome}
+                              onChange={(event) =>
+                                updateTask(task.id, "outcome", event.target.value)
+                              }
+                              placeholder="Describe the outcome"
+                              disabled={!task.isEditing}
+                            />
+                          </label>
+                        ) : null}
+
+                        {!isNewTask && !isRoutineTask ? (
                           <>
                             <DatePickerField
                               id={`task-target-${task.id}`}
@@ -1614,29 +1717,9 @@ export default function EffismLite() {
                                   event.target.value,
                                 )
                               }
-                              disabled={!task.isEditing}
+                              disabled={!canEditTargetDate}
                               formatDisplayValue={formatDateDisplayValue}
                             />
-
-                            <label
-                              className="effismLite-field effismLite-fieldWide"
-                              htmlFor={`task-outcome-${task.id}`}
-                            >
-                              <span className="effismLite-fieldLabel">
-                                Outcome
-                              </span>
-                              <textarea
-                                id={`task-outcome-${task.id}`}
-                                className="effismLite-input effismLite-textarea effismLite-taskOutcomeInput"
-                                rows={1}
-                                value={task.outcome}
-                                onChange={(event) =>
-                                  updateTask(task.id, "outcome", event.target.value)
-                                }
-                                placeholder="Describe the outcome"
-                                disabled={!task.isEditing}
-                              />
-                            </label>
 
                             <div className="effismLite-field effismLite-taskStatusField">
                               <div className="effismLite-taskStatusHeader">

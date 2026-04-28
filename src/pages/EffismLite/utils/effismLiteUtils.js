@@ -60,6 +60,7 @@ export function formatMinutesToClock(totalMinutes) {
 
 export function getTaskComparableSnapshot(task) {
   return JSON.stringify({
+    jobCategory: `${task?.jobCategory ?? "job"}`,
     taskName: `${task?.taskName ?? ""}`,
     mainType: `${task?.mainType ?? ""}`,
     subType: `${task?.subType ?? ""}`,
@@ -76,6 +77,8 @@ export function getTaskComparableSnapshot(task) {
 export function createEditableTask(task = {}, overrides = {}) {
   const baseTask = {
     id: task.id || createTaskId(),
+    jobCategory: task.jobCategory || "job",
+    routineJobId: task.routineJobId || "",
     workreportId: task.workreportId || "",
     taskName: task.taskName || "",
     mainType: task.mainType || "",

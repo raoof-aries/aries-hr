@@ -560,11 +560,15 @@ export async function listEffismLiteJobs(dateValue) {
       payload = null;
     }
 
-    if (!response.ok || !isSuccessfulPayload(payload) || !Array.isArray(payload?.data)) {
+    if (!response.ok || !isSuccessfulPayload(payload)) {
       return [];
     }
 
-    return payload.data;
+    if (Array.isArray(payload?.data)) {
+      return payload.data;
+    }
+
+    return payload;
   } catch {
     return [];
   }
@@ -691,6 +695,133 @@ export async function editEffismLiteJob(task, date) {
   } catch {
     return null;
   }
+}
+
+function buildPartialTaskFormData(task, date, idFieldName, idValue, options = {}) {
+  const normalizedDate = `${date || ""}`.trim();
+  const normalizedId = `${idValue || ""}`.trim();
+  const estimatedTime = normalizeTaskTimeForApi(task?.estimatedTime);
+  const actualTime = normalizeTaskTimeForApi(task?.actualTime) || "00:00";
+
+  if (!normalizedDate || !normalizedId || !estimatedTime) {
+    return null;
+  }
+
+  const formData = new FormData();
+  formData.append(idFieldName, normalizedId);
+  formData.append("date", normalizedDate);
+  formData.append("est_time", estimatedTime);
+  formData.append("act_time", actualTime);
+
+  if (options.includeOutcome) {
+    const description = `${task?.outcome || ""}`.trim();
+    formData.append(options.outcomeField || "description", description);
+  }
+
+  if (options.includeStatus) {
+    const statusValue = Number.parseInt(`${task?.status || "0"}`.replace("%", ""), 10);
+    formData.append(
+      "status",
+      Number.isFinite(statusValue)
+        ? `${Math.min(100, Math.max(0, statusValue))}`
+        : "0",
+    );
+  }
+
+  if (options.includeCfDate) {
+    formData.append("cf_date", `${task?.cfDate || ""}`.trim());
+  }
+
+  if (options.includeTargetDate) {
+    formData.append("target_date", `${task?.targetDate || ""}`.trim());
+  }
+
+  if (options.includeStore) {
+    formData.append("store", `${task?.store ?? 0}`);
+  }
+
+  return formData;
+}
+
+async function postEffismLiteTaskAction(action, formData) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl || !formData) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=${action}`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return null;
+    }
+
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export async function editEffismLiteRoutineJob(task, date) {
+  const formData = buildPartialTaskFormData(
+    task,
+    date,
+    "job_id",
+    task?.routineJobId || task?.id,
+    {
+      includeOutcome: true,
+      outcomeField: "remarks",
+    },
+  );
+
+  return postEffismLiteTaskAction("addEditRoutineJob", formData);
+}
+
+export async function editEffismLiteCFJob(task, date) {
+  const formData = buildPartialTaskFormData(
+    task,
+    date,
+    "workreport_id",
+    task?.workreportId,
+    {
+      includeOutcome: true,
+      includeStatus: true,
+      includeCfDate: true,
+      includeTargetDate: true,
+      includeStore: true,
+    },
+  );
+
+  return postEffismLiteTaskAction("editCFJob", formData);
+}
+
+export async function editEffismLiteDelegatedJob(task, date) {
+  const formData = buildPartialTaskFormData(
+    task,
+    date,
+    "workreport_id",
+    task?.workreportId,
+    {
+      includeOutcome: true,
+      includeStatus: true,
+      includeCfDate: true,
+      includeTargetDate: true,
+      includeStore: true,
+    },
+  );
+
+  return postEffismLiteTaskAction("editDelegatedJob", formData);
 }
 
 export async function completeEffismLiteJobDiary(dateValue) {
