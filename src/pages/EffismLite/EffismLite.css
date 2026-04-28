@@ -1090,7 +1090,7 @@
 .effismLite-taskHeaderMeta {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: 7px;
   min-width: 0;
   line-height: 1;
 }
@@ -1177,13 +1177,23 @@
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1;
-  margin-right: 7px;
   padding-right: 0;
 }
 
 .effismLite-taskCard:not(.is-expanded) .effismLite-taskNumberPill {
   padding-right: 7px;
   border-right: 1px solid rgba(15, 23, 42, 0.16);
+}
+
+.effismLite-taskCategoryText {
+  display: inline-block;
+  padding-left: 7px;
+  border-left: 1px solid rgba(15, 23, 42, 0.16);
+  color: #0f6d61;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .effismLite-taskTypePill.is-invoiceable {
@@ -1345,7 +1355,7 @@
 .effismLite-taskExpandedMeta {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: 7px;
   min-width: 0;
 }
 

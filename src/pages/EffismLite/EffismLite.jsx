@@ -86,9 +86,19 @@ const TASK_SECTION_CONFIG = [
   },
   {
     category: TASK_CATEGORY.JOB,
-    title: "Jobs",
+    title: "Today",
   },
 ];
+
+const TASK_CATEGORY_LABELS = {
+  [TASK_CATEGORY.ROUTINE]: "Routine",
+  [TASK_CATEGORY.CF]: "CF",
+  [TASK_CATEGORY.DELEGATED]: "Delegate",
+};
+
+function getTaskCategoryLabel(category) {
+  return TASK_CATEGORY_LABELS[category] || "";
+}
 
 function normalizeTaskListPayload(payload) {
   if (Array.isArray(payload)) {
@@ -1306,6 +1316,11 @@ export default function EffismLite() {
                           >
                             {getTaskMainTypeLabel(task.mainType)}
                           </span>
+                          {getTaskCategoryLabel(task.jobCategory) ? (
+                            <span className="effismLite-taskCategoryText">
+                              {getTaskCategoryLabel(task.jobCategory)}
+                            </span>
+                          ) : null}
                         </div>
 
                         <div className="effismLite-taskHeaderActions">
@@ -1474,6 +1489,16 @@ export default function EffismLite() {
                         <span className="effismLite-taskNumberPill">
                           {taskDisplayNumberById.get(task.id) ?? taskIndex + 1}
                         </span>
+                        <span
+                          className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
+                        >
+                          {getTaskMainTypeLabel(task.mainType)}
+                        </span>
+                        {getTaskCategoryLabel(task.jobCategory) ? (
+                          <span className="effismLite-taskCategoryText">
+                            {getTaskCategoryLabel(task.jobCategory)}
+                          </span>
+                        ) : null}
                       </div>
                       <div className="effismLite-taskExpandedToolbarActions">
                         {!isSummaryMode ? task.isEditing ? (
