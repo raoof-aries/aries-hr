@@ -336,6 +336,28 @@
   transform: translateY(-1px);
 }
 
+.effismLite-pickerField.is-disabled {
+  background: #f5faf8;
+  border-color: rgba(1, 67, 66, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  cursor: not-allowed;
+}
+
+.effismLite-pickerField.is-disabled:hover,
+.effismLite-pickerField.is-disabled:focus-within {
+  border-color: rgba(1, 67, 66, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  transform: none;
+}
+
+.effismLite-pickerField.is-disabled .effismLite-pickerValue {
+  color: #45645f;
+}
+
+.effismLite-pickerField.is-disabled .effismLite-pickerIcon {
+  color: #8ca6a1;
+}
+
 .effismLite-pickerValue {
   color: #123430;
   font-size: 1rem;

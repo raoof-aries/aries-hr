@@ -1021,24 +1021,6 @@ export default function EffismLite() {
     }
   };
 
-  // Compute stable task numbering (saved first, drafts after).
-  const taskDisplayNumberById = useMemo(() => {
-    const savedIdsInOrder = tasks.filter((task) => task.isSaved).map((task) => task.id);
-    const draftIdsInOrder = tasks.filter((task) => !task.isSaved).map((task) => task.id);
-    const savedCount = savedIdsInOrder.length;
-    const result = new Map();
-
-    savedIdsInOrder.forEach((id, index) => {
-      result.set(id, index + 1);
-    });
-
-    draftIdsInOrder.forEach((id, index) => {
-      result.set(id, savedCount + index + 1);
-    });
-
-    return result;
-  }, [tasks]);
-
   const taskSections = useMemo(
     () =>
       TASK_SECTION_CONFIG.map((section) => ({
@@ -1371,12 +1353,9 @@ export default function EffismLite() {
                   </div>
 
                   <div className="effismLite-taskStack">
-              {section.tasks.map((task) => {
+              {section.tasks.map((task, taskIndex) => {
                 const taskSubError = taskErrorsByWorkreportId.get(
                   `${task.workreportId || ""}`.trim(),
-                );
-                const taskIndex = tasks.findIndex(
-                  (currentTask) => currentTask.id === task.id,
                 );
                 const isNewTask = !task.isSaved;
                 const isRoutineTask = task.jobCategory === TASK_CATEGORY.ROUTINE;
@@ -1424,7 +1403,7 @@ export default function EffismLite() {
                       <div className="effismLite-taskHeaderTop">
                         <div className="effismLite-taskHeaderMeta">
                           <span className="effismLite-taskNumberPill">
-                            {taskDisplayNumberById.get(task.id) ?? taskIndex + 1}
+                            {taskIndex + 1}
                           </span>
                           <span
                             className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
@@ -1602,7 +1581,7 @@ export default function EffismLite() {
                       </button>
                       <div className="effismLite-taskExpandedMeta">
                         <span className="effismLite-taskNumberPill">
-                          {taskDisplayNumberById.get(task.id) ?? taskIndex + 1}
+                          {taskIndex + 1}
                         </span>
                         <span
                           className={`effismLite-taskTypePill is-${getTaskMainTypeTone(task.mainType)}`}
