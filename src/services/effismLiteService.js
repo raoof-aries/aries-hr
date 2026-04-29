@@ -107,16 +107,6 @@ const TIME_LOG_EXTRA_FIELD_API_KEYS = {
 };
 
 
-const TASK_MAIN_TYPE_TO_ID = {
-  Invoiceable: "1",
-  "Non Invoiceable": "2",
-};
-
-const TASK_MAIN_TYPE_ID_TO_LABEL = {
-  "1": "Invoiceable",
-  "2": "Non Invoiceable",
-};
-
 let taskMainTypeCatalog = [];
 let taskSubTypeCatalog = [];
 
@@ -364,15 +354,9 @@ export function mapTaskMainTypeIdToLabel(value) {
     return fromCatalog.label;
   }
 
-  if (TASK_MAIN_TYPE_ID_TO_LABEL[normalizedValue]) {
-    return TASK_MAIN_TYPE_ID_TO_LABEL[normalizedValue];
-  }
-
-  if (normalizedValue === "Invoiceable" || normalizedValue === "Non Invoiceable") {
-    return normalizedValue;
-  }
-
-  return "";
+  return taskMainTypeCatalog.find(
+    (item) => item.label.toLowerCase() === normalizedValue.toLowerCase(),
+  )?.label || "";
 }
 
 export function mapTaskMainTypeLabelToId(value) {
@@ -389,15 +373,7 @@ export function mapTaskMainTypeLabelToId(value) {
     return fromCatalog.id;
   }
 
-  if (TASK_MAIN_TYPE_TO_ID[normalizedValue]) {
-    return TASK_MAIN_TYPE_TO_ID[normalizedValue];
-  }
-
-  const matchedKey = Object.keys(TASK_MAIN_TYPE_TO_ID).find(
-    (key) => key.toLowerCase() === loweredValue,
-  );
-
-  return matchedKey ? TASK_MAIN_TYPE_TO_ID[matchedKey] : "";
+  return "";
 }
 
 export function mapTaskSubTypeIdToLabel(value) {
@@ -411,7 +387,9 @@ export function mapTaskSubTypeIdToLabel(value) {
     return fromCatalog.label;
   }
 
-  return "";
+  return taskSubTypeCatalog.find(
+    (item) => item.label.toLowerCase() === normalizedValue.toLowerCase(),
+  )?.label || "";
 }
 
 export function mapTaskSubTypeLabelToId(value) {

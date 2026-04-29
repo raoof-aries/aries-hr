@@ -51,8 +51,6 @@ import {
 } from "./utils/effismLiteUtils";
 import "./EffismLite.css";
 
-const FALLBACK_MAIN_TYPE_OPTIONS = ["Invoiceable", "Non Invoiceable"];
-
 const TASK_CATEGORY = {
   JOB: "job",
   ROUTINE: "routine",
@@ -128,6 +126,66 @@ function normalizeTaskListPayload(payload) {
   ];
 }
 
+function getApiTextLabel(value) {
+  const normalizedValue = `${value ?? ""}`.trim();
+  return /^\d+$/.test(normalizedValue) ? "" : normalizedValue;
+}
+
+function resolveTaskMainTypeLabel(task) {
+  return (
+    mapTaskMainTypeIdToLabel(
+      task.main_type ?? task.mian_type ?? task.main_type_id ?? task.main_type_name,
+    ) || getApiTextLabel(task.main_type_name)
+  );
+}
+
+function resolveTaskSubTypeLabel(task) {
+  return (
+    mapTaskSubTypeIdToLabel(
+      task.sub_type ??
+        task.subtype ??
+        task.sub_type_id ??
+        task.job_type ??
+        task.job_type_id ??
+        task.job_type_name,
+    ) || getApiTextLabel(task.job_type_name) || getApiTextLabel(task.sub_type_name)
+  );
+}
+
+function mapApiTaskToEditableTask({ task, category }) {
+  const isRoutineTask = category === TASK_CATEGORY.ROUTINE;
+  const workreportId = `${task.workreport_id || ""}`;
+  const routineJobId = `${task.id || ""}`;
+  const taskIdSource = isRoutineTask ? routineJobId : workreportId;
+  const taskIdPrefix = isRoutineTask
+    ? "effism-lite-routine-task"
+    : `effism-lite-${category}-task`;
+
+  return createEditableTask(
+    {
+      id: taskIdSource ? `${taskIdPrefix}-${taskIdSource}` : createTaskId(),
+      jobCategory: category,
+      routineJobId,
+      workreportId,
+      taskName: `${task.taskname ?? task.job_name ?? ""}`,
+      mainType: resolveTaskMainTypeLabel(task),
+      subType: resolveTaskSubTypeLabel(task),
+      jobNumber: `${task.job_no || ""}`,
+      estimatedTime: normalizeApiClockValue(task.est_time),
+      actualTime: normalizeApiClockValue(task.act_time),
+      outcome: `${task.desc ?? task.description ?? task.remarks ?? ""}`,
+      status: `${task.status ?? 0}%`,
+      cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
+      targetDate: normalizeApiDateValue(task.target_date ?? task.target),
+    },
+    {
+      isSaved: true,
+      isEditing: false,
+      isExpanded: false,
+    },
+  );
+}
+
 const DAY_TYPE_SELECT_OPTIONS = [
   { value: "", label: "Select day type" },
 ];
@@ -189,9 +247,7 @@ export default function EffismLite() {
     travel: "",
   });
   const [tasks, setTasks] = useState([]);
-  const [taskMainTypeOptions, setTaskMainTypeOptions] = useState(
-    FALLBACK_MAIN_TYPE_OPTIONS,
-  );
+  const [taskMainTypeOptions, setTaskMainTypeOptions] = useState([]);
   const [taskSubTypeOptions, setTaskSubTypeOptions] = useState([]);
   const [jobNumberOptions, setJobNumberOptions] = useState([]);
   const [dayTypeOptions, setDayTypeOptions] = useState(DAY_TYPE_SELECT_OPTIONS);
@@ -483,6 +539,8 @@ export default function EffismLite() {
         const [taskList, summaryMetrics] = await Promise.all([
           listEffismLiteJobs(jobDetails.date),
           getEffismLiteJobDiarySummary(jobDetails.date),
+          listEffismLiteMainTypes(),
+          listEffismLiteSubTypes(),
         ]);
         if (!isMounted) {
           return;
@@ -581,45 +639,6 @@ export default function EffismLite() {
     ).find((option) => option.value === jobDetails.daySubtype)?.label ||
     jobDetails.daySubtype ||
     "-";
-
-  const mapApiTaskToEditableTask = ({ task, category }) => {
-    const isRoutineTask = category === TASK_CATEGORY.ROUTINE;
-    const workreportId = `${task.workreport_id || ""}`;
-    const routineJobId = `${task.id || ""}`;
-    const taskIdSource = isRoutineTask ? routineJobId : workreportId;
-    const taskIdPrefix = isRoutineTask
-      ? "effism-lite-routine-task"
-      : `effism-lite-${category}-task`;
-
-    return createEditableTask(
-      {
-        id: taskIdSource ? `${taskIdPrefix}-${taskIdSource}` : createTaskId(),
-        jobCategory: category,
-        routineJobId,
-        workreportId,
-        taskName: `${task.taskname ?? task.job_name ?? ""}`,
-        mainType: mapTaskMainTypeIdToLabel(task.main_type ?? task.mian_type) ||
-          `${task.main_type_name ?? ""}`,
-        subType:
-          `${task.job_type_name ?? task.sub_type_name ?? task.sub_type ?? ""}`.trim() ||
-          mapTaskSubTypeIdToLabel(
-            task.sub_type ?? task.subtype ?? task.job_type ?? task.job_type_id,
-          ),
-        jobNumber: `${task.job_no || ""}`,
-        estimatedTime: normalizeApiClockValue(task.est_time),
-        actualTime: normalizeApiClockValue(task.act_time),
-        outcome: `${task.desc ?? task.description ?? task.remarks ?? ""}`,
-        status: `${task.status ?? 0}%`,
-        cfDate: normalizeApiDateValue(task.cf_date ?? task.cf),
-        targetDate: normalizeApiDateValue(task.target_date ?? task.target),
-      },
-      {
-        isSaved: true,
-        isEditing: false,
-        isExpanded: false,
-      },
-    );
-  };
 
   // Generic job-details updater with autosave tracking.
   const updateJobDetails = (field, value) => {
@@ -958,6 +977,8 @@ export default function EffismLite() {
       await Promise.allSettled([
         listEffismLiteJobs(jobDetails.date),
         getEffismLiteJobDiarySummary(jobDetails.date),
+        listEffismLiteMainTypes(),
+        listEffismLiteSubTypes(),
       ]);
 
     if (refreshedTasksResult.status === "fulfilled") {
