@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  LEAVE_DAY_SUBTYPE_OPTIONS,
-  NON_EFFISM_DAY_TYPE_OPTIONS,
-  OFF_DAY_SUBTYPE_OPTIONS,
-} from "../../data/attendanceOptions";
-import {
   addEffismLiteJob,
   completeEffismLiteJobDiary,
   editEffismLiteCFJob,
@@ -135,7 +130,6 @@ function normalizeTaskListPayload(payload) {
 
 const DAY_TYPE_SELECT_OPTIONS = [
   { value: "", label: "Select day type" },
-  ...NON_EFFISM_DAY_TYPE_OPTIONS,
 ];
 
 const TIME_LOG_EXTRA_FIELDS = [
@@ -150,12 +144,10 @@ const TIME_LOG_EXTRA_FIELDS = [
 
 const OFF_SUBTYPE_SELECT_OPTIONS = [
   { value: "", label: "Select" },
-  ...OFF_DAY_SUBTYPE_OPTIONS,
 ];
 
 const LEAVE_SUBTYPE_SELECT_OPTIONS = [
   { value: "", label: "Select" },
-  ...LEAVE_DAY_SUBTYPE_OPTIONS,
 ];
 
 const STEP_CONFIG = [
@@ -255,7 +247,7 @@ export default function EffismLite() {
             ...currentJobDetails,
             date: `${timeRecord.date_log || lastWorkingDate || ""}`,
             dayType: mapApiWorkStatusToDayType(timeRecord.work_status),
-            daySubtype: `${timeRecord.leave_type_name ?? timeRecord.leave_type ?? ""}`,
+            daySubtype: `${timeRecord.leave_type ?? ""}`,
             timeIn: timeInValue.time,
             timeInMeridiem: timeInValue.meridiem,
             timeOut: timeOutValue.time,
@@ -312,7 +304,7 @@ export default function EffismLite() {
     };
   }, []);
 
-  // Load day type dropdown options from API, with local fallbacks kept for offline/dev.
+  // Load day type dropdown options from API.
   useEffect(() => {
     let isMounted = true;
 
@@ -662,6 +654,12 @@ export default function EffismLite() {
       dayType: nextDayType,
       daySubtype: shouldResetSubtype ? "" : currentJobDetails.daySubtype,
     }));
+
+    if (nextDayType === "off") {
+      setOffSubtypeOptions(OFF_SUBTYPE_SELECT_OPTIONS);
+    } else if (nextDayType === "leave") {
+      setLeaveSubtypeOptions(LEAVE_SUBTYPE_SELECT_OPTIONS);
+    }
   };
 
   // Switch date context and rehydrate time-log data for selected date.
@@ -698,7 +696,7 @@ export default function EffismLite() {
           ...currentJobDetails,
           date: nextDate,
           dayType: mapApiWorkStatusToDayType(timeRecord.work_status),
-          daySubtype: `${timeRecord.leave_type_name ?? timeRecord.leave_type ?? ""}`,
+          daySubtype: `${timeRecord.leave_type ?? ""}`,
           timeIn: timeInValue.time,
           timeInMeridiem: timeInValue.meridiem,
           timeOut: timeOutValue.time,

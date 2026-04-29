@@ -58,9 +58,14 @@ export default function EffismLiteSearchableCombo({
   const showMenu = menuOpen && !disabled && filteredOptions.length > 0;
 
   return (
-    <div className={`effismLite-field${className ? ` ${className}` : ""}`}>
+    <div
+      className={`effismLite-field${showMenu ? " is-dropdown-open" : ""}${className ? ` ${className}` : ""}`}
+    >
       <span className="effismLite-fieldLabel">{label}</span>
-      <div className="effismLite-searchComboRoot" ref={rootRef}>
+      <div
+        className={`effismLite-searchComboRoot${showMenu ? " is-open" : ""}`}
+        ref={rootRef}
+      >
         <div className="effismLite-inputWrap">
           <input
             id={id}

@@ -554,7 +554,7 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
   });
 
   if ((workStatus === "OFF" || workStatus === "leave") && jobDetails.daySubtype) {
-    formData.append("leave_type_name", jobDetails.daySubtype);
+    formData.append("leave_type", jobDetails.daySubtype);
   }
 
   if (

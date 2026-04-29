@@ -47,7 +47,7 @@ export default function EffismLiteDropdown({
 
   return (
     <div
-      className={`effismLite-dropdownRoot${className ? ` ${className}` : ""}`}
+      className={`effismLite-dropdownRoot${open && !disabled ? " is-open" : ""}${className ? ` ${className}` : ""}`}
       ref={rootRef}
     >
       <button

@@ -267,6 +267,16 @@
   min-width: 0;
 }
 
+.effismLite-field.is-dropdown-open {
+  position: relative;
+  z-index: 900;
+}
+
+.effismLite-field:has(.effismLite-dropdownRoot.is-open) {
+  position: relative;
+  z-index: 900;
+}
+
 .effismLite-fieldWide {
   grid-column: 1 / -1;
 }
@@ -1518,6 +1528,11 @@
   z-index: 20;
 }
 
+.effismLite-searchComboRoot.is-open,
+.effismLite-searchComboRoot:focus-within {
+  z-index: 700;
+}
+
 .effismLite-searchComboMenu {
   top: calc(100% + 6px);
   z-index: 320;
@@ -1705,6 +1720,11 @@
   min-width: 0;
 }
 
+.effismLite-dropdownRoot.is-open,
+.effismLite-dropdownRoot:focus-within {
+  z-index: 700;
+}
+
 .effismLite-dropdownTrigger {
   width: 100%;
   margin: 0;
@@ -1724,7 +1744,9 @@
   left: 0;
   right: 0;
   z-index: 400;
+  box-sizing: border-box;
   max-height: min(280px, 45vh);
+  overflow-x: hidden;
   overflow-y: auto;
   margin: 0;
   padding: 8px;
@@ -1747,6 +1769,7 @@
 .effismLite-dropdownOption {
   display: block;
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 14px;
   border: 0;
   border-radius: 12px;

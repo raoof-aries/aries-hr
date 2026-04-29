@@ -6,11 +6,6 @@ import {
   getBreakStatus,
 } from "../../services/breakTimeStatusService";
 import {
-  LEAVE_DAY_SUBTYPE_OPTIONS,
-  NON_EFFISM_DAY_TYPE_OPTIONS,
-  OFF_DAY_SUBTYPE_OPTIONS,
-} from "../../data/attendanceOptions";
-import {
   listEffismLiteDayLeaveTypes,
   listEffismLiteDayTypes,
 } from "../../services/effismLiteService";
@@ -19,17 +14,14 @@ import "./Home.css";
 
 const DAY_TYPE_SELECT_OPTIONS = [
   { value: "", label: "Select day type" },
-  ...NON_EFFISM_DAY_TYPE_OPTIONS,
 ];
 
 const OFF_SUBTYPE_SELECT_OPTIONS = [
   { value: "", label: "Select" },
-  ...OFF_DAY_SUBTYPE_OPTIONS,
 ];
 
 const LEAVE_SUBTYPE_SELECT_OPTIONS = [
   { value: "", label: "Select" },
-  ...LEAVE_DAY_SUBTYPE_OPTIONS,
 ];
 
 export default function Home() {
@@ -363,6 +355,12 @@ export default function Home() {
 
     if (shouldResetSubtype) {
       setDaySubtype("");
+    }
+
+    if (nextDayType === "off") {
+      setOffSubtypeOptions(OFF_SUBTYPE_SELECT_OPTIONS);
+    } else if (nextDayType === "leave") {
+      setLeaveSubtypeOptions(LEAVE_SUBTYPE_SELECT_OPTIONS);
     }
   };
 
