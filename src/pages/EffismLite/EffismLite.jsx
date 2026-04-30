@@ -262,6 +262,8 @@ export default function EffismLite() {
   const [timeSaveStatus, setTimeSaveStatus] = useState("idle");
   const [jobDiaryCompleteStatus, setJobDiaryCompleteStatus] = useState("idle");
   const [jobDiaryCompleteMessage, setJobDiaryCompleteMessage] = useState("");
+  const [hasTaskLevelCompletionErrors, setHasTaskLevelCompletionErrors] =
+    useState(false);
   const [taskFilter, setTaskFilter] = useState("all");
   const [taskErrorsByWorkreportId, setTaskErrorsByWorkreportId] = useState(new Map());
   const [taskSummaryMetrics, setTaskSummaryMetrics] = useState(null);
@@ -332,9 +334,11 @@ export default function EffismLite() {
           if (jobDiaryStatusResult.isComplete) {
             setJobDiaryCompleteStatus("success");
             setJobDiaryCompleteMessage("Job diary completed.");
+            setHasTaskLevelCompletionErrors(false);
           } else if (jobDiaryStatusResult.success) {
             setJobDiaryCompleteStatus("idle");
             setJobDiaryCompleteMessage("");
+            setHasTaskLevelCompletionErrors(false);
           }
         }
       } finally {
@@ -587,9 +591,13 @@ export default function EffismLite() {
     };
   }, [jobDiaryCompleteStatus, jobDetails.date]);
 
-  // Clear generic error state when no task-level API errors remain.
+  // Clear completion error state after all task-level API errors are fixed.
   useEffect(() => {
     if (jobDiaryCompleteStatus !== "error") {
+      return;
+    }
+
+    if (!hasTaskLevelCompletionErrors) {
       return;
     }
 
@@ -599,7 +607,12 @@ export default function EffismLite() {
 
     setJobDiaryCompleteStatus("idle");
     setJobDiaryCompleteMessage("");
-  }, [jobDiaryCompleteStatus, taskErrorsByWorkreportId]);
+    setHasTaskLevelCompletionErrors(false);
+  }, [
+    hasTaskLevelCompletionErrors,
+    jobDiaryCompleteStatus,
+    taskErrorsByWorkreportId,
+  ]);
 
   // After adding a draft, bring the created card into view and place the cursor.
   useEffect(() => {
@@ -690,6 +703,7 @@ export default function EffismLite() {
 
     setIsTimeLogLoading(true);
     setTaskErrorsByWorkreportId(new Map());
+    setHasTaskLevelCompletionErrors(false);
 
     try {
       const [timeRecord, jobDiaryStatusResult] = await Promise.all([
@@ -755,9 +769,11 @@ export default function EffismLite() {
       if (jobDiaryStatusResult.isComplete) {
         setJobDiaryCompleteStatus("success");
         setJobDiaryCompleteMessage("Job diary completed.");
+        setHasTaskLevelCompletionErrors(false);
       } else if (jobDiaryStatusResult.success) {
         setJobDiaryCompleteStatus("idle");
         setJobDiaryCompleteMessage("");
+        setHasTaskLevelCompletionErrors(false);
       }
 
       loadedTaskDateRef.current = "";
@@ -787,14 +803,17 @@ export default function EffismLite() {
       setJobDiaryCompleteStatus("success");
       setJobDiaryCompleteMessage("Job diary completed.");
       setTaskErrorsByWorkreportId(new Map());
+      setHasTaskLevelCompletionErrors(false);
       return;
     }
 
+    const taskErrors = mapTaskErrorsFromPayload(result.payload);
     setJobDiaryCompleteStatus("error");
     setJobDiaryCompleteMessage(
       result.message || "Failed to complete job diary.",
     );
-    setTaskErrorsByWorkreportId(mapTaskErrorsFromPayload(result.payload));
+    setTaskErrorsByWorkreportId(taskErrors);
+    setHasTaskLevelCompletionErrors(taskErrors.size > 0);
   };
 
   const handleCancelComplete = () => {
