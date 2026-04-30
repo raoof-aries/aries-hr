@@ -468,7 +468,14 @@ export async function getEffismLiteTimeRecord(dateValue) {
       return null;
     }
 
-    return payload?.data || null;
+    if (!payload?.data) {
+      return null;
+    }
+
+    return {
+      ...payload.data,
+      is_punctual: 0,
+    };
   } catch {
     return null;
   }
@@ -497,6 +504,12 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
       value: normalizeDurationForApi(jobDetails[field]),
     }),
   );
+  const isLateRequired =
+    Number.parseInt(`${jobDetails.isPunctual ?? 1}`, 10) === 0;
+  const lateConfirmation = isLateRequired
+    ? `${jobDetails.lateConfirmation || ""}`.trim()
+    : "";
+  const lateRemarks = isLateRequired ? `${jobDetails.lateRemarks || ""}`.trim() : "";
 
   if (!jobDetails.date) {
     return null;
@@ -525,6 +538,16 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
     formData.append("site_travel", siteTravel);
   }
 
+  if (isLateRequired) {
+    if (lateConfirmation) {
+      formData.append("is_late", lateConfirmation === "yes" ? "1" : "0");
+    }
+
+    if (lateRemarks) {
+      formData.append("late_remarks", lateRemarks);
+    }
+  }
+
   extraTimeValues.forEach(({ apiKey, value }) => {
     if (value) {
       formData.append(apiKey, value);
@@ -543,6 +566,8 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
       nwt,
       siteTravel,
       jobDetails.daySubtype,
+      lateConfirmation,
+      lateRemarks,
       ...extraTimeValues.map((entry) => entry.value),
     ].some(Boolean)
   ) {

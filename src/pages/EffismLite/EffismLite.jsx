@@ -245,6 +245,9 @@ export default function EffismLite() {
     friends: "",
     sleep: "",
     travel: "",
+    isPunctual: 0,
+    lateConfirmation: "",
+    lateRemarks: "",
   });
   const [tasks, setTasks] = useState([]);
   const [taskMainTypeOptions, setTaskMainTypeOptions] = useState([]);
@@ -319,6 +322,14 @@ export default function EffismLite() {
             friends: normalizeApiClockValue(timeRecord.friend ?? timeRecord.friends),
             sleep: normalizeApiClockValue(timeRecord.sleep),
             travel: normalizeApiClockValue(timeRecord.travel),
+            isPunctual: Number.parseInt(`${timeRecord.is_punctual ?? 1}`, 10) === 0 ? 0 : 1,
+            lateConfirmation:
+              `${timeRecord.is_late ?? ""}` === "1"
+                ? "yes"
+                : `${timeRecord.is_late ?? ""}` === "0"
+                  ? "no"
+                  : "",
+            lateRemarks: `${timeRecord.late_remarks ?? ""}`,
           }));
         } else {
           setJobDetails((currentJobDetails) => ({
@@ -640,6 +651,7 @@ export default function EffismLite() {
   // Derived screen mode flags.
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
+  const showLateFields = Number.parseInt(`${jobDetails.isPunctual ?? 1}`, 10) === 0;
   const isSummaryMode = jobDiaryCompleteStatus === "success";
   const selectedDayTypeLabel =
     dayTypeOptions.find((option) => option.value === jobDetails.dayType)?.label ||
@@ -743,6 +755,14 @@ export default function EffismLite() {
           friends: normalizeApiClockValue(timeRecord.friend ?? timeRecord.friends),
           sleep: normalizeApiClockValue(timeRecord.sleep),
           travel: normalizeApiClockValue(timeRecord.travel),
+          isPunctual: Number.parseInt(`${timeRecord.is_punctual ?? 1}`, 10) === 0 ? 0 : 1,
+          lateConfirmation:
+            `${timeRecord.is_late ?? ""}` === "1"
+              ? "yes"
+              : `${timeRecord.is_late ?? ""}` === "0"
+                ? "no"
+                : "",
+          lateRemarks: `${timeRecord.late_remarks ?? ""}`,
         }));
       } else {
         setJobDetails((currentJobDetails) => ({
@@ -763,6 +783,9 @@ export default function EffismLite() {
           friends: "",
           sleep: "",
           travel: "",
+          isPunctual: 0,
+          lateConfirmation: "",
+          lateRemarks: "",
         }));
       }
 
@@ -1148,6 +1171,24 @@ export default function EffismLite() {
       });
     }
 
+    if (showLateFields) {
+      metrics.push(
+        {
+          label: "Late",
+          value:
+            jobDetails.lateConfirmation === "yes"
+              ? "Yes"
+              : jobDetails.lateConfirmation === "no"
+                ? "No"
+                : "-",
+        },
+        {
+          label: "Late Remarks",
+          value: jobDetails.lateRemarks || "-",
+        },
+      );
+    }
+
     if (isSummaryMode) {
       metrics.push(
         { label: "Net Time", value: taskSummaryMetrics?.netTime || "--:--" },
@@ -1157,7 +1198,7 @@ export default function EffismLite() {
     }
 
     return metrics;
-  }, [isSummaryMode, jobDetails, selectedDaySubtypeLabel, selectedDayTypeLabel, taskSummaryMetrics]);
+  }, [isSummaryMode, jobDetails, selectedDaySubtypeLabel, selectedDayTypeLabel, showLateFields, taskSummaryMetrics]);
 
   return (
     <div className="effismLite-page">
@@ -2217,6 +2258,55 @@ export default function EffismLite() {
                 defaultPickerTime="08:00"
                 defaultPickerMeridiem="AM"
               />
+
+              {showLateFields ? (
+                <div className="effismLite-lateEntry effismLite-fieldWide">
+                  <div className="effismLite-latePromptRow">
+                    <span className="effismLite-fieldLabel">Are you late?</span>
+                    <div
+                      className="effismLite-lateToggle"
+                      role="radiogroup"
+                      aria-label="Are you late?"
+                    >
+                      {[
+                        { value: "yes", label: "Yes" },
+                        { value: "no", label: "No" },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`effismLite-lateToggleButton is-${option.value}${
+                            jobDetails.lateConfirmation === option.value
+                              ? " is-active"
+                              : ""
+                          }`}
+                          onClick={() =>
+                            updateJobDetails("lateConfirmation", option.value)
+                          }
+                          role="radio"
+                          aria-checked={jobDetails.lateConfirmation === option.value}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <label className="effismLite-field" htmlFor="effism-lite-late-remarks">
+                    <span className="effismLite-fieldLabel">Late Remarks</span>
+                    <textarea
+                      id="effism-lite-late-remarks"
+                      className="effismLite-input effismLite-textarea effismLite-lateRemarks"
+                      rows={2}
+                      value={jobDetails.lateRemarks}
+                      onChange={(event) =>
+                        updateJobDetails("lateRemarks", event.target.value)
+                      }
+                      placeholder="Add reason for late start"
+                    />
+                  </label>
+                </div>
+              ) : null}
 
               <MeridiemTimeInput
                 id="effism-lite-duty-end"
