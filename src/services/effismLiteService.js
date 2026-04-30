@@ -472,10 +472,7 @@ export async function getEffismLiteTimeRecord(dateValue) {
       return null;
     }
 
-    return {
-      ...payload.data,
-      is_punctual: 0,
-    };
+    return payload.data;
   } catch {
     return null;
   }
@@ -504,8 +501,7 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
       value: normalizeDurationForApi(jobDetails[field]),
     }),
   );
-  const isLateRequired =
-    Number.parseInt(`${jobDetails.isPunctual ?? 1}`, 10) === 0;
+  const isLateRequired = jobDetails.isLate === true;
   const lateConfirmation = isLateRequired
     ? `${jobDetails.lateConfirmation || ""}`.trim()
     : "";
@@ -540,7 +536,7 @@ export async function saveEffismLiteTimeRecord(jobDetails) {
 
   if (isLateRequired) {
     if (lateConfirmation) {
-      formData.append("is_late", lateConfirmation === "yes" ? "1" : "0");
+      formData.append("not_punctual", lateConfirmation === "yes" ? "1" : "2");
     }
 
     if (lateRemarks) {

@@ -245,7 +245,7 @@ export default function EffismLite() {
     friends: "",
     sleep: "",
     travel: "",
-    isPunctual: 0,
+    isLate: false,
     lateConfirmation: "",
     lateRemarks: "",
   });
@@ -322,11 +322,11 @@ export default function EffismLite() {
             friends: normalizeApiClockValue(timeRecord.friend ?? timeRecord.friends),
             sleep: normalizeApiClockValue(timeRecord.sleep),
             travel: normalizeApiClockValue(timeRecord.travel),
-            isPunctual: Number.parseInt(`${timeRecord.is_punctual ?? 1}`, 10) === 0 ? 0 : 1,
+            isLate: timeRecord.is_late === true || `${timeRecord.is_late}` === "true" || `${timeRecord.is_late}` === "1",
             lateConfirmation:
-              `${timeRecord.is_late ?? ""}` === "1"
+              `${timeRecord.not_punctual ?? ""}` === "1"
                 ? "yes"
-                : `${timeRecord.is_late ?? ""}` === "0"
+                : (`${timeRecord.not_punctual ?? ""}` === "2" || `${timeRecord.not_punctual ?? ""}` === "0")
                   ? "no"
                   : "",
             lateRemarks: `${timeRecord.late_remarks ?? ""}`,
@@ -503,6 +503,15 @@ export default function EffismLite() {
       saveEffismLiteTimeRecord(jobDetails)
         .then((payload) => {
           setTimeSaveStatus(payload ? "saved" : "error");
+          if (payload && payload.is_late !== undefined) {
+            const newIsLate = payload.is_late === true || String(payload.is_late) === "true" || String(payload.is_late) === "1";
+            setJobDetails((currentJobDetails) => {
+              if (currentJobDetails.isLate !== newIsLate) {
+                return { ...currentJobDetails, isLate: newIsLate };
+              }
+              return currentJobDetails;
+            });
+          }
         })
         .catch(() => {
           setTimeSaveStatus("error");
@@ -651,7 +660,7 @@ export default function EffismLite() {
   // Derived screen mode flags.
   const showOffTypeField = jobDetails.dayType === "off";
   const showLeaveTypeField = jobDetails.dayType === "leave";
-  const showLateFields = Number.parseInt(`${jobDetails.isPunctual ?? 1}`, 10) === 0;
+  const showLateFields = jobDetails.isLate === true;
   const isSummaryMode = jobDiaryCompleteStatus === "success";
   const selectedDayTypeLabel =
     dayTypeOptions.find((option) => option.value === jobDetails.dayType)?.label ||
@@ -755,11 +764,11 @@ export default function EffismLite() {
           friends: normalizeApiClockValue(timeRecord.friend ?? timeRecord.friends),
           sleep: normalizeApiClockValue(timeRecord.sleep),
           travel: normalizeApiClockValue(timeRecord.travel),
-          isPunctual: Number.parseInt(`${timeRecord.is_punctual ?? 1}`, 10) === 0 ? 0 : 1,
+          isLate: timeRecord.is_late === true || `${timeRecord.is_late}` === "true" || `${timeRecord.is_late}` === "1",
           lateConfirmation:
-            `${timeRecord.is_late ?? ""}` === "1"
+            `${timeRecord.not_punctual ?? ""}` === "1"
               ? "yes"
-              : `${timeRecord.is_late ?? ""}` === "0"
+              : (`${timeRecord.not_punctual ?? ""}` === "2" || `${timeRecord.not_punctual ?? ""}` === "0")
                 ? "no"
                 : "",
           lateRemarks: `${timeRecord.late_remarks ?? ""}`,
@@ -783,7 +792,7 @@ export default function EffismLite() {
           friends: "",
           sleep: "",
           travel: "",
-          isPunctual: 0,
+          isLate: false,
           lateConfirmation: "",
           lateRemarks: "",
         }));
