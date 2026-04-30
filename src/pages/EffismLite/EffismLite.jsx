@@ -2294,10 +2294,10 @@ export default function EffismLite() {
 
                   <label className="effismLite-field" htmlFor="effism-lite-late-remarks">
                     <span className="effismLite-fieldLabel">Late Remarks</span>
-                    <textarea
+                    <input
                       id="effism-lite-late-remarks"
-                      className="effismLite-input effismLite-textarea effismLite-lateRemarks"
-                      rows={2}
+                      className="effismLite-input effismLite-lateRemarks"
+                      type="text"
                       value={jobDetails.lateRemarks}
                       onChange={(event) =>
                         updateJobDetails("lateRemarks", event.target.value)
