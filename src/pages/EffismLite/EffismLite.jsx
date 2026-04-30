@@ -271,6 +271,7 @@ export default function EffismLite() {
   const [taskErrorsByWorkreportId, setTaskErrorsByWorkreportId] = useState(new Map());
   const [taskSummaryMetrics, setTaskSummaryMetrics] = useState(null);
   const [showCompleteConfirmation, setShowCompleteConfirmation] = useState(false);
+  const [lastEditedField, setLastEditedField] = useState("");
   const hasHydratedTimeRef = useRef(false);
   const loadedTaskDateRef = useRef("");
   const autosaveTimerRef = useRef(null);
@@ -677,6 +678,7 @@ export default function EffismLite() {
   // Generic job-details updater with autosave tracking.
   const updateJobDetails = (field, value) => {
     hasUserEditedTimeRef.current = true;
+    setLastEditedField(field);
     setJobDetails((currentJobDetails) => ({
       ...currentJobDetails,
       [field]: value,
@@ -684,6 +686,7 @@ export default function EffismLite() {
   };
 
   const handleJobClockChange = (field, value) => {
+    setLastEditedField(field);
     updateJobDetails(field, formatClockInputAsTyped(value));
   };
 
@@ -698,6 +701,7 @@ export default function EffismLite() {
 
   const handleDayTypeChange = (nextDayType) => {
     hasUserEditedTimeRef.current = true;
+    setLastEditedField("dayType");
     const shouldResetSubtype =
       nextDayType !== jobDetails.dayType ||
       (nextDayType !== "off" && nextDayType !== "leave");
@@ -722,6 +726,7 @@ export default function EffismLite() {
       return;
     }
 
+    setLastEditedField("date");
     setIsTimeLogLoading(true);
     setTaskErrorsByWorkreportId(new Map());
     setHasTaskLevelCompletionErrors(false);
@@ -812,6 +817,24 @@ export default function EffismLite() {
     } finally {
       setIsTimeLogLoading(false);
     }
+  };
+
+  const renderFieldSaveStatus = (fieldName) => {
+    if (lastEditedField !== fieldName || timeSaveStatus === "idle") {
+      return null;
+    }
+
+    return (
+      <span className={`effismLite-fieldSaveStatus is-${timeSaveStatus}`} aria-live="polite">
+        {timeSaveStatus === "saving" ? (
+          <span className="effismLite-spinner effismLite-spinnerSmall" aria-hidden="true" />
+        ) : timeSaveStatus === "saved" ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        )}
+      </span>
+    );
   };
 
   const goToStep = (path) => {
@@ -2179,21 +2202,6 @@ export default function EffismLite() {
         <>
           {/* Editable time-log form */}
           <section className="effismLite-timeLogFormSection">
-          {timeSaveStatus !== "idle" ? (
-            <div className="effismLite-saveStatusWrap" aria-live="polite">
-              <span
-                className={`effismLite-saveStatusPill is-${timeSaveStatus}`}
-                role="status"
-              >
-                {timeSaveStatus === "saving"
-                  ? "Saving..."
-                  : timeSaveStatus === "saved"
-                    ? "Saved"
-                    : "Save failed"}
-              </span>
-            </div>
-          ) : null}
-
           <div className="effismLite-timeLogCardStack">
             <div className="effismLite-timeLogCard">
               <DatePickerField
@@ -2203,10 +2211,14 @@ export default function EffismLite() {
                 value={jobDetails.date}
                 onChange={handleTimeLogDateChange}
                 formatDisplayValue={formatDateDisplayValue}
+                indicator={renderFieldSaveStatus("date")}
               />
 
               <div className="effismLite-field effismLite-fieldWide">
-                <span className="effismLite-fieldLabel">Day Type</span>
+                <div className="effismLite-fieldLabelRow">
+                  <span className="effismLite-fieldLabel">Day Type</span>
+                  {renderFieldSaveStatus("dayType")}
+                </div>
                 <EffismLiteDropdown
                   id="effism-lite-day-type"
                   ariaLabel="Day type"
@@ -2219,7 +2231,10 @@ export default function EffismLite() {
 
               {showOffTypeField ? (
                 <div className="effismLite-field effismLite-fieldWide">
-                  <span className="effismLite-fieldLabel">OFF Type</span>
+                  <div className="effismLite-fieldLabelRow">
+                    <span className="effismLite-fieldLabel">OFF Type</span>
+                    {renderFieldSaveStatus("daySubtype")}
+                  </div>
                   <EffismLiteDropdown
                     id="effism-lite-off-type"
                     ariaLabel="OFF type"
@@ -2235,7 +2250,10 @@ export default function EffismLite() {
 
               {showLeaveTypeField ? (
                 <div className="effismLite-field effismLite-fieldWide">
-                  <span className="effismLite-fieldLabel">Leave Type</span>
+                  <div className="effismLite-fieldLabelRow">
+                    <span className="effismLite-fieldLabel">Leave Type</span>
+                    {renderFieldSaveStatus("daySubtype")}
+                  </div>
                   <EffismLiteDropdown
                     id="effism-lite-leave-type"
                     ariaLabel="Leave type"
@@ -2266,12 +2284,16 @@ export default function EffismLite() {
                 normalizeClockInput={normalizeClockInput}
                 defaultPickerTime="08:00"
                 defaultPickerMeridiem="AM"
+                indicator={renderFieldSaveStatus("timeIn") || renderFieldSaveStatus("timeInMeridiem")}
               />
 
               {showLateFields ? (
                 <div className="effismLite-lateEntry effismLite-fieldWide">
                   <div className="effismLite-latePromptRow">
-                    <span className="effismLite-fieldLabel">Are you late?</span>
+                    <div className="effismLite-fieldLabelRow">
+                      <span className="effismLite-fieldLabel">Are you late?</span>
+                      {renderFieldSaveStatus("lateConfirmation")}
+                    </div>
                     <div
                       className="effismLite-lateToggle"
                       role="radiogroup"
@@ -2302,7 +2324,10 @@ export default function EffismLite() {
                   </div>
 
                   <label className="effismLite-field" htmlFor="effism-lite-late-remarks">
-                    <span className="effismLite-fieldLabel">Late Remarks</span>
+                    <div className="effismLite-fieldLabelRow">
+                      <span className="effismLite-fieldLabel">Late Remarks</span>
+                      {renderFieldSaveStatus("lateRemarks")}
+                    </div>
                     <input
                       id="effism-lite-late-remarks"
                       className="effismLite-input effismLite-lateRemarks"
@@ -2334,6 +2359,7 @@ export default function EffismLite() {
                 normalizeClockInput={normalizeClockInput}
                 defaultPickerTime="06:00"
                 defaultPickerMeridiem="PM"
+                indicator={renderFieldSaveStatus("timeOut") || renderFieldSaveStatus("timeOutMeridiem")}
               />
             </div>
 
@@ -2348,6 +2374,7 @@ export default function EffismLite() {
                 onBlur={() => handleJobTimeBlur("breakTime")}
                 formatClockInputAsTyped={formatClockInputAsTyped}
                 normalizeClockInput={normalizeClockInput}
+                indicator={renderFieldSaveStatus("breakTime")}
               />
 
               <ClockPickerField
@@ -2360,6 +2387,7 @@ export default function EffismLite() {
                 onBlur={() => handleJobTimeBlur("siteTravel")}
                 formatClockInputAsTyped={formatClockInputAsTyped}
                 normalizeClockInput={normalizeClockInput}
+                indicator={renderFieldSaveStatus("siteTravel")}
               />
 
               {TIME_LOG_EXTRA_FIELDS.slice(0, 2).map((fieldConfig) => (
@@ -2374,6 +2402,7 @@ export default function EffismLite() {
                   onBlur={() => handleJobTimeBlur(fieldConfig.field)}
                   formatClockInputAsTyped={formatClockInputAsTyped}
                   normalizeClockInput={normalizeClockInput}
+                  indicator={renderFieldSaveStatus(fieldConfig.field)}
                 />
               ))}
             </div>
@@ -2392,6 +2421,7 @@ export default function EffismLite() {
                   onBlur={() => handleJobTimeBlur(fieldConfig.field)}
                   formatClockInputAsTyped={formatClockInputAsTyped}
                   normalizeClockInput={normalizeClockInput}
+                  indicator={renderFieldSaveStatus(fieldConfig.field)}
                 />
               ))}
             </div>

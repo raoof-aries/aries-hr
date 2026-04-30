@@ -16,6 +16,7 @@ export default function ClockPickerField({
   normalizeClockInput,
   placeholder = "00:00",
   disabled = false,
+  indicator = null,
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [draftHour, setDraftHour] = useState("00");
@@ -83,9 +84,12 @@ export default function ClockPickerField({
 
   return (
     <div className={`effismLite-field${className ? ` ${className}` : ""}`}>
-      <label className="effismLite-fieldLabel" htmlFor={id}>
-        {label}
-      </label>
+      <div className="effismLite-fieldLabelRow">
+        <label className="effismLite-fieldLabel" htmlFor={id}>
+          {label}
+        </label>
+        {indicator}
+      </div>
       <div className="effismLite-inputWrap">
         <input
           id={id}

@@ -8,13 +8,17 @@ export default function DatePickerField({
   formatDisplayValue,
   className = "",
   disabled = false,
+  indicator = null,
 }) {
   return (
     <label
       className={`effismLite-field${className ? ` ${className}` : ""}`}
       htmlFor={id}
     >
-      <span className="effismLite-fieldLabel">{label}</span>
+      <div className="effismLite-fieldLabelRow">
+        <span className="effismLite-fieldLabel">{label}</span>
+        {indicator}
+      </div>
       <div
         className={`effismLite-pickerField${disabled ? " is-disabled" : ""}`}
       >

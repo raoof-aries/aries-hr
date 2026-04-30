@@ -373,6 +373,39 @@
   font-weight: 700;
 }
 
+.effismLite-fieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 16px;
+  gap: 8px;
+}
+
+.effismLite-fieldSaveStatus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 14px;
+}
+
+.effismLite-fieldSaveStatus.is-saving {
+  color: var(--apple-blue);
+}
+
+.effismLite-fieldSaveStatus.is-saved {
+  color: #22c55e;
+}
+
+.effismLite-fieldSaveStatus.is-error {
+  color: #ef4444;
+}
+
+.effismLite-spinnerSmall {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
 .effismLite-summaryLabel {
   font-weight: 800;
 }

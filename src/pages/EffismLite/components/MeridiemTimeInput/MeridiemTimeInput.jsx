@@ -16,6 +16,7 @@ export default function MeridiemTimeInput({
   className = "",
   defaultPickerTime = "12:00",
   defaultPickerMeridiem = "AM",
+  indicator = null,
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [draftHour, setDraftHour] = useState("12");
@@ -96,9 +97,12 @@ export default function MeridiemTimeInput({
 
   return (
     <div className={`effismLite-field${className ? ` ${className}` : ""}`}>
-      <label className="effismLite-fieldLabel" htmlFor={id}>
-        {label}
-      </label>
+      <div className="effismLite-fieldLabelRow">
+        <label className="effismLite-fieldLabel" htmlFor={id}>
+          {label}
+        </label>
+        {indicator}
+      </div>
       <div className="effismLite-timeControl">
         <div className="effismLite-timeValueWrap">
           <input
