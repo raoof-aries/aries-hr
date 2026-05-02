@@ -1236,6 +1236,16 @@ export default function EffismLite() {
     const metrics = [
       { label: "Date", value: formatDateDisplayValue(jobDetails.date) },
       { label: "Day Type", value: selectedDayTypeLabel },
+    ];
+
+    if (jobDetails.dayType === "off" || jobDetails.dayType === "leave") {
+      metrics.push({
+        label: jobDetails.dayType === "off" ? "OFF Type" : "Leave Type",
+        value: selectedDaySubtypeLabel,
+      });
+    }
+
+    metrics.push(
       {
         label: "Duty Start",
         value: `${jobDetails.timeIn || "--:--"} ${jobDetails.timeInMeridiem || "AM"}`,
@@ -1249,15 +1259,8 @@ export default function EffismLite() {
       ...TIME_LOG_EXTRA_FIELDS.map((fieldConfig) => ({
         label: fieldConfig.label,
         value: jobDetails[fieldConfig.field] || "--:--",
-      })),
-    ];
-
-    if (jobDetails.dayType === "off" || jobDetails.dayType === "leave") {
-      metrics.push({
-        label: jobDetails.dayType === "off" ? "OFF Type" : "Leave Type",
-        value: selectedDaySubtypeLabel,
-      });
-    }
+      }))
+    );
 
     if (showLateFields) {
       metrics.push(
@@ -1397,17 +1400,17 @@ export default function EffismLite() {
       {isTaskStep ? (
         <>
           {/* Task section header and add-task action */}
-          <div className="effismLite-taskToolbarRow">
-            <div className="effismLite-taskToolbarHeading">
-              <h2 className="effismLite-taskToolbarTitle">
-                Tasks{" "}
-                <span className="effismLite-taskToolbarCount">
-                  ({taskFilter === "all" ? tasks.length : filteredTaskCount})
-                </span>
-              </h2>
-            </div>
+          {!isSummaryMode ? (
+            <div className="effismLite-taskToolbarRow">
+              <div className="effismLite-taskToolbarHeading">
+                <h2 className="effismLite-taskToolbarTitle">
+                  Tasks{" "}
+                  <span className="effismLite-taskToolbarCount">
+                    ({taskFilter === "all" ? tasks.length : filteredTaskCount})
+                  </span>
+                </h2>
+              </div>
 
-            {!isSummaryMode ? (
               <button
                 type="button"
                 className="effismLite-button effismLite-buttonGhost effismLite-taskToolbarButton"
@@ -1421,8 +1424,8 @@ export default function EffismLite() {
                 </span>
                 Add Task
               </button>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </>
       ) : null}
 
@@ -2377,11 +2380,6 @@ export default function EffismLite() {
         <>
           {/* Read-only time-log summary once diary is completed */}
           <div className="effismLite-timeLogSummaryPanel">
-            <div className="effismLite-summaryHeaderRow">
-              <h3 className="effismLite-summarySectionTitle">
-                Time Log Summary
-              </h3>
-            </div>
 
             <section className="effismLite-timeLogSummaryShell">
               <div className="effismLite-timeLogSummaryList">
