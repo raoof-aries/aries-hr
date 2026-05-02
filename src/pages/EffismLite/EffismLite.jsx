@@ -1322,31 +1322,33 @@ export default function EffismLite() {
           })}
         </div>
 
-        <div className="effismLite-completeAction">
-          <button
-            type="button"
-            className="effismLite-button effismLite-buttonPrimary effismLite-completeButton"
-            onClick={handleComplete}
-            disabled={jobDiaryCompleteStatus === "loading"}
-            aria-label="Complete effism lite entry"
-            title="Complete"
-          >
-            <svg
-              width="16"
-              height="16"
-              className="effismLite-completeButtonIcon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+        {!isSummaryMode ? (
+          <div className="effismLite-completeAction">
+            <button
+              type="button"
+              className="effismLite-button effismLite-buttonPrimary effismLite-completeButton"
+              onClick={handleComplete}
+              disabled={jobDiaryCompleteStatus === "loading"}
+              aria-label="Complete effism lite entry"
+              title="Complete"
             >
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-          </button>
-        </div>
+              <svg
+                width="16"
+                height="16"
+                className="effismLite-completeButtonIcon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {jobDiaryCompleteStatus === "success" && !isSummaryMode ? (
