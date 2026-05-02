@@ -8,7 +8,7 @@ import { registerAppServiceWorker } from "./utils/pwa";
 registerAppServiceWorker();
 
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter basename="/hrms1">
+  <BrowserRouter basename="/hrms">
     <App />
   </BrowserRouter>
 );
