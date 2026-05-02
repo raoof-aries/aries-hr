@@ -2381,64 +2381,133 @@ export default function EffismLite() {
           {/* Read-only time-log summary once diary is completed */}
           <div className="effismLite-timeLogSummaryPanel">
 
-            <section className="effismLite-timeLogSummaryShell">
-              <div className="effismLite-timeLogSummaryList">
-                {timeLogMetrics
-                  .filter(
-                    (metric) =>
-                      !["Net Time", "Total Est", "Total Act"].includes(
-                        metric.label,
-                      ),
-                  )
-                  .map((metric) =>
-                    metric.label === "Date" ? (
-                      <DatePickerField
-                        key={metric.label}
-                        id="effism-lite-summary-date"
-                        className="effismLite-timeLogSummaryDateField"
-                        label="Date"
-                        value={jobDetails.date}
-                        onChange={handleTimeLogDateChange}
-                        formatDisplayValue={formatDateDisplayValue}
-                      />
-                    ) : (
-                      <article
-                        key={metric.label}
-                        className="effismLite-timeLogSummaryItem"
-                      >
-                        <span className="effismLite-timeLogSummaryLabel">
-                          {metric.label}
-                        </span>
-                        <strong className="effismLite-timeLogSummaryValue">
-                          {metric.value}
-                        </strong>
-                      </article>
+            <section
+              className="effismLite-timeLogSummaryShell"
+              style={{
+                padding: 0,
+                border: "none",
+                boxShadow: "none",
+                background: "transparent",
+              }}
+            >
+              <div className="effismLite-timeLogCardStack">
+                {[
+                  timeLogMetrics
+                    .filter((m) =>
+                      [
+                        "Date",
+                        "Day Type",
+                        "OFF Type",
+                        "Leave Type",
+                        "Duty Start",
+                        "Late",
+                        "Late Remarks",
+                        "Duty End",
+                      ].includes(m.label),
+                    )
+                    .sort((a, b) => {
+                      const order = [
+                        "Date",
+                        "Day Type",
+                        "OFF Type",
+                        "Leave Type",
+                        "Duty Start",
+                        "Late",
+                        "Late Remarks",
+                        "Duty End",
+                      ];
+                      return order.indexOf(a.label) - order.indexOf(b.label);
+                    }),
+                  "NET_TIME_CARD",
+                  timeLogMetrics.filter((m) =>
+                    ["Break", "Site Travel", "Work Home", "Night"].includes(
+                      m.label,
                     ),
-                  )}
-              </div>
-            </section>
+                  ),
+                  timeLogMetrics.filter(
+                    (m) =>
+                      ![
+                        "Date",
+                        "Day Type",
+                        "OFF Type",
+                        "Leave Type",
+                        "Duty Start",
+                        "Late",
+                        "Late Remarks",
+                        "Duty End",
+                        "Break",
+                        "Site Travel",
+                        "Work Home",
+                        "Night",
+                        "Net Time",
+                        "Total Est",
+                        "Total Act",
+                      ].includes(m.label),
+                  ),
+                ].map(
+                  (groupMetrics, idx) => {
+                    if (groupMetrics === "NET_TIME_CARD") {
+                      return (
+                        <div key="net-time-card" className="effismLite-timeLogCard effismLite-timeTotalsGrid">
+                          {timeLogMetrics
+                            .filter((metric) =>
+                              ["Total Est", "Total Act", "Net Time"].includes(
+                                metric.label,
+                              ),
+                            )
+                            .map((metric) => (
+                              <article
+                                key={metric.label}
+                                className={`effismLite-timeLogSummaryItem${metric.label === "Net Time" ? " is-full-width is-net-time" : ""}`}
+                              >
+                                <span className="effismLite-timeLogSummaryLabel">
+                                  {metric.label}
+                                </span>
+                                <strong className="effismLite-timeLogSummaryValue">
+                                  {metric.value}
+                                </strong>
+                              </article>
+                            ))}
+                        </div>
+                      );
+                    }
 
-            <section className="effismLite-timeTotalsShell">
-              <div className="effismLite-timeTotalsGrid">
-                {timeLogMetrics
-                  .filter((metric) =>
-                    ["Total Est", "Total Act", "Net Time"].includes(
-                      metric.label,
-                    ),
-                  )
-                  .map((metric) => (
-                    <article
-                      key={metric.label}
-                      className={`effismLite-timeLogSummaryItem${metric.label === "Net Time" ? " is-full-width is-net-time" : ""}`}
-                    >
-                      <span className="effismLite-timeLogSummaryLabel">
-                        {metric.label}
-                      </span>
-                      <strong className="effismLite-timeLogSummaryValue">
-                        {metric.value}
-                      </strong>
-                    </article>
-                  ))}
+                    return groupMetrics.length > 0 && (
+                      <div key={idx} className="effismLite-timeLogCard">
+                        {groupMetrics.map((metric) =>
+                          metric.label === "Date" ? (
+                            <DatePickerField
+                              key={metric.label}
+                              id="effism-lite-summary-date"
+                              className="effismLite-timeLogSummaryDateField"
+                              label="Date"
+                              value={jobDetails.date}
+                              onChange={handleTimeLogDateChange}
+                              formatDisplayValue={formatDateDisplayValue}
+                            />
+                          ) : (
+                            <article
+                              key={metric.label}
+                              className="effismLite-timeLogSummaryItem"
+                              style={
+                                metric.label === "Late Remarks"
+                                  ? { gridColumn: "1 / -1" }
+                                  : undefined
+                              }
+                            >
+                              <span className="effismLite-timeLogSummaryLabel">
+                                {metric.label}
+                              </span>
+                              <strong className="effismLite-timeLogSummaryValue">
+                                {metric.value}
+                              </strong>
+                            </article>
+                          ),
+                        )}
+                      </div>
+                    );
+                  }
+                )}
               </div>
             </section>
           </div>
