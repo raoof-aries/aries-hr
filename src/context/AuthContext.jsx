@@ -109,6 +109,19 @@ export function AuthProvider({ children }) {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    const handleAuthFailure = () => {
+      setIsAuthenticated(false);
+      setToken("");
+      setUser(null);
+      setUserName("");
+      clearStoredSession();
+    };
+
+    window.addEventListener("auth-failure", handleAuthFailure);
+    return () => window.removeEventListener("auth-failure", handleAuthFailure);
+  }, []);
+
   const login = async (username, password) => {
     try {
       const { apiBaseUrl } = await getRuntimeConfig();
