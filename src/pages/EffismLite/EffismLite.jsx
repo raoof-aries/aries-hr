@@ -1348,7 +1348,11 @@ export default function EffismLite() {
               </svg>
             </button>
           </div>
-        ) : null}
+        ) : (
+          <div className="effismLite-completeAction" style={{ alignItems: "center" }}>
+            <span className="effismLite-inlineCompletePill">Completed</span>
+          </div>
+        )}
       </div>
 
       {jobDiaryCompleteStatus === "success" && !isSummaryMode ? (
@@ -1401,9 +1405,6 @@ export default function EffismLite() {
                   ({taskFilter === "all" ? tasks.length : filteredTaskCount})
                 </span>
               </h2>
-              {isSummaryMode ? (
-                <span className="effismLite-inlineCompletePill">Completed</span>
-              ) : null}
             </div>
 
             {!isSummaryMode ? (
@@ -2380,7 +2381,6 @@ export default function EffismLite() {
               <h3 className="effismLite-summarySectionTitle">
                 Time Log Summary
               </h3>
-              <span className="effismLite-inlineCompletePill">Completed</span>
             </div>
 
             <section className="effismLite-timeLogSummaryShell">
