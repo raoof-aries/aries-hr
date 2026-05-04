@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  addEffismLiteJob,
-  completeEffismLiteJobDiary,
-  editEffismLiteJob,
-  listEffismLiteJobs,
-  listEffismLiteMainTypes,
-} from "../../services/effismLiteService";
-import {
   createTaskId,
   formatDateDisplayValue,
   normalizeClockInput,
@@ -23,69 +16,34 @@ export default function TimeTracker() {
   });
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [mainTypes, setMainTypes] = useState([]);
   const [completeStatus, setCompleteStatus] = useState("idle");
   const [completeMessage, setCompleteMessage] = useState("");
 
   useEffect(() => {
-    let isMounted = true;
-    const loadTypes = async () => {
-      const types = await listEffismLiteMainTypes();
-      if (isMounted) {
-        setMainTypes(types);
-      }
-    };
-    loadTypes();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
     if (!date) return;
-    let isMounted = true;
-    const loadTasks = async () => {
+    const loadTasks = () => {
       setIsLoading(true);
       try {
-        const taskList = await listEffismLiteJobs(date);
-        if (!isMounted) return;
-        
-        // Normalize tasks
-        const normalizedTasks = Array.isArray(taskList) ? taskList.map((t) => ({
-          id: `time-tracker-task-${t.workreport_id || t.id}`,
-          workreportId: t.workreport_id,
-          taskName: t.taskname || t.job_name || "",
-          jobNumber: t.job_no || "",
-          mainType: t.main_type_name || t.main_type || "",
-          estimatedTime: t.est_time || "00:00",
-          actualTime: t.act_time || "00:00",
-          outcome: t.desc || t.description || t.remarks || "",
-          isEditing: false,
-          isSaved: true,
-        })) : [];
-        
-        setTasks(normalizedTasks);
+        const allData = JSON.parse(localStorage.getItem("timeTracker_data_v1")) || {};
+        const dayTasks = allData[date] || [];
+        setTasks(dayTasks.map(t => ({ ...t, isEditing: false })));
+      } catch (e) {
+        console.error("Failed to load tasks", e);
+        setTasks([]);
       } finally {
-        if (isMounted) setIsLoading(false);
+        setIsLoading(false);
       }
     };
     loadTasks();
-    return () => {
-      isMounted = false;
-    };
   }, [date]);
 
-  const handleComplete = async () => {
+  const handleComplete = () => {
     if (completeStatus === "loading") return;
     setCompleteStatus("loading");
-    const result = await completeEffismLiteJobDiary(date);
-    if (result.success) {
+    setTimeout(() => {
       setCompleteStatus("success");
       setCompleteMessage("Job diary completed successfully.");
-    } else {
-      setCompleteStatus("error");
-      setCompleteMessage(result.message || "Failed to complete job diary.");
-    }
+    }, 500);
   };
 
   const handleAddTask = () => {
@@ -94,7 +52,7 @@ export default function TimeTracker() {
       workreportId: "",
       taskName: "",
       jobNumber: "",
-      mainType: mainTypes.length > 0 ? mainTypes[0].label : "",
+      mainType: "",
       estimatedTime: "",
       actualTime: "",
       outcome: "",
@@ -111,58 +69,41 @@ export default function TimeTracker() {
   };
 
   const toggleEditTask = (taskId) => {
-    setTasks((current) =>
-      current.map((t) =>
+    setTasks((current) => {
+      const task = current.find(t => t.id === taskId);
+      if (task && !task.isSaved && task.isEditing) {
+        return current.filter(t => t.id !== taskId);
+      }
+      return current.map((t) =>
         t.id === taskId ? { ...t, isEditing: !t.isEditing } : t
-      )
-    );
+      );
+    });
   };
 
-  const saveTask = async (taskId) => {
+  const saveTask = (taskId) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
-    // ensure time is formatted
+    if (!task.taskName.trim()) {
+      alert("Task name is required.");
+      return;
+    }
+
     const normalizedTask = {
       ...task,
       estimatedTime: normalizeClockInput(task.estimatedTime) || "00:00",
       actualTime: normalizeClockInput(task.actualTime) || "00:00",
+      isEditing: false,
+      isSaved: true,
     };
 
-    updateTask(taskId, "estimatedTime", normalizedTask.estimatedTime);
-    updateTask(taskId, "actualTime", normalizedTask.actualTime);
+    const updatedTasks = tasks.map((t) => (t.id === taskId ? normalizedTask : t));
+    setTasks(updatedTasks);
 
-    // If mainType is missing, default to the first available one to satisfy API
-    if (!normalizedTask.mainType && mainTypes.length > 0) {
-      normalizedTask.mainType = mainTypes[0].label;
-    }
-
-    let payload;
-    if (normalizedTask.workreportId) {
-      payload = await editEffismLiteJob(normalizedTask, date);
-    } else {
-      payload = await addEffismLiteJob(normalizedTask, date);
-    }
-
-    if (payload) {
-      // Reload tasks after save to get the new workreportId
-      const taskList = await listEffismLiteJobs(date);
-      const normalizedTasks = Array.isArray(taskList) ? taskList.map((t) => ({
-        id: `time-tracker-task-${t.workreport_id || t.id}`,
-        workreportId: t.workreport_id,
-        taskName: t.taskname || t.job_name || "",
-        jobNumber: t.job_no || "",
-        mainType: t.main_type_name || t.main_type || "",
-        estimatedTime: t.est_time || "00:00",
-        actualTime: t.act_time || "00:00",
-        outcome: t.desc || t.description || t.remarks || "",
-        isEditing: false,
-        isSaved: true,
-      })) : [];
-      setTasks(normalizedTasks);
-    } else {
-      alert("Failed to save task. Please ensure all required fields are filled.");
-    }
+    const allData = JSON.parse(localStorage.getItem("timeTracker_data_v1")) || {};
+    const tasksToSave = updatedTasks.filter((t) => t.isSaved).map((t) => ({ ...t, isEditing: false }));
+    allData[date] = tasksToSave;
+    localStorage.setItem("timeTracker_data_v1", JSON.stringify(allData));
   };
 
   return (
@@ -228,46 +169,93 @@ export default function TimeTracker() {
               key={task.id}
               className={`timeTracker-taskCard ${task.isEditing ? "is-editing" : ""}`}
             >
-              <div className="timeTracker-taskHeader">
-                <div className="timeTracker-taskHeaderMain" onClick={() => !task.isEditing && toggleEditTask(task.id)}>
-                  <h3 className="timeTracker-taskTitle">
-                    {task.taskName || "Untitled Task"}
-                  </h3>
-                  {!task.isEditing && (
-                    <div className="timeTracker-taskMeta">
-                      {task.jobNumber && <span>Job: {task.jobNumber}</span>}
-                      {task.estimatedTime && <span>Time: {task.estimatedTime}</span>}
-                    </div>
-                  )}
-                </div>
-                <div className="timeTracker-taskActions">
-                  <button
-                    type="button"
-                    className={`timeTracker-taskIconButton${task.isEditing ? " is-active" : ""}`}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      if (task.isEditing) {
-                        saveTask(task.id);
-                      } else {
+              <div className="timeTracker-taskHeader" onClick={() => !task.isEditing && toggleEditTask(task.id)}>
+                {task.isEditing ? (
+                  <div className="timeTracker-taskHeaderEdit">
+                    <button
+                      type="button"
+                      className="timeTracker-taskIconButton"
+                      onClick={(event) => {
+                        event.stopPropagation();
                         toggleEditTask(task.id);
-                      }
-                    }}
-                    title={task.isEditing ? "Save task" : "Edit task"}
-                  >
-                    {task.isEditing ? (
+                      }}
+                      title="Cancel"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                      </svg>
+                    </button>
+                    <div className="timeTracker-taskHeaderCenter">
+                      <span className="timeTracker-taskNumber">{index + 1}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="timeTracker-taskIconButton is-active"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        saveTask(task.id);
+                      }}
+                      title="Save task"
+                    >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                         <path d="M17 21v-8H7v8" />
                         <path d="M7 3v5h8" />
                       </svg>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
-                        <path d="m12.5 5.5 3 3" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="timeTracker-taskHeaderContent">
+                    <div className="timeTracker-taskHeaderTop">
+                      <div className="timeTracker-taskHeaderMeta">
+                        <span className="timeTracker-taskNumber">{index + 1}</span>
+                      </div>
+                      <div className="timeTracker-taskActions">
+                        <button
+                          type="button"
+                          className="timeTracker-taskIconButton"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleEditTask(task.id);
+                          }}
+                          title="Edit task"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
+                            <path d="m12.5 5.5 3 3" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          className="timeTracker-taskIconButton"
+                          title="Expand task"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <h3 className="timeTracker-taskTitle">
+                      {task.taskName || "Untitled Task"}
+                    </h3>
+                    
+                    <div className="timeTracker-taskSummaryMetrics">
+                      {task.jobNumber && (
+                        <div className="timeTracker-taskJobNumber">
+                          {task.jobNumber}
+                        </div>
+                      )}
+                      
+                      {task.estimatedTime && (
+                        <span className="timeTracker-summaryTimeItem">
+                          <span className="timeTracker-summaryTimeValue">{task.estimatedTime}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {task.isEditing && (
