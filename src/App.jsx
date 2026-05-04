@@ -13,6 +13,7 @@ import Layout from "./components/Layout/Layout";
 import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper";
 import AuthGateLoader from "./components/AuthGateLoader/AuthGateLoader";
 import { getIsRegularUser } from "./utils/userMode";
+import TimeTracker from "./pages/TimeTracker/TimeTracker";
 
 function EffismLiteGuard({ children }) {
   const { user } = useAuth();
@@ -170,6 +171,14 @@ function AppRoutes() {
             <EffismLiteGuard>
               <EffismLite />
             </EffismLiteGuard>
+          </ProtectedAppRoute>
+        }
+      />
+      <Route
+        path="/time-tracker"
+        element={
+          <ProtectedAppRoute>
+            <TimeTracker />
           </ProtectedAppRoute>
         }
       />

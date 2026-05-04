@@ -39,7 +39,7 @@ export default function Home() {
   );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary", "effism-lite"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
@@ -169,6 +169,30 @@ export default function Home() {
       iconColor: "#0D6C5F",
       shadowColor: "rgba(1, 67, 66, 0.14)",
     }] : []),
+    {
+      id: "time-tracker",
+      title: "Time Tracker",
+      description: "Quick task entry",
+      route: "/time-tracker",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      ),
+      bgColor: "#E9F2FA",
+      iconColor: "#1A5A99",
+      shadowColor: "rgba(26, 90, 153, 0.12)",
+    },
     {
       id: "salary",
       title: "Salary",
