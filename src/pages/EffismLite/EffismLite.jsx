@@ -265,7 +265,7 @@ export default function EffismLite() {
   const [jobDiaryCompleteMessage, setJobDiaryCompleteMessage] = useState("");
   const [hasTaskLevelCompletionErrors, setHasTaskLevelCompletionErrors] =
     useState(false);
-  const [taskFilter, setTaskFilter] = useState("all");
+  const [taskFilter, setTaskFilter] = useState(TASK_CATEGORY.JOB);
   const [taskErrorsByWorkreportId, setTaskErrorsByWorkreportId] = useState(
     new Map(),
   );
