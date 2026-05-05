@@ -8,10 +8,9 @@ import {
 import DatePickerField from "../EffismLite/components/DatePickerField/DatePickerField";
 import ClockPickerField from "../EffismLite/components/ClockPickerField/ClockPickerField";
 import {
-  addTimeTrackerJob,
-  editTimeTrackerJob,
-  getTimeTrackerJobSummary,
-  listTimeTrackerJobs,
+  completeTimeTrackerJobDiary,
+  getTimeTrackerDayData,
+  saveTimeTrackerJob,
 } from "../../services/timeTrackerService";
 import "./TimeTracker.css";
 
@@ -25,6 +24,8 @@ export default function TimeTracker() {
   const [isLoading, setIsLoading] = useState(true);
   const [completeStatus, setCompleteStatus] = useState("idle");
   const [completeMessage, setCompleteMessage] = useState("");
+  const [showCompleteConfirmation, setShowCompleteConfirmation] =
+    useState(false);
   const wait = (duration) =>
     new Promise((resolve) => {
       setTimeout(resolve, duration);
@@ -38,10 +39,7 @@ export default function TimeTracker() {
       setIsLoading(true);
 
       try {
-        const [result, metrics] = await Promise.all([
-          listTimeTrackerJobs(date),
-          getTimeTrackerJobSummary(date),
-        ]);
+        const result = await getTimeTrackerDayData(date);
 
         if (!isMounted) {
           return;
@@ -49,7 +47,7 @@ export default function TimeTracker() {
 
         if (result.success) {
           setTasks(result.jobs);
-          setSummaryMetrics(metrics);
+          setSummaryMetrics(result.summaryMetrics);
           setCompleteStatus("idle");
           setCompleteMessage("");
         } else {
@@ -73,14 +71,11 @@ export default function TimeTracker() {
   }, [date]);
 
   const refreshTasks = async () => {
-    const [result, metrics] = await Promise.all([
-      listTimeTrackerJobs(date),
-      getTimeTrackerJobSummary(date),
-    ]);
+    const result = await getTimeTrackerDayData(date);
 
     if (result.success) {
       setTasks(result.jobs);
-      setSummaryMetrics(metrics);
+      setSummaryMetrics(result.summaryMetrics);
       return;
     }
 
@@ -116,11 +111,29 @@ export default function TimeTracker() {
 
   const handleComplete = () => {
     if (completeStatus === "loading") return;
+    setShowCompleteConfirmation(true);
+  };
+
+  const handleConfirmComplete = async () => {
+    setShowCompleteConfirmation(false);
     setCompleteStatus("loading");
-    setTimeout(() => {
+    setCompleteMessage("");
+
+    const result = await completeTimeTrackerJobDiary(date);
+
+    if (result.success) {
       setCompleteStatus("success");
-      setCompleteMessage("Job diary completed successfully.");
-    }, 500);
+      setCompleteMessage(result.message || "Job diary completed successfully.");
+      await refreshTasks();
+      return;
+    }
+
+    setCompleteStatus("error");
+    setCompleteMessage(result.message || "Failed to complete job diary.");
+  };
+
+  const handleCancelComplete = () => {
+    setShowCompleteConfirmation(false);
   };
 
   const handleAddTask = () => {
@@ -227,9 +240,7 @@ export default function TimeTracker() {
       saveError: "",
     });
 
-    const result = normalizedTask.workreportId
-      ? await editTimeTrackerJob(normalizedTask, date)
-      : await addTimeTrackerJob(normalizedTask, date);
+    const result = await saveTimeTrackerJob(normalizedTask, date);
 
     if (!result.success) {
       setTaskSaveState(taskId, {
@@ -306,6 +317,34 @@ export default function TimeTracker() {
       {!isLoading && completeStatus === "error" && (
         <div className="timeTracker-notice is-error">{completeMessage}</div>
       )}
+
+      {!isLoading && completeStatus === "success" && (
+        <div className="timeTracker-notice is-success">{completeMessage}</div>
+      )}
+
+      {showCompleteConfirmation ? (
+        <div className="timeTracker-completeConfirmCard" role="alertdialog">
+          <p className="timeTracker-completeConfirmText">
+            Are you sure you want to complete this job diary?
+          </p>
+          <div className="timeTracker-completeConfirmActions">
+            <button
+              type="button"
+              className="timeTracker-confirmButton timeTracker-confirmButtonGhost"
+              onClick={handleCancelComplete}
+            >
+              No
+            </button>
+            <button
+              type="button"
+              className="timeTracker-confirmButton timeTracker-confirmButtonPrimary"
+              onClick={handleConfirmComplete}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {!isLoading ? (
         <>

@@ -504,6 +504,69 @@
   border: 1px solid #fecaca;
 }
 
+.timeTracker-completeConfirmCard {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(1, 67, 66, 0.16);
+  background: linear-gradient(180deg, #ffffff 0%, #f5faf8 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 6px 14px rgba(15, 23, 42, 0.04);
+}
+
+.timeTracker-completeConfirmText {
+  margin: 0;
+  color: #123430;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.timeTracker-completeConfirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.timeTracker-confirmButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  min-width: 52px;
+  padding: 0 13px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.timeTracker-confirmButtonGhost {
+  border: 1px solid #d6dfeb;
+  background: #ffffff;
+  color: #014342;
+}
+
+.timeTracker-confirmButtonGhost:hover {
+  background: #f8fafc;
+}
+
+.timeTracker-confirmButtonPrimary {
+  border: 1px solid rgba(1, 67, 66, 0.12);
+  background: #014342;
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(1, 67, 66, 0.14);
+}
+
+.timeTracker-confirmButtonPrimary:hover {
+  background: #013231;
+  transform: translateY(-1px);
+}
+
 @media (max-width: 640px) {
   .timeTracker-taskMetricsContainer {
     padding: 10px;

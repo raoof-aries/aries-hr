@@ -150,7 +150,7 @@ function buildTaskFormData(task, date, { includeWorkreportId = false } = {}) {
   return formData;
 }
 
-export async function listTimeTrackerJobs(dateValue) {
+async function listTimeTrackerJobs(dateValue) {
   const normalizedDate = `${dateValue || ""}`.trim();
 
   if (!normalizedDate) {
@@ -173,7 +173,7 @@ export async function listTimeTrackerJobs(dateValue) {
   };
 }
 
-export async function getTimeTrackerJobSummary(dateValue) {
+async function getTimeTrackerJobSummary(dateValue) {
   const normalizedDate = `${dateValue || ""}`.trim();
 
   if (!normalizedDate) {
@@ -196,7 +196,7 @@ export async function getTimeTrackerJobSummary(dateValue) {
   };
 }
 
-export async function addTimeTrackerJob(task, date) {
+async function addTimeTrackerJob(task, date) {
   const formData = buildTaskFormData(task, date);
 
   if (!formData) {
@@ -209,7 +209,7 @@ export async function addTimeTrackerJob(task, date) {
   return postTimeTrackerAction("addJobFreelancer", formData);
 }
 
-export async function editTimeTrackerJob(task, date) {
+async function editTimeTrackerJob(task, date) {
   const formData = buildTaskFormData(task, date, { includeWorkreportId: true });
 
   if (!formData) {
@@ -220,4 +220,41 @@ export async function editTimeTrackerJob(task, date) {
   }
 
   return postTimeTrackerAction("editFreelancerJob", formData);
+}
+
+export async function getTimeTrackerDayData(dateValue) {
+  const [jobResult, summaryMetrics] = await Promise.all([
+    listTimeTrackerJobs(dateValue),
+    getTimeTrackerJobSummary(dateValue),
+  ]);
+
+  return {
+    success: jobResult.success,
+    message: jobResult.message || "",
+    jobs: jobResult.success ? jobResult.jobs : [],
+    summaryMetrics: jobResult.success ? summaryMetrics : null,
+    payload: jobResult.payload,
+  };
+}
+
+export async function saveTimeTrackerJob(task, dateValue) {
+  return task?.workreportId
+    ? editTimeTrackerJob(task, dateValue)
+    : addTimeTrackerJob(task, dateValue);
+}
+
+export async function completeTimeTrackerJobDiary(dateValue) {
+  const normalizedDate = `${dateValue || ""}`.trim();
+
+  if (!normalizedDate) {
+    return {
+      success: false,
+      message: "Date is required.",
+    };
+  }
+
+  const formData = new FormData();
+  formData.set("date", normalizedDate);
+
+  return postTimeTrackerAction("completeFeelancerJobdiary", formData);
 }
