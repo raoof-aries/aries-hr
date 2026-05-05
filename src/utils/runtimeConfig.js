@@ -1,7 +1,8 @@
 // import { getDataUrl } from "./dataUrl";
 
 const DEFAULT_CONFIG = {
-  apiBaseUrl: "https://www.efftime.com/webservices/effism_lite/",
+  apiBaseUrl: "https://www.efftime.com/webservices/freelancer/",
+  freelancerApiBaseUrl: "https://www.efftime.com/webservices/freelancer/",
 };
 
 let configPromise = null;

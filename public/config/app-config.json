@@ -1,3 +1,4 @@
 {
-  "apiBaseUrl": "https://www.efftime.com/webservices/effism_lite/"
+  "apiBaseUrl": "https://www.efftime.com/webservices/effism_lite/",
+  "freelancerApiBaseUrl": "https://www.efftime.com/webservices/freelancer/"
 }

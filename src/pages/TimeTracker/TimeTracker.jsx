@@ -7,6 +7,11 @@ import {
 } from "../EffismLite/utils/effismLiteUtils";
 import DatePickerField from "../EffismLite/components/DatePickerField/DatePickerField";
 import ClockPickerField from "../EffismLite/components/ClockPickerField/ClockPickerField";
+import {
+  addTimeTrackerJob,
+  editTimeTrackerJob,
+  listTimeTrackerJobs,
+} from "../../services/timeTrackerService";
 import "./TimeTracker.css";
 
 export default function TimeTracker() {
@@ -21,21 +26,74 @@ export default function TimeTracker() {
 
   useEffect(() => {
     if (!date) return;
-    const loadTasks = () => {
+    let isMounted = true;
+
+    const loadTasks = async () => {
       setIsLoading(true);
-      try {
-        const allData = JSON.parse(localStorage.getItem("timeTracker_data_v1")) || {};
-        const dayTasks = allData[date] || [];
-        setTasks(dayTasks.map(t => ({ ...t, isEditing: false })));
-      } catch (e) {
-        console.error("Failed to load tasks", e);
-        setTasks([]);
-      } finally {
-        setIsLoading(false);
+
+      const result = await listTimeTrackerJobs(date);
+
+      if (!isMounted) {
+        return;
       }
+
+      if (result.success) {
+        setTasks(result.jobs);
+        setCompleteStatus("idle");
+        setCompleteMessage("");
+      } else {
+        setTasks([]);
+        setCompleteStatus("error");
+        setCompleteMessage(result.message || "Could not load tasks.");
+      }
+
+      setIsLoading(false);
     };
+
     loadTasks();
+
+    return () => {
+      isMounted = false;
+    };
   }, [date]);
+
+  const refreshTasks = async () => {
+    const result = await listTimeTrackerJobs(date);
+
+    if (result.success) {
+      setTasks(result.jobs);
+      return;
+    }
+
+    setCompleteStatus("error");
+    setCompleteMessage(result.message || "Could not refresh tasks.");
+  };
+
+  const setTaskSaveState = (taskId, state) => {
+    setTasks((current) =>
+      current.map((task) => (task.id === taskId ? { ...task, ...state } : task)),
+    );
+  };
+
+  const getTaskValidationMessage = (task) => {
+    if (!date) {
+      return "Date is required.";
+    }
+
+    if (!`${task.taskName || ""}`.trim()) {
+      return "Task name is required.";
+    }
+
+    if (!`${task.jobNumber || ""}`.trim()) {
+      return "Job number is required.";
+    }
+
+    if (!normalizeClockInput(task.estimatedTime)) {
+      return "Time is required.";
+    }
+
+    return "";
+  };
 
   const handleComplete = () => {
     if (completeStatus === "loading") return;
@@ -58,13 +116,17 @@ export default function TimeTracker() {
       outcome: "",
       isEditing: true,
       isSaved: false,
+      isSaving: false,
+      saveError: "",
     };
     setTasks([newTask, ...tasks]);
   };
 
   const updateTask = (taskId, field, value) => {
     setTasks((current) =>
-      current.map((t) => (t.id === taskId ? { ...t, [field]: value } : t))
+      current.map((t) =>
+        t.id === taskId ? { ...t, [field]: value, saveError: "" } : t,
+      )
     );
   };
 
@@ -75,35 +137,52 @@ export default function TimeTracker() {
         return current.filter(t => t.id !== taskId);
       }
       return current.map((t) =>
-        t.id === taskId ? { ...t, isEditing: !t.isEditing } : t
+        t.id === taskId ? { ...t, isEditing: !t.isEditing, saveError: "" } : t
       );
     });
   };
 
-  const saveTask = (taskId) => {
+  const saveTask = async (taskId) => {
     const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
+    if (!task || task.isSaving) return;
 
-    if (!task.taskName.trim()) {
-      alert("Task name is required.");
+    const validationMessage = getTaskValidationMessage(task);
+    if (validationMessage) {
+      setTaskSaveState(taskId, { saveError: validationMessage });
       return;
     }
 
     const normalizedTask = {
       ...task,
       estimatedTime: normalizeClockInput(task.estimatedTime) || "00:00",
-      actualTime: normalizeClockInput(task.actualTime) || "00:00",
-      isEditing: false,
-      isSaved: true,
+      actualTime: normalizeClockInput(task.estimatedTime) || "00:00",
     };
 
-    const updatedTasks = tasks.map((t) => (t.id === taskId ? normalizedTask : t));
-    setTasks(updatedTasks);
+    setTaskSaveState(taskId, { isSaving: true, saveError: "" });
 
-    const allData = JSON.parse(localStorage.getItem("timeTracker_data_v1")) || {};
-    const tasksToSave = updatedTasks.filter((t) => t.isSaved).map((t) => ({ ...t, isEditing: false }));
-    allData[date] = tasksToSave;
-    localStorage.setItem("timeTracker_data_v1", JSON.stringify(allData));
+    const result = normalizedTask.workreportId
+      ? await editTimeTrackerJob(normalizedTask, date)
+      : await addTimeTrackerJob(normalizedTask, date);
+
+    if (!result.success) {
+      setTaskSaveState(taskId, {
+        isSaving: false,
+        saveError: result.message || "Could not save this task.",
+      });
+      return;
+    }
+
+    setTaskSaveState(taskId, {
+      ...normalizedTask,
+      isEditing: false,
+      isSaved: true,
+      isSaving: false,
+      saveError: "",
+    });
+
+    setCompleteStatus("success");
+    setCompleteMessage(result.message || "Job saved successfully.");
+    await refreshTasks();
   };
 
   return (
@@ -196,12 +275,15 @@ export default function TimeTracker() {
                         saveTask(task.id);
                       }}
                       title="Save task"
+                      disabled={task.isSaving}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                        <path d="M17 21v-8H7v8" />
-                        <path d="M7 3v5h8" />
-                      </svg>
+                      {task.isSaving ? "..." : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                          <path d="M17 21v-8H7v8" />
+                          <path d="M7 3v5h8" />
+                        </svg>
+                      )}
                     </button>
                   </div>
                 ) : (
@@ -273,7 +355,7 @@ export default function TimeTracker() {
                     </label>
 
                     <label className="timeTracker-fieldWide">
-                      <span className="timeTracker-fieldLabel">Job Number</span>
+                      <span className="timeTracker-fieldLabel">Job Number *</span>
                       <input
                         type="text"
                         className="timeTracker-input"
@@ -286,7 +368,7 @@ export default function TimeTracker() {
                     <ClockPickerField
                       className="timeTracker-fieldWide"
                       id={`time-tracker-clock-${task.id}`}
-                      label="Time"
+                      label="Time *"
                       value={task.estimatedTime}
                       onChange={(e) => updateTask(task.id, "estimatedTime", e.target.value)}
                       onBlur={() => {}}
@@ -311,9 +393,13 @@ export default function TimeTracker() {
                       type="button"
                       className="timeTracker-buttonPrimary"
                       onClick={() => saveTask(task.id)}
+                      disabled={task.isSaving}
                     >
-                      Save
+                      {task.isSaving ? "Saving..." : "Save"}
                     </button>
+                    {task.saveError && (
+                      <div className="timeTracker-taskError">{task.saveError}</div>
+                    )}
                   </div>
                 </div>
               )}
