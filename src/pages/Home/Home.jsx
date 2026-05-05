@@ -169,7 +169,7 @@ export default function Home() {
       iconColor: "#0D6C5F",
       shadowColor: "rgba(1, 67, 66, 0.14)",
     }] : []),
-    {
+    ...(user?.usertype === 2 ? [{
       id: "time-tracker",
       title: "Time Tracker",
       description: "Quick task entry",
@@ -192,7 +192,7 @@ export default function Home() {
       bgColor: "#E9F2FA",
       iconColor: "#1A5A99",
       shadowColor: "rgba(26, 90, 153, 0.12)",
-    },
+    }] : []),
     {
       id: "salary",
       title: "Salary",
