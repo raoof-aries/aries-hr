@@ -122,6 +122,13 @@
   gap: 16px;
 }
 
+.timeTracker-loader {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  color: #014342;
+}
+
 .timeTracker-taskCard {
   border-radius: 18px;
   border: 1px solid #e7edf4;

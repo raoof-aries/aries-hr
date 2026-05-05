@@ -20,7 +20,7 @@ export default function TimeTracker() {
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   });
   const [tasks, setTasks] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [completeStatus, setCompleteStatus] = useState("idle");
   const [completeMessage, setCompleteMessage] = useState("");
   const wait = (duration) =>
@@ -35,23 +35,27 @@ export default function TimeTracker() {
     const loadTasks = async () => {
       setIsLoading(true);
 
-      const result = await listTimeTrackerJobs(date);
+      try {
+        const result = await listTimeTrackerJobs(date);
 
-      if (!isMounted) {
-        return;
+        if (!isMounted) {
+          return;
+        }
+
+        if (result.success) {
+          setTasks(result.jobs);
+          setCompleteStatus("idle");
+          setCompleteMessage("");
+        } else {
+          setTasks([]);
+          setCompleteStatus("error");
+          setCompleteMessage(result.message || "Could not load tasks.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-
-      if (result.success) {
-        setTasks(result.jobs);
-        setCompleteStatus("idle");
-        setCompleteMessage("");
-      } else {
-        setTasks([]);
-        setCompleteStatus("error");
-        setCompleteMessage(result.message || "Could not load tasks.");
-      }
-
-      setIsLoading(false);
     };
 
     loadTasks();
@@ -239,6 +243,7 @@ export default function TimeTracker() {
             value={date}
             formatDisplayValue={formatDateDisplayValue}
             onChange={(e) => {
+              setIsLoading(true);
               setDate(e.target.value);
               setCompleteStatus("idle");
               setCompleteMessage("");
@@ -262,26 +267,36 @@ export default function TimeTracker() {
         </button>
       </div>
 
-      {completeStatus === "error" && (
+      {isLoading ? (
+        <div
+          className="timeTracker-loader"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="timeTracker-spinner" aria-hidden="true" />
+        </div>
+      ) : null}
+
+      {!isLoading && completeStatus === "error" && (
         <div className="timeTracker-notice is-error">{completeMessage}</div>
       )}
 
-      <div className="timeTracker-taskToolbarRow">
-        <h2 className="timeTracker-taskToolbarTitle">Tasks ({tasks.length})</h2>
-        <button
-          type="button"
-          className="timeTracker-taskToolbarButton"
-          onClick={handleAddTask}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-          Add Task
-        </button>
-      </div>
+      {!isLoading ? (
+        <>
+          <div className="timeTracker-taskToolbarRow">
+            <h2 className="timeTracker-taskToolbarTitle">Tasks ({tasks.length})</h2>
+            <button
+              type="button"
+              className="timeTracker-taskToolbarButton"
+              onClick={handleAddTask}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              Add Task
+            </button>
+          </div>
 
-      <div className="timeTracker-panelTasks">
-        {isLoading ? (
-          <div style={{ textAlign: "center", padding: "2rem", color: "#64748b" }}>Loading tasks...</div>
-        ) : tasks.length === 0 ? (
+          <div className="timeTracker-panelTasks">
+            {tasks.length === 0 ? (
           <div style={{ textAlign: "center", padding: "2rem", color: "#64748b", background: "#f8fafc", borderRadius: "12px" }}>
             No tasks found for this date.
           </div>
@@ -498,8 +513,10 @@ export default function TimeTracker() {
               )}
             </div>
           ))
-        )}
-      </div>
+            )}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
