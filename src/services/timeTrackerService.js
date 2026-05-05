@@ -70,11 +70,9 @@ function mapApiTaskToTimeTrackerTask(task, index) {
 }
 
 async function postTimeTrackerAction(action, formData) {
-  const { freelancerApiBaseUrl, apiBaseUrl } = await getRuntimeConfig();
-  const trackerApiBaseUrl =
-    freelancerApiBaseUrl || "https://www.efftime.com/webservices/freelancer/";
+  const { apiBaseUrl } = await getRuntimeConfig();
 
-  if (!trackerApiBaseUrl && !apiBaseUrl) {
+  if (!apiBaseUrl) {
     return {
       success: false,
       message: "API base URL missing. Update runtime config.",
@@ -85,7 +83,7 @@ async function postTimeTrackerAction(action, formData) {
   let payload = null;
 
   try {
-    response = await fetch(`${trackerApiBaseUrl || apiBaseUrl}?action=${action}`, {
+    response = await fetch(`${apiBaseUrl}?action=${action}`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: formData,

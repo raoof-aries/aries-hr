@@ -2,7 +2,6 @@
 
 const DEFAULT_CONFIG = {
   apiBaseUrl: "https://www.efftime.com/webservices/freelancer/",
-  freelancerApiBaseUrl: "https://www.efftime.com/webservices/freelancer/",
 };
 
 let configPromise = null;
