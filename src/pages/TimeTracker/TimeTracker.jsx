@@ -659,7 +659,7 @@ export default function TimeTracker() {
                         className="timeTracker-input"
                         value={task.jobNumber}
                         onChange={(e) => updateTask(task.id, "jobNumber", e.target.value)}
-                        placeholder="e.g. 12345"
+                        placeholder="Enter job number"
                         disabled={isDiaryComplete}
                       />
                     </label>
