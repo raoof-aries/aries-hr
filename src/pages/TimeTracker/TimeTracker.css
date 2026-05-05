@@ -141,6 +141,10 @@
   transform: translateY(-1px);
 }
 
+.timeTracker-taskCard.is-expanded:not(.is-editing) {
+  border-color: rgba(15, 109, 97, 0.2);
+}
+
 .timeTracker-taskHeader {
   width: 100%;
   display: block;
@@ -254,6 +258,28 @@
   gap: 12px;
 }
 
+.timeTracker-readOnlyGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.timeTracker-readOnlyItem {
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(1, 67, 66, 0.08);
+  background: rgba(248, 250, 252, 0.78);
+}
+
+.timeTracker-readOnlyItem strong {
+  display: block;
+  color: #123430;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .timeTracker-formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -351,6 +377,11 @@
   background: rgba(15, 109, 97, 0.12);
 }
 
+.timeTracker-taskIconButton.is-saved {
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.12);
+}
+
 .timeTracker-taskIconButton:disabled {
   opacity: 0.7;
   cursor: not-allowed;
@@ -360,6 +391,33 @@
   margin-top: 16px;
   display: grid;
   gap: 10px;
+}
+
+.timeTracker-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: timeTrackerSpin 0.8s linear infinite;
+}
+
+.timeTracker-spinnerSmall {
+  width: 14px;
+  height: 14px;
+}
+
+.timeTracker-spinnerOnButton {
+  margin-right: 8px;
+  width: 15px;
+  height: 15px;
+}
+
+@keyframes timeTrackerSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .timeTracker-taskError {
@@ -389,4 +447,11 @@
   background: #fef2f2;
   color: #b91c1c;
   border: 1px solid #fecaca;
+}
+
+@media (max-width: 560px) {
+  .timeTracker-readOnlyGrid,
+  .timeTracker-formGrid {
+    grid-template-columns: 1fr;
+  }
 }

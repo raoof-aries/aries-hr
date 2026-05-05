@@ -63,8 +63,10 @@ function mapApiTaskToTimeTrackerTask(task, index) {
     actualTime: normalizeApiClockValue(task?.act_time ?? task?.actualTime),
     outcome: `${task?.description ?? task?.desc ?? task?.outcome ?? ""}`.trim(),
     isEditing: false,
+    isExpanded: false,
     isSaved: true,
     isSaving: false,
+    saveStatus: "idle",
     saveError: "",
   };
 }

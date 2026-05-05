@@ -23,6 +23,10 @@ export default function TimeTracker() {
   const [isLoading, setIsLoading] = useState(false);
   const [completeStatus, setCompleteStatus] = useState("idle");
   const [completeMessage, setCompleteMessage] = useState("");
+  const wait = (duration) =>
+    new Promise((resolve) => {
+      setTimeout(resolve, duration);
+    });
 
   useEffect(() => {
     if (!date) return;
@@ -115,8 +119,10 @@ export default function TimeTracker() {
       actualTime: "",
       outcome: "",
       isEditing: true,
+      isExpanded: true,
       isSaved: false,
       isSaving: false,
+      saveStatus: "idle",
       saveError: "",
     };
     setTasks([newTask, ...tasks]);
@@ -125,21 +131,48 @@ export default function TimeTracker() {
   const updateTask = (taskId, field, value) => {
     setTasks((current) =>
       current.map((t) =>
-        t.id === taskId ? { ...t, [field]: value, saveError: "" } : t,
+        t.id === taskId
+          ? { ...t, [field]: value, saveStatus: "idle", saveError: "" }
+          : t,
       )
     );
   };
 
-  const toggleEditTask = (taskId) => {
+  const toggleTaskExpanded = (taskId) => {
     setTasks((current) => {
       const task = current.find(t => t.id === taskId);
-      if (task && !task.isSaved && task.isEditing) {
+      if (task && !task.isSaved && task.isExpanded) {
         return current.filter(t => t.id !== taskId);
       }
+      const shouldExpand = task ? !task.isExpanded : true;
       return current.map((t) =>
-        t.id === taskId ? { ...t, isEditing: !t.isEditing, saveError: "" } : t
+        t.id === taskId
+          ? {
+              ...t,
+              isExpanded: shouldExpand,
+              isEditing: shouldExpand ? t.isEditing : false,
+              saveStatus: "idle",
+              saveError: "",
+            }
+          : t
       );
     });
+  };
+
+  const editTask = (taskId) => {
+    setTasks((current) =>
+      current.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              isEditing: true,
+              isExpanded: true,
+              saveStatus: "idle",
+              saveError: "",
+            }
+          : t,
+      ),
+    );
   };
 
   const saveTask = async (taskId) => {
@@ -158,7 +191,11 @@ export default function TimeTracker() {
       actualTime: normalizeClockInput(task.estimatedTime) || "00:00",
     };
 
-    setTaskSaveState(taskId, { isSaving: true, saveError: "" });
+    setTaskSaveState(taskId, {
+      isSaving: true,
+      saveStatus: "saving",
+      saveError: "",
+    });
 
     const result = normalizedTask.workreportId
       ? await editTimeTrackerJob(normalizedTask, date)
@@ -167,6 +204,7 @@ export default function TimeTracker() {
     if (!result.success) {
       setTaskSaveState(taskId, {
         isSaving: false,
+        saveStatus: "idle",
         saveError: result.message || "Could not save this task.",
       });
       return;
@@ -174,14 +212,20 @@ export default function TimeTracker() {
 
     setTaskSaveState(taskId, {
       ...normalizedTask,
-      isEditing: false,
+      isEditing: true,
+      isExpanded: true,
       isSaved: true,
       isSaving: false,
+      saveStatus: "saved",
       saveError: "",
     });
 
-    setCompleteStatus("success");
-    setCompleteMessage(result.message || "Job saved successfully.");
+    await wait(900);
+    setTaskSaveState(taskId, {
+      isEditing: false,
+      isExpanded: false,
+      saveStatus: "idle",
+    });
     await refreshTasks();
   };
 
@@ -208,7 +252,9 @@ export default function TimeTracker() {
           disabled={completeStatus === "loading"}
           title="Complete Entry"
         >
-          {completeStatus === "loading" ? "..." : (
+          {completeStatus === "loading" ? (
+            <span className="timeTracker-spinner" aria-hidden="true" />
+          ) : (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
@@ -216,9 +262,6 @@ export default function TimeTracker() {
         </button>
       </div>
 
-      {completeStatus === "success" && (
-        <div className="timeTracker-notice is-success">{completeMessage}</div>
-      )}
       {completeStatus === "error" && (
         <div className="timeTracker-notice is-error">{completeMessage}</div>
       )}
@@ -246,9 +289,9 @@ export default function TimeTracker() {
           tasks.map((task, index) => (
             <div
               key={task.id}
-              className={`timeTracker-taskCard ${task.isEditing ? "is-editing" : ""}`}
+              className={`timeTracker-taskCard ${task.isExpanded ? "is-expanded" : ""} ${task.isEditing ? "is-editing" : ""}`}
             >
-              <div className="timeTracker-taskHeader" onClick={() => !task.isEditing && toggleEditTask(task.id)}>
+              <div className="timeTracker-taskHeader" onClick={() => toggleTaskExpanded(task.id)}>
                 {task.isEditing ? (
                   <div className="timeTracker-taskHeaderEdit">
                     <button
@@ -256,7 +299,7 @@ export default function TimeTracker() {
                       className="timeTracker-taskIconButton"
                       onClick={(event) => {
                         event.stopPropagation();
-                        toggleEditTask(task.id);
+                        toggleTaskExpanded(task.id);
                       }}
                       title="Cancel"
                     >
@@ -269,7 +312,7 @@ export default function TimeTracker() {
                     </div>
                     <button
                       type="button"
-                      className="timeTracker-taskIconButton is-active"
+                      className={`timeTracker-taskIconButton is-active${task.saveStatus === "saved" ? " is-saved" : ""}`}
                       onClick={(event) => {
                         event.stopPropagation();
                         saveTask(task.id);
@@ -277,7 +320,13 @@ export default function TimeTracker() {
                       title="Save task"
                       disabled={task.isSaving}
                     >
-                      {task.isSaving ? "..." : (
+                      {task.saveStatus === "saving" ? (
+                        <span className="timeTracker-spinner timeTracker-spinnerSmall" aria-hidden="true" />
+                      ) : task.saveStatus === "saved" ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      ) : (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                           <path d="M17 21v-8H7v8" />
@@ -298,7 +347,7 @@ export default function TimeTracker() {
                           className="timeTracker-taskIconButton"
                           onClick={(event) => {
                             event.stopPropagation();
-                            toggleEditTask(task.id);
+                            editTask(task.id);
                           }}
                           title="Edit task"
                         >
@@ -310,37 +359,74 @@ export default function TimeTracker() {
                         <button
                           type="button"
                           className="timeTracker-taskIconButton"
-                          title="Expand task"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleTaskExpanded(task.id);
+                          }}
+                          title={task.isExpanded ? "Collapse task" : "Expand task"}
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <polyline points="9 18 15 12 9 6"></polyline>
+                            {task.isExpanded ? (
+                              <polyline points="18 15 12 9 6 15"></polyline>
+                            ) : (
+                              <polyline points="9 18 15 12 9 6"></polyline>
+                            )}
                           </svg>
                         </button>
                       </div>
                     </div>
                     
-                    <h3 className="timeTracker-taskTitle">
-                      {task.taskName || "Untitled Task"}
-                    </h3>
-                    
-                    <div className="timeTracker-taskSummaryMetrics">
-                      {task.jobNumber && (
-                        <div className="timeTracker-taskJobNumber">
-                          {task.jobNumber}
+                    {!task.isExpanded && (
+                      <>
+                        <h3 className="timeTracker-taskTitle">
+                          {task.taskName || "Untitled Task"}
+                        </h3>
+
+                        <div className="timeTracker-taskSummaryMetrics">
+                          {task.jobNumber && (
+                            <div className="timeTracker-taskJobNumber">
+                              {task.jobNumber}
+                            </div>
+                          )}
+
+                          {task.estimatedTime && (
+                            <span className="timeTracker-summaryTimeItem">
+                              <span className="timeTracker-summaryTimeValue">
+                                {task.estimatedTime}
+                              </span>
+                            </span>
+                          )}
                         </div>
-                      )}
-                      
-                      {task.estimatedTime && (
-                        <span className="timeTracker-summaryTimeItem">
-                          <span className="timeTracker-summaryTimeValue">{task.estimatedTime}</span>
-                        </span>
-                      )}
-                    </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
 
-              {task.isEditing && (
+              {task.isExpanded && !task.isEditing && (
+                <div className="timeTracker-taskBody">
+                  <div className="timeTracker-readOnlyGrid">
+                    <article className="timeTracker-readOnlyItem">
+                      <span className="timeTracker-fieldLabel">Task Name</span>
+                      <strong>{task.taskName || "Untitled Task"}</strong>
+                    </article>
+                    <article className="timeTracker-readOnlyItem">
+                      <span className="timeTracker-fieldLabel">Job Number</span>
+                      <strong>{task.jobNumber || "-"}</strong>
+                    </article>
+                    <article className="timeTracker-readOnlyItem">
+                      <span className="timeTracker-fieldLabel">Time</span>
+                      <strong>{task.estimatedTime || "00:00"}</strong>
+                    </article>
+                    <article className="timeTracker-readOnlyItem timeTracker-fieldWide">
+                      <span className="timeTracker-fieldLabel">Outcome</span>
+                      <strong>{task.outcome || "-"}</strong>
+                    </article>
+                  </div>
+                </div>
+              )}
+
+              {task.isExpanded && task.isEditing && (
                 <div className="timeTracker-taskBody">
                   <div className="timeTracker-formGrid">
                     <label className="timeTracker-fieldWide">
@@ -395,7 +481,14 @@ export default function TimeTracker() {
                       onClick={() => saveTask(task.id)}
                       disabled={task.isSaving}
                     >
-                      {task.isSaving ? "Saving..." : "Save"}
+                      {task.isSaving ? (
+                        <>
+                          <span className="timeTracker-spinner timeTracker-spinnerOnButton" aria-hidden="true" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save"
+                      )}
                     </button>
                     {task.saveError && (
                       <div className="timeTracker-taskError">{task.saveError}</div>
