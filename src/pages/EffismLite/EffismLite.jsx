@@ -1298,6 +1298,13 @@ export default function EffismLite() {
     taskSummaryMetrics,
   ]);
 
+  const isTaskContentLoading =
+    isTaskStep &&
+    (isTimeLogLoading ||
+      isTaskListLoading ||
+      !jobDetails.date ||
+      loadedTaskDateRef.current !== jobDetails.date);
+
   return (
     <div className="effismLite-page">
       {/* Top navigation and completion action */}
@@ -1397,7 +1404,17 @@ export default function EffismLite() {
         </>
       ) : null}
 
-      {isTaskStep ? (
+      {isTaskStep && isTaskContentLoading ? (
+        <div
+          className="effismLite-stepLoader effismLite-stepLoaderStandalone"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="effismLite-spinner" aria-hidden="true" />
+        </div>
+      ) : null}
+
+      {isTaskStep && !isTaskContentLoading ? (
         <>
           {/* Task section header and add-task action */}
           {!isSummaryMode ? (
@@ -1429,7 +1446,7 @@ export default function EffismLite() {
         </>
       ) : null}
 
-      {isTaskStep ? (
+      {isTaskStep && !isTaskContentLoading ? (
         <>
           {/* Task metrics and progress bar */}
           <section
@@ -1495,20 +1512,11 @@ export default function EffismLite() {
         </>
       ) : null}
 
-      {isTaskStep ? (
+      {isTaskStep && !isTaskContentLoading ? (
         <>
           {/* Task list (collapsed/expanded cards with edit/summary modes) */}
           <section className="effismLite-panelTasks">
-            {isTaskListLoading ? (
-              <div
-                className="effismLite-stepLoader"
-                role="status"
-                aria-live="polite"
-              >
-                <span className="effismLite-spinner" aria-hidden="true" />
-              </div>
-            ) : (
-              <div className="effismLite-taskSectionStack">
+            <div className="effismLite-taskSectionStack">
                 {filteredTaskSections.length > 0 ? (
                   filteredTaskSections.map((section) => (
                     <section
@@ -2361,11 +2369,10 @@ export default function EffismLite() {
                     No tasks in this view.
                   </div>
                 )}
-              </div>
-            )}
+            </div>
           </section>
         </>
-      ) : isTimeLogLoading ? (
+      ) : !isTaskStep && isTimeLogLoading ? (
         <>
           {/* Loading state for time-log page */}
           <div
@@ -2376,7 +2383,7 @@ export default function EffismLite() {
             <span className="effismLite-spinner" aria-hidden="true" />
           </div>
         </>
-      ) : isSummaryMode ? (
+      ) : !isTaskStep && isSummaryMode ? (
         <>
           {/* Read-only time-log summary once diary is completed */}
           <div className="effismLite-timeLogSummaryPanel">
@@ -2512,7 +2519,7 @@ export default function EffismLite() {
             </section>
           </div>
         </>
-      ) : (
+      ) : !isTaskStep ? (
         <>
           {/* Editable time-log form */}
           <section className="effismLite-timeLogFormSection">
@@ -2765,7 +2772,7 @@ export default function EffismLite() {
             </div>
           </section>
         </>
-      )}
+      ) : null}
     </div>
   );
 }
