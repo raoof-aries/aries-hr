@@ -57,11 +57,26 @@
   cursor: not-allowed;
 }
 
-.timeTracker-completeButton.is-complete {
-  background: #047857;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 6px 14px rgba(4, 120, 87, 0.16);
+.timeTracker-completeAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 40px;
+}
+
+.timeTracker-inlineCompletePill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  background: rgba(34, 197, 94, 0.12);
+  color: #1f8f4c;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .timeTracker-taskToolbarRow {
@@ -347,6 +362,54 @@
   overflow-wrap: anywhere;
 }
 
+.timeTracker-taskSummaryDetails {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid rgba(1, 67, 66, 0.08);
+  padding-top: 10px;
+}
+
+.timeTracker-taskSummaryGrid,
+.timeTracker-taskSummaryMetricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.timeTracker-taskSummaryCard {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(1, 67, 66, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfa 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 6px 14px rgba(15, 23, 42, 0.04);
+}
+
+.timeTracker-taskSummaryCard.is-full-width {
+  grid-column: 1 / -1;
+}
+
+.timeTracker-taskSummaryLabel {
+  color: #0f6d61;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.timeTracker-taskSummaryValue {
+  color: #123430;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 .timeTracker-formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -601,7 +664,9 @@
 
 @media (max-width: 560px) {
   .timeTracker-readOnlyGrid,
-  .timeTracker-formGrid {
+  .timeTracker-formGrid,
+  .timeTracker-taskSummaryGrid,
+  .timeTracker-taskSummaryMetricsGrid {
     grid-template-columns: 1fr;
   }
 }

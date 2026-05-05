@@ -35,6 +35,7 @@ export default function TimeTracker() {
       setTimeout(resolve, duration);
     });
   const isDiaryComplete = completeStatus === "success";
+  const isSummaryMode = isDiaryComplete;
 
   useEffect(() => {
     let isMounted = true;
@@ -340,21 +341,28 @@ export default function TimeTracker() {
             }}
           />
         </div>
-        <button
-          type="button"
-          className={`timeTracker-completeButton${isDiaryComplete ? " is-complete" : ""}`}
-          onClick={handleComplete}
-          disabled={completeStatus === "loading" || isDiaryComplete}
-          title={isDiaryComplete ? "Completed" : "Complete Entry"}
-        >
-          {completeStatus === "loading" ? (
-            <span className="timeTracker-spinner" aria-hidden="true" />
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          )}
-        </button>
+        {!isSummaryMode ? (
+          <button
+            type="button"
+            className="timeTracker-completeButton"
+            onClick={handleComplete}
+            disabled={completeStatus === "loading"}
+            title="Complete Entry"
+            aria-label="Complete time tracker entry"
+          >
+            {completeStatus === "loading" ? (
+              <span className="timeTracker-spinner" aria-hidden="true" />
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            )}
+          </button>
+        ) : (
+          <div className="timeTracker-completeAction">
+            <span className="timeTracker-inlineCompletePill">Completed</span>
+          </div>
+        )}
       </div>
 
       {isLoading ? (
@@ -371,7 +379,7 @@ export default function TimeTracker() {
         <div className="timeTracker-notice is-error">{completeMessage}</div>
       )}
 
-      {!isLoading && completeStatus === "success" && (
+      {!isLoading && completeStatus === "success" && !isSummaryMode && (
         <div className="timeTracker-notice is-success">{completeMessage}</div>
       )}
 
@@ -401,18 +409,21 @@ export default function TimeTracker() {
 
       {!isLoading ? (
         <>
-          <div className="timeTracker-taskToolbarRow">
-            <h2 className="timeTracker-taskToolbarTitle">Tasks ({tasks.length})</h2>
-            <button
-              type="button"
-            className="timeTracker-taskToolbarButton"
-            onClick={handleAddTask}
-            disabled={isDiaryComplete}
-          >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-              Add Task
-            </button>
-          </div>
+          {!isSummaryMode ? (
+            <div className="timeTracker-taskToolbarRow">
+              <h2 className="timeTracker-taskToolbarTitle">
+                Tasks ({tasks.length})
+              </h2>
+              <button
+                type="button"
+                className="timeTracker-taskToolbarButton"
+                onClick={handleAddTask}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                Add Task
+              </button>
+            </div>
+          ) : null}
 
           <section
             className="timeTracker-taskMetricsContainer"
@@ -447,7 +458,7 @@ export default function TimeTracker() {
               className={`timeTracker-taskCard ${task.isExpanded ? "is-expanded" : ""} ${task.isEditing ? "is-editing" : ""}`}
             >
               <div className="timeTracker-taskHeader" onClick={() => toggleTaskExpanded(task.id)}>
-                {task.isEditing ? (
+                {task.isEditing && !isSummaryMode ? (
                   <div className="timeTracker-taskHeaderEdit">
                     <button
                       type="button"
@@ -497,21 +508,22 @@ export default function TimeTracker() {
                         <span className="timeTracker-taskNumber">{index + 1}</span>
                       </div>
                       <div className="timeTracker-taskActions">
-                        <button
-                          type="button"
-                          className="timeTracker-taskIconButton"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            editTask(task.id);
-                          }}
-                          title="Edit task"
-                          disabled={isDiaryComplete}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
-                            <path d="m12.5 5.5 3 3" />
-                          </svg>
-                        </button>
+                        {!isSummaryMode ? (
+                          <button
+                            type="button"
+                            className="timeTracker-taskIconButton"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              editTask(task.id);
+                            }}
+                            title="Edit task"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
+                              <path d="m12.5 5.5 3 3" />
+                            </svg>
+                          </button>
+                        ) : null}
                         <button
                           type="button"
                           className="timeTracker-taskIconButton"
@@ -559,7 +571,50 @@ export default function TimeTracker() {
                 )}
               </div>
 
-              {task.isExpanded && !task.isEditing && (
+              {task.isExpanded && isSummaryMode && (
+                <div className="timeTracker-taskBody">
+                  <div className="timeTracker-taskSummaryDetails">
+                    <div className="timeTracker-taskSummaryGrid">
+                      <div className="timeTracker-taskSummaryCard is-full-width">
+                        <span className="timeTracker-taskSummaryLabel">Task Name</span>
+                        <span className="timeTracker-taskSummaryValue">
+                          {task.taskName || "-"}
+                        </span>
+                      </div>
+                      <div className="timeTracker-taskSummaryCard is-full-width">
+                        <span className="timeTracker-taskSummaryLabel">Job Number</span>
+                        <span className="timeTracker-taskSummaryValue">
+                          {task.jobNumber || "-"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="timeTracker-taskSummaryMetricsGrid">
+                      <div className="timeTracker-taskSummaryCard">
+                        <span className="timeTracker-taskSummaryLabel">Time</span>
+                        <span className="timeTracker-taskSummaryValue">
+                          {task.estimatedTime || "00:00"}
+                        </span>
+                      </div>
+                      <div className="timeTracker-taskSummaryCard">
+                        <span className="timeTracker-taskSummaryLabel">Act Time</span>
+                        <span className="timeTracker-taskSummaryValue">
+                          {task.actualTime || task.estimatedTime || "00:00"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="timeTracker-taskSummaryCard">
+                      <span className="timeTracker-taskSummaryLabel">Outcome</span>
+                      <span className="timeTracker-taskSummaryValue">
+                        {task.outcome || "-"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {task.isExpanded && !task.isEditing && !isSummaryMode && (
                 <div className="timeTracker-taskBody">
                   <div className="timeTracker-readOnlyGrid">
                     <article className="timeTracker-readOnlyItem">
@@ -582,7 +637,7 @@ export default function TimeTracker() {
                 </div>
               )}
 
-              {task.isExpanded && task.isEditing && (
+              {task.isExpanded && task.isEditing && !isSummaryMode && (
                 <div className="timeTracker-taskBody">
                   <div className="timeTracker-formGrid">
                     <label className="timeTracker-fieldWide">
