@@ -57,6 +57,13 @@
   cursor: not-allowed;
 }
 
+.timeTracker-completeButton.is-complete {
+  background: #047857;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 6px 14px rgba(4, 120, 87, 0.16);
+}
+
 .timeTracker-taskToolbarRow {
   display: flex;
   align-items: center;
@@ -111,6 +118,11 @@
 .timeTracker-taskToolbarButton:hover {
   background: rgba(255, 255, 255, 0.8);
   border-color: rgba(1, 67, 66, 0.2);
+}
+
+.timeTracker-taskToolbarButton:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
 }
 
 .timeTracker-hideDateLabel .effismLite-fieldLabelRow {

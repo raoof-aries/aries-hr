@@ -10,15 +10,19 @@ import ClockPickerField from "../EffismLite/components/ClockPickerField/ClockPic
 import {
   completeTimeTrackerJobDiary,
   getTimeTrackerDayData,
+  getTimeTrackerJobDiaryStatus,
+  getTimeTrackerLastWorkingDate,
   saveTimeTrackerJob,
 } from "../../services/timeTrackerService";
 import "./TimeTracker.css";
 
+function getTodayDateValue() {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+}
+
 export default function TimeTracker() {
-  const [date, setDate] = useState(() => {
-    const today = new Date();
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  });
+  const [date, setDate] = useState("");
   const [tasks, setTasks] = useState([]);
   const [summaryMetrics, setSummaryMetrics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,6 +34,26 @@ export default function TimeTracker() {
     new Promise((resolve) => {
       setTimeout(resolve, duration);
     });
+  const isDiaryComplete = completeStatus === "success";
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadInitialDate = async () => {
+      setIsLoading(true);
+      const lastWorkingDate = await getTimeTrackerLastWorkingDate();
+
+      if (isMounted) {
+        setDate(lastWorkingDate || getTodayDateValue());
+      }
+    };
+
+    loadInitialDate();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!date) return;
@@ -39,7 +63,10 @@ export default function TimeTracker() {
       setIsLoading(true);
 
       try {
-        const result = await getTimeTrackerDayData(date);
+        const [result, jobDiaryStatusResult] = await Promise.all([
+          getTimeTrackerDayData(date),
+          getTimeTrackerJobDiaryStatus(date),
+        ]);
 
         if (!isMounted) {
           return;
@@ -48,8 +75,18 @@ export default function TimeTracker() {
         if (result.success) {
           setTasks(result.jobs);
           setSummaryMetrics(result.summaryMetrics);
-          setCompleteStatus("idle");
-          setCompleteMessage("");
+          if (jobDiaryStatusResult.isComplete) {
+            setCompleteStatus("success");
+            setCompleteMessage("Job diary completed.");
+          } else if (jobDiaryStatusResult.success) {
+            setCompleteStatus("idle");
+            setCompleteMessage("");
+          } else {
+            setCompleteStatus("error");
+            setCompleteMessage(
+              jobDiaryStatusResult.message || "Could not load job diary status.",
+            );
+          }
         } else {
           setTasks([]);
           setSummaryMetrics(null);
@@ -110,7 +147,7 @@ export default function TimeTracker() {
   };
 
   const handleComplete = () => {
-    if (completeStatus === "loading") return;
+    if (completeStatus === "loading" || isDiaryComplete) return;
     setShowCompleteConfirmation(true);
   };
 
@@ -137,6 +174,10 @@ export default function TimeTracker() {
   };
 
   const handleAddTask = () => {
+    if (isDiaryComplete) {
+      return;
+    }
+
     const newTask = {
       id: createTaskId(),
       workreportId: "",
@@ -172,6 +213,10 @@ export default function TimeTracker() {
   ];
 
   const updateTask = (taskId, field, value) => {
+    if (isDiaryComplete) {
+      return;
+    }
+
     setTasks((current) =>
       current.map((t) =>
         t.id === taskId
@@ -203,6 +248,10 @@ export default function TimeTracker() {
   };
 
   const editTask = (taskId) => {
+    if (isDiaryComplete) {
+      return;
+    }
+
     setTasks((current) =>
       current.map((t) =>
         t.id === taskId
@@ -219,6 +268,10 @@ export default function TimeTracker() {
   };
 
   const saveTask = async (taskId) => {
+    if (isDiaryComplete) {
+      return;
+    }
+
     const task = tasks.find((t) => t.id === taskId);
     if (!task || task.isSaving) return;
 
@@ -289,10 +342,10 @@ export default function TimeTracker() {
         </div>
         <button
           type="button"
-          className="timeTracker-completeButton"
+          className={`timeTracker-completeButton${isDiaryComplete ? " is-complete" : ""}`}
           onClick={handleComplete}
-          disabled={completeStatus === "loading"}
-          title="Complete Entry"
+          disabled={completeStatus === "loading" || isDiaryComplete}
+          title={isDiaryComplete ? "Completed" : "Complete Entry"}
         >
           {completeStatus === "loading" ? (
             <span className="timeTracker-spinner" aria-hidden="true" />
@@ -352,9 +405,10 @@ export default function TimeTracker() {
             <h2 className="timeTracker-taskToolbarTitle">Tasks ({tasks.length})</h2>
             <button
               type="button"
-              className="timeTracker-taskToolbarButton"
-              onClick={handleAddTask}
-            >
+            className="timeTracker-taskToolbarButton"
+            onClick={handleAddTask}
+            disabled={isDiaryComplete}
+          >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
               Add Task
             </button>
@@ -451,6 +505,7 @@ export default function TimeTracker() {
                             editTask(task.id);
                           }}
                           title="Edit task"
+                          disabled={isDiaryComplete}
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
@@ -538,6 +593,7 @@ export default function TimeTracker() {
                         value={task.taskName}
                         onChange={(e) => updateTask(task.id, "taskName", e.target.value)}
                         placeholder="Enter task name"
+                        disabled={isDiaryComplete}
                       />
                     </label>
 
@@ -549,6 +605,7 @@ export default function TimeTracker() {
                         value={task.jobNumber}
                         onChange={(e) => updateTask(task.id, "jobNumber", e.target.value)}
                         placeholder="e.g. 12345"
+                        disabled={isDiaryComplete}
                       />
                     </label>
 
@@ -562,6 +619,7 @@ export default function TimeTracker() {
                       formatClockInputAsTyped={formatClockInputAsTyped}
                       normalizeClockInput={normalizeClockInput}
                       placeholder="00:00"
+                      disabled={isDiaryComplete}
                     />
 
                     <label className="timeTracker-fieldWide">
@@ -572,6 +630,7 @@ export default function TimeTracker() {
                         value={task.outcome}
                         onChange={(e) => updateTask(task.id, "outcome", e.target.value)}
                         placeholder="Describe the outcome..."
+                        disabled={isDiaryComplete}
                       />
                     </label>
                   </div>
@@ -580,7 +639,7 @@ export default function TimeTracker() {
                       type="button"
                       className="timeTracker-buttonPrimary"
                       onClick={() => saveTask(task.id)}
-                      disabled={task.isSaving}
+                      disabled={task.isSaving || isDiaryComplete}
                     >
                       {task.isSaving ? (
                         <>
