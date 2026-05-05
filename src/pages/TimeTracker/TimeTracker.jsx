@@ -10,6 +10,7 @@ import ClockPickerField from "../EffismLite/components/ClockPickerField/ClockPic
 import {
   addTimeTrackerJob,
   editTimeTrackerJob,
+  getTimeTrackerJobSummary,
   listTimeTrackerJobs,
 } from "../../services/timeTrackerService";
 import "./TimeTracker.css";
@@ -20,6 +21,7 @@ export default function TimeTracker() {
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   });
   const [tasks, setTasks] = useState([]);
+  const [summaryMetrics, setSummaryMetrics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [completeStatus, setCompleteStatus] = useState("idle");
   const [completeMessage, setCompleteMessage] = useState("");
@@ -36,7 +38,10 @@ export default function TimeTracker() {
       setIsLoading(true);
 
       try {
-        const result = await listTimeTrackerJobs(date);
+        const [result, metrics] = await Promise.all([
+          listTimeTrackerJobs(date),
+          getTimeTrackerJobSummary(date),
+        ]);
 
         if (!isMounted) {
           return;
@@ -44,10 +49,12 @@ export default function TimeTracker() {
 
         if (result.success) {
           setTasks(result.jobs);
+          setSummaryMetrics(metrics);
           setCompleteStatus("idle");
           setCompleteMessage("");
         } else {
           setTasks([]);
+          setSummaryMetrics(null);
           setCompleteStatus("error");
           setCompleteMessage(result.message || "Could not load tasks.");
         }
@@ -66,10 +73,14 @@ export default function TimeTracker() {
   }, [date]);
 
   const refreshTasks = async () => {
-    const result = await listTimeTrackerJobs(date);
+    const [result, metrics] = await Promise.all([
+      listTimeTrackerJobs(date),
+      getTimeTrackerJobSummary(date),
+    ]);
 
     if (result.success) {
       setTasks(result.jobs);
+      setSummaryMetrics(metrics);
       return;
     }
 
@@ -131,6 +142,21 @@ export default function TimeTracker() {
     };
     setTasks([newTask, ...tasks]);
   };
+
+  const topMetrics = [
+    {
+      label: "Jobs",
+      value: summaryMetrics?.jobCount || "0",
+    },
+    {
+      label: "Total Time",
+      value: summaryMetrics?.totalJob || "00:00",
+    },
+    {
+      label: "Net Time",
+      value: summaryMetrics?.netTime || "00:00",
+    },
+  ];
 
   const updateTask = (taskId, field, value) => {
     setTasks((current) =>
@@ -294,6 +320,27 @@ export default function TimeTracker() {
               Add Task
             </button>
           </div>
+
+          <section
+            className="timeTracker-taskMetricsContainer"
+            aria-label="Time tracker summary"
+          >
+            <div className="timeTracker-taskMetricsRow">
+              {topMetrics.map((metric) => (
+                <article
+                  key={metric.label}
+                  className="timeTracker-taskMetricCard"
+                >
+                  <span className="timeTracker-taskMetricLabel">
+                    {metric.label}
+                  </span>
+                  <strong className="timeTracker-taskMetricValue">
+                    {metric.value}
+                  </strong>
+                </article>
+              ))}
+            </div>
+          </section>
 
           <div className="timeTracker-panelTasks">
             {tasks.length === 0 ? (

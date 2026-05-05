@@ -173,6 +173,29 @@ export async function listTimeTrackerJobs(dateValue) {
   };
 }
 
+export async function getTimeTrackerJobSummary(dateValue) {
+  const normalizedDate = `${dateValue || ""}`.trim();
+
+  if (!normalizedDate) {
+    return null;
+  }
+
+  const formData = new FormData();
+  formData.set("date", normalizedDate);
+
+  const result = await postTimeTrackerAction("jobSummaryFreelancer", formData);
+
+  if (!result.success) {
+    return null;
+  }
+
+  return {
+    jobCount: `${result.payload?.jobCount ?? 0}`.trim() || "0",
+    totalJob: normalizeApiClockValue(result.payload?.total_job) || "00:00",
+    netTime: normalizeApiClockValue(result.payload?.net_time) || "00:00",
+  };
+}
+
 export async function addTimeTrackerJob(task, date) {
   const formData = buildTaskFormData(task, date);
 
