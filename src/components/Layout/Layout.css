@@ -161,6 +161,10 @@
   transition: margin-left 0.3s ease;
 }
 
+.layout-main-full {
+  margin-left: 0;
+}
+
 .layout-main--pulling {
   transform: translateY(var(--pull-offset, 0px));
   transition: transform 0.18s ease-out;
@@ -382,6 +386,57 @@
   box-shadow: 0 10px 26px rgba(2, 57, 57, 0.16);
 }
 
+.home-hero-card-simple {
+  gap: 1.25rem;
+}
+
+.home-hero-top-simple {
+  align-items: flex-start;
+}
+
+.home-hero-logo-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(2, 57, 57, 0.14);
+}
+
+.home-hero-logo-button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.home-hero-logo-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.home-hero-logo-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.home-hero-logo-mark svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+
 .home-hero-actions .layout-notification-button {
   width: 2.6rem;
   height: 2.6rem;
@@ -443,6 +498,10 @@
     transform 0.2s ease,
     background 0.2s ease,
     border 0.2s ease;
+}
+
+.home-hero-profile-static {
+  cursor: default;
 }
 
 .home-hero-avatar {
@@ -1238,6 +1297,10 @@
     background: transparent;
   }
 
+  .layout-main-full {
+    margin-left: 0;
+  }
+
   .layout-sidebar.closed ~ .layout-main {
     margin-left: 24px;
   }
@@ -1343,6 +1406,24 @@
     padding: 0;
     background: transparent;
     border: none;
+    box-shadow: none;
+  }
+
+  .home-hero-logo-button {
+    padding: 10px 12px 10px 16px;
+    border-color: rgba(1, 67, 66, 0.08);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--apple-blue);
+    box-shadow: 0 14px 28px rgba(1, 67, 66, 0.08);
+  }
+
+  .home-hero-logo-button:hover {
+    background: #ffffff;
+  }
+
+  .home-hero-logo-mark {
+    background: rgba(1, 67, 66, 0.06);
+    border: 1px solid rgba(1, 67, 66, 0.08);
     box-shadow: none;
   }
 
@@ -1736,6 +1817,10 @@
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 1rem);
   }
 
+  .layout-container-non-regular .layout-content.home-content {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
   /* Reduce padding on home shell and body for mobile */
   .home-shell {
     padding-bottom: 0;
@@ -1743,6 +1828,29 @@
 
   .home-body-inner {
     padding: 32px 0 12px 0;
+  }
+
+  .home-hero-card-simple {
+    gap: 18px;
+  }
+
+  .home-hero-logo-button {
+    padding: 6px 8px 6px 12px;
+    gap: 7px;
+  }
+
+  .home-hero-logo-label {
+    font-size: 0.82rem;
+  }
+
+  .home-hero-logo-mark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .home-hero-logo-mark svg {
+    width: 15px;
+    height: 15px;
   }
 }
 

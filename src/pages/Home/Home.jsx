@@ -1,12 +1,124 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import {
+  BREAK_STATUS_UPDATED_EVENT,
+  getBreakStatus,
+} from "../../services/breakTimeStatusService";
+import {
+  listEffismLiteDayLeaveTypes,
+  listEffismLiteDayTypes,
+} from "../../services/effismLiteService";
+import { getIsRegularUser } from "../../utils/userMode";
 import "./Home.css";
 
+const DAY_TYPE_SELECT_OPTIONS = [
+  { value: "", label: "Select day type" },
+];
+
+const OFF_SUBTYPE_SELECT_OPTIONS = [
+  { value: "", label: "Select" },
+];
+
+const LEAVE_SUBTYPE_SELECT_OPTIONS = [
+  { value: "", label: "Select" },
+];
+
 export default function Home() {
+  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [timeIn, setTimeIn] = useState("");
+  const [timeOut, setTimeOut] = useState("");
+  const [dayType, setDayType] = useState("");
+  const [daySubtype, setDaySubtype] = useState("");
+  const [dayTypeOptions, setDayTypeOptions] = useState(DAY_TYPE_SELECT_OPTIONS);
+  const [offSubtypeOptions, setOffSubtypeOptions] = useState(
+    OFF_SUBTYPE_SELECT_OPTIONS,
+  );
+  const [leaveSubtypeOptions, setLeaveSubtypeOptions] = useState(
+    LEAVE_SUBTYPE_SELECT_OPTIONS,
+  );
+  const { user } = useAuth();
+  const isRegularUser = getIsRegularUser(user);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker"]);
+  const showOffTypeField = dayType === "off";
+  const showLeaveTypeField = dayType === "leave";
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadBreakStatus = async () => {
+      const result = await getBreakStatus();
+
+      if (!isActive || !result?.success) {
+        return;
+      }
+
+      setIsOnBreak(result.isOnBreak);
+    };
+
+    loadBreakStatus();
+    window.addEventListener(BREAK_STATUS_UPDATED_EVENT, loadBreakStatus);
+
+    return () => {
+      isActive = false;
+      window.removeEventListener(BREAK_STATUS_UPDATED_EVENT, loadBreakStatus);
+    };
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadDayTypeOptions = async () => {
+      const options = await listEffismLiteDayTypes();
+
+      if (isActive && options.length > 0) {
+        setDayTypeOptions([{ value: "", label: "Select day type" }, ...options]);
+      }
+    };
+
+    loadDayTypeOptions();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (dayType !== "off" && dayType !== "leave") {
+      return;
+    }
+
+    let isActive = true;
+
+    const loadDaySubtypeOptions = async () => {
+      const options = await listEffismLiteDayLeaveTypes(dayType);
+
+      if (!isActive || options.length === 0) {
+        return;
+      }
+
+      const selectOptions = [{ value: "", label: "Select" }, ...options];
+
+      if (dayType === "off") {
+        setOffSubtypeOptions(selectOptions);
+      } else {
+        setLeaveSubtypeOptions(selectOptions);
+      }
+    };
+
+    loadDaySubtypeOptions();
+
+    return () => {
+      isActive = false;
+    };
+  }, [dayType]);
+
   const quickAccessItems = [
     {
       id: "break",
       title: "Break",
-      description: "Open your break time log",
+      statusBadge: isOnBreak ? "Break Initiated" : null,
+      description: isOnBreak ? "Tap to mark IN" : "Open your break time log",
       route: "/break-time-log",
       icon: (
         <svg
@@ -23,10 +135,64 @@ export default function Home() {
           <polyline points="12 7 12 12 15 15"></polyline>
         </svg>
       ),
-      bgColor: "#E6F3EF",
-      iconColor: "#0F7A67",
-      shadowColor: "rgba(1, 67, 66, 0.14)",
+      bgColor: isOnBreak ? "#FFF4F4" : "#E6F3EF",
+      iconColor: isOnBreak ? "#CF5B5B" : "#0F7A67",
+      shadowColor: isOnBreak
+        ? "rgba(198, 69, 69, 0.16)"
+        : "rgba(1, 67, 66, 0.14)",
+      cardTone: isOnBreak ? "warning" : null,
     },
+    ...(user?.usertype === 1 ? [{
+      id: "effism-lite",
+      title: "EFFISM Lite",
+      description: "Time log and task entry",
+      route: "/effism-lite",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          <path d="M8 7h8"></path>
+          <path d="M8 11h8"></path>
+          <path d="M8 15h5"></path>
+        </svg>
+      ),
+      bgColor: "#E7F5F1",
+      iconColor: "#0D6C5F",
+      shadowColor: "rgba(1, 67, 66, 0.14)",
+    }] : []),
+    ...(user?.usertype === 2 ? [{
+      id: "time-tracker",
+      title: "Time Tracker",
+      description: "Quick task entry",
+      route: "/time-tracker",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      ),
+      bgColor: "#E9F2FA",
+      iconColor: "#1A5A99",
+      shadowColor: "rgba(26, 90, 153, 0.12)",
+    }] : []),
     {
       id: "salary",
       title: "Salary",
@@ -185,55 +351,218 @@ export default function Home() {
       iconColor: "#327F6D",
       shadowColor: "rgba(1, 67, 66, 0.1)",
     },
-  ];
+  ].map((item) => {
+    if (implementedModuleIds.has(item.id)) {
+      return {
+        ...item,
+        isAvailable: true,
+      };
+    }
+
+    return {
+      ...item,
+      isAvailable: false,
+      description: "This feature will be available soon",
+      bgColor: "#ECEFF0",
+      iconColor: "#8C9592",
+      shadowColor: "rgba(129, 136, 136, 0.05)",
+    };
+  });
+
+  const handleDayTypeChange = (event) => {
+    const nextDayType = event.target.value;
+    const shouldResetSubtype =
+      nextDayType !== dayType ||
+      (nextDayType !== "off" && nextDayType !== "leave");
+
+    setDayType(nextDayType);
+
+    if (shouldResetSubtype) {
+      setDaySubtype("");
+    }
+
+    if (nextDayType === "off") {
+      setOffSubtypeOptions(OFF_SUBTYPE_SELECT_OPTIONS);
+    } else if (nextDayType === "leave") {
+      setLeaveSubtypeOptions(LEAVE_SUBTYPE_SELECT_OPTIONS);
+    }
+  };
+
+  if (!isRegularUser) {
+    return (
+      <div className="dashboard-container dashboard-container-simple">
+        <section className="attendance-panel" aria-label="Attendance details">
+          <div className="attendance-form">
+            <label className="attendance-field attendance-field-time">
+              <span className="attendance-label">Time in</span>
+              <input
+                type="time"
+                className="attendance-input"
+                value={timeIn}
+                onChange={(event) => setTimeIn(event.target.value)}
+              />
+            </label>
+
+            <label className="attendance-field attendance-field-time">
+              <span className="attendance-label">Time out</span>
+              <input
+                type="time"
+                className="attendance-input"
+                value={timeOut}
+                onChange={(event) => setTimeOut(event.target.value)}
+              />
+            </label>
+
+            <label className="attendance-field attendance-field-choice">
+              <span className="attendance-label">Day type</span>
+              <select
+                className="attendance-input attendance-select"
+                value={dayType}
+                onChange={handleDayTypeChange}
+              >
+                {dayTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {showOffTypeField ? (
+              <label className="attendance-field attendance-field-secondary">
+                <span className="attendance-label">OFF Type</span>
+                <select
+                  className="attendance-input attendance-select"
+                  value={daySubtype}
+                  onChange={(event) => setDaySubtype(event.target.value)}
+                >
+                  {offSubtypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            {showLeaveTypeField ? (
+              <label className="attendance-field attendance-field-secondary">
+                <span className="attendance-label">Leave Type</span>
+                <select
+                  className="attendance-input attendance-select"
+                  value={daySubtype}
+                  onChange={(event) => setDaySubtype(event.target.value)}
+                >
+                  {leaveSubtypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-quick-access">
         <div className="dashboard-grid">
-          {quickAccessItems.map((item, index) => (
-            <Link
-              key={item.id}
-              to={item.route}
-              className="dashboard-card"
-              style={{
-                "--card-accent": item.iconColor,
-                "--card-soft": item.bgColor,
-                "--card-icon-bg": item.bgColor,
-                "--card-shadow": item.shadowColor,
-                "--card-order": index,
-              }}
-            >
-              <div className="dashboard-card-main">
-                <div
-                  className="dashboard-card-icon"
-                  style={{ color: item.iconColor }}
+          {quickAccessItems.map((item, index) => {
+            const cardClassName = `dashboard-card${item.cardTone ? ` dashboard-card-${item.cardTone}` : ""}${item.isAvailable ? "" : " dashboard-card-inactive"}`;
+            const cardStyle = {
+              "--card-accent": item.iconColor,
+              "--card-soft": item.bgColor,
+              "--card-icon-bg": item.bgColor,
+              "--card-shadow": item.shadowColor,
+              "--card-order": index,
+            };
+
+            const cardContent = (
+              <>
+                <div className="dashboard-card-main">
+                  <div
+                    className="dashboard-card-icon"
+                    style={{ color: item.iconColor }}
+                  >
+                    {item.icon}
+                  </div>
+                  <div className="dashboard-card-content">
+                    <h4 className="dashboard-card-title">{item.title}</h4>
+                    {item.description && (
+                      <p className="dashboard-card-desc">{item.description}</p>
+                    )}
+                    {item.statusBadge && (
+                      <span className="dashboard-card-status-badge">
+                        {item.statusBadge}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {item.isAvailable ? (
+                  <span className="dashboard-card-arrow" aria-hidden="true">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                  </span>
+                ) : (
+                  <span className="dashboard-card-lock" aria-hidden="true">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                      <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
+                    </svg>
+                  </span>
+                )}
+              </>
+            );
+
+            if (item.isAvailable) {
+              return (
+                <Link
+                  key={item.id}
+                  to={item.route}
+                  className={cardClassName}
+                  style={cardStyle}
                 >
-                  {item.icon}
-                </div>
-                <div className="dashboard-card-content">
-                  <h4 className="dashboard-card-title">{item.title}</h4>
-                  {item.description && (
-                    <p className="dashboard-card-desc">{item.description}</p>
-                  )}
-                </div>
+                  {cardContent}
+                </Link>
+              );
+            }
+
+            return (
+              <div
+                key={item.id}
+                className={cardClassName}
+                style={cardStyle}
+                aria-disabled="true"
+              >
+                {cardContent}
               </div>
-              <span className="dashboard-card-arrow" aria-hidden="true">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m9 18 6-6-6-6"></path>
-                </svg>
-              </span>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

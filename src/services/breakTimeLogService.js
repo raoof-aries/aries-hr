@@ -27,6 +27,30 @@ function getRecordedTimestamp(payload, actionType) {
   return payload?.break_out || payload?.out_time || "";
 }
 
+function buildBreakLogId(entry, index) {
+  const parts = [
+    entry?.date || "date",
+    entry?.break_out || "break-out",
+    entry?.break_in || "break-in",
+    entry?.reason || "reason",
+    index,
+  ];
+
+  return parts.join("--").replace(/\s+/g, "-").toLowerCase();
+}
+
+function normalizeBreakLogEntry(entry, index) {
+  return {
+    id: buildBreakLogId(entry, index),
+    breakOut: `${entry?.break_out || ""}`.trim(),
+    breakIn: `${entry?.break_in || ""}`.trim(),
+    reason: `${entry?.reason || ""}`.trim(),
+    status: `${entry?.status || ""}`.trim(),
+    date: `${entry?.date || ""}`.trim(),
+    breakTime: `${entry?.break_time || ""}`.trim(),
+  };
+}
+
 export function formatBreakApiTime(timestamp) {
   const rawValue = `${timestamp || ""}`.trim();
   if (!rawValue) {
@@ -54,6 +78,77 @@ export function formatBreakApiTime(timestamp) {
     hour: "numeric",
     minute: "2-digit",
   }).format(fallbackDate);
+}
+
+export async function fetchBreakLogListing({ date }) {
+  const normalizedDate = `${date || ""}`.trim();
+
+  if (!normalizedDate) {
+    return {
+      success: false,
+      logs: [],
+      message: "Date is required to load break logs.",
+    };
+  }
+
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return {
+      success: false,
+      logs: [],
+      message: "API base URL missing. Update public/config/app-config.json.",
+    };
+  }
+
+  const form = new FormData();
+  form.set("date", normalizedDate);
+
+  let response = null;
+  let payload = null;
+
+  try {
+    response = await fetch(`${apiBaseUrl}?action=breakLogListing`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: form,
+    });
+
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+  } catch (error) {
+    return {
+      success: false,
+      logs: [],
+      message:
+        "Cannot reach break log API from browser (network/CORS). If running locally, restart dev server so proxy is active.",
+      details: error?.message || "",
+    };
+  }
+
+  if (!response.ok) {
+    return {
+      success: false,
+      logs: [],
+      message:
+        payload?.message || `Break log listing failed (HTTP ${response.status})`,
+      payload,
+    };
+  }
+
+  const success = isSuccessfulPayload(payload);
+  const logs = Array.isArray(payload?.data)
+    ? payload.data.map((entry, index) => normalizeBreakLogEntry(entry, index))
+    : [];
+
+  return {
+    success,
+    logs: success ? logs : [],
+    message: payload?.message || "",
+    payload,
+  };
 }
 
 export async function submitBreakTimeAction({

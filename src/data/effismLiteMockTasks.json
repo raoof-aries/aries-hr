@@ -1,0 +1,22 @@
+[
+  {
+    "id": "task-1",
+    "taskName": "Campaign microsite content review",
+    "mainType": "Invoiceable",
+    "jobNumber": "AES/Website/Plex/Ariesplex",
+    "estimatedTime": "09:30 AM",
+    "actualTime": "10:00 AM",
+    "outcome": "Reviewed hero copy, refined section hierarchy, and shared content notes for approval.",
+    "status": "80%"
+  },
+  {
+    "id": "task-2",
+    "taskName": "ESOL reporting handoff",
+    "mainType": "Non Invoiceable",
+    "jobNumber": "Effism/2020/ESOL/EFFISM",
+    "estimatedTime": "02:00 PM",
+    "actualTime": "01:45 PM",
+    "outcome": "Prepared internal summary and aligned outstanding follow-ups with the delivery team.",
+    "status": "100%"
+  }
+]

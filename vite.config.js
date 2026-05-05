@@ -20,8 +20,8 @@ export default defineConfig({
         skipWaiting: true,
       },
       manifest: {
-        name: "HR Portal",
-        short_name: "HR App",
+        name: "Aries HRMS",
+        short_name: "Aries HRMS",
         start_url: "/hrms/",
         scope: "/hrms/",
         display: "standalone",
@@ -41,7 +41,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/arieshrms-api": {
-        target: "https://www.efftime.com/webservices/arieshrms/",
+        target: "https://www.efftime.com/webservices/effism_lite/",
         changeOrigin: true,
         secure: true,
         rewrite: (requestPath) =>

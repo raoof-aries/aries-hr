@@ -3,6 +3,12 @@
     "Breakfast",
     "Lunch",
     "Client Visit",
-    "Personal"
+    "Personal",
+    "Floor-to-Floor",
+    "Office-to-Office",
+    "Personal",
+    "Prayer",
+    "Office to Store/Yard",
+    "Other"
   ]
 }

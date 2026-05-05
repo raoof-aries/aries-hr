@@ -1,43 +1,26 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { registerSW } from "virtual:pwa-register";
 import App from "./App";
 import "./App.css";
+import { registerAppServiceWorker } from "./utils/pwa";
 
-const PWA_UPDATE_INTERVAL_MS = 60 * 1000;
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  const response = await originalFetch(...args);
+  
+  // Clone the response to read the body without consuming the original stream
+  const clonedResponse = response.clone();
+  clonedResponse.json().then(payload => {
+    if (payload && payload.authStatus === false) {
+      window.dispatchEvent(new Event("auth-failure"));
+    }
+  }).catch(() => {});
+  
+  return response;
+};
 
-if (import.meta.env.PROD) {
-  const updateSW = registerSW({
-    immediate: true,
-    onNeedRefresh() {
-      void updateSW(true);
-    },
-    onRegisteredSW(_swUrl, registration) {
-      if (!registration) {
-        return;
-      }
-
-      const checkForUpdates = () => {
-        if (navigator.onLine) {
-          void registration.update();
-        }
-      };
-
-      checkForUpdates();
-      window.setInterval(checkForUpdates, PWA_UPDATE_INTERVAL_MS);
-      window.addEventListener("focus", checkForUpdates);
-      document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") {
-          checkForUpdates();
-        }
-      });
-    },
-    onRegisterError(error) {
-      console.error("PWA registration failed", error);
-    },
-  });
-}
+registerAppServiceWorker();
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter basename="/hrms">
