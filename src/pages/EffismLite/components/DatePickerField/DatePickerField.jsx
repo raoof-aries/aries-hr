@@ -9,6 +9,8 @@ export default function DatePickerField({
   className = "",
   disabled = false,
   indicator = null,
+  max,
+  min,
 }) {
   return (
     <label
@@ -50,6 +52,8 @@ export default function DatePickerField({
           onChange={onChange}
           disabled={disabled}
           readOnly={disabled}
+          max={max}
+          min={min}
         />
       </div>
     </label>

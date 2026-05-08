@@ -196,36 +196,6 @@ async function getTimeTrackerJobSummary(dateValue) {
   };
 }
 
-export async function getTimeTrackerLastWorkingDate() {
-  const { apiBaseUrl } = await getRuntimeConfig();
-
-  if (!apiBaseUrl) {
-    return "";
-  }
-
-  try {
-    const response = await fetch(`${apiBaseUrl}?action=lastWorkingDate`, {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: new FormData(),
-    });
-
-    let payload = null;
-    try {
-      payload = await response.json();
-    } catch {
-      payload = null;
-    }
-
-    if (!response.ok || !isSuccessfulPayload(payload)) {
-      return "";
-    }
-
-    return `${payload?.last_working_date || ""}`.trim();
-  } catch {
-    return "";
-  }
-}
 
 export async function getTimeTrackerJobDiaryStatus(dateValue) {
   const normalizedDate = `${dateValue || ""}`.trim();

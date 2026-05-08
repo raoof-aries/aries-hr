@@ -11,7 +11,6 @@ import {
   completeTimeTrackerJobDiary,
   getTimeTrackerDayData,
   getTimeTrackerJobDiaryStatus,
-  getTimeTrackerLastWorkingDate,
   saveTimeTrackerJob,
 } from "../../services/timeTrackerService";
 import "./TimeTracker.css";
@@ -22,7 +21,7 @@ function getTodayDateValue() {
 }
 
 export default function TimeTracker() {
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(getTodayDateValue());
   const [tasks, setTasks] = useState([]);
   const [summaryMetrics, setSummaryMetrics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,25 +35,6 @@ export default function TimeTracker() {
     });
   const isDiaryComplete = completeStatus === "success";
   const isSummaryMode = isDiaryComplete;
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadInitialDate = async () => {
-      setIsLoading(true);
-      const lastWorkingDate = await getTimeTrackerLastWorkingDate();
-
-      if (isMounted) {
-        setDate(lastWorkingDate || getTodayDateValue());
-      }
-    };
-
-    loadInitialDate();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (!date) return;
@@ -333,9 +313,17 @@ export default function TimeTracker() {
             label="Date"
             value={date}
             formatDisplayValue={formatDateDisplayValue}
+            max={getTodayDateValue()}
             onChange={(e) => {
+              const selectedDate = e.target.value;
+              const today = getTodayDateValue();
+              
+              if (selectedDate > today) {
+                return;
+              }
+
               setIsLoading(true);
-              setDate(e.target.value);
+              setDate(selectedDate);
               setCompleteStatus("idle");
               setCompleteMessage("");
             }}
