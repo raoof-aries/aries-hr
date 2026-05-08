@@ -1,0 +1,149 @@
+.effismLite-calendar {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  user-select: none;
+}
+
+.effismLite-calendarHeader {
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.effismLite-calendarHeaderNavRow {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+}
+
+.effismLite-calendarNav {
+  background: transparent;
+  border: none;
+  color: #014342 !important; /* Force primary dark color */
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.effismLite-calendarNav:hover:not(:disabled) {
+  background: rgba(1, 67, 66, 0.1);
+  color: #013231 !important;
+}
+
+.effismLite-calendarNav.is-disabled {
+  color: #cbd5e1 !important;
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.effismLite-calendarNav svg {
+  stroke: currentColor;
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.effismLite-calendarMonthYear {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #014342 !important;
+  letter-spacing: -0.03em;
+  text-align: center;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.effismLite-calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.effismLite-calendarWeekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  padding: 0.5rem 0;
+  text-transform: uppercase;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.effismLite-calendarDay {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #0f172a;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.effismLite-calendarDay:hover:not(.is-disabled):not(.is-selected) {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.effismLite-calendarDay.is-selected {
+  background: var(--apple-blue, #014342);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(1, 67, 66, 0.25);
+}
+
+.effismLite-calendarDay.is-today:not(.is-selected) {
+  color: var(--apple-blue, #014342);
+  font-weight: 700;
+}
+
+.effismLite-calendarDay.is-today::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  background: #10b981; /* Vibrant green for today */
+  border-radius: 50%;
+}
+
+.effismLite-calendarDay.is-disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.effismLite-calendarDay.is-empty {
+  cursor: default;
+}
+
+/* Dark mode compatibility if needed */
+@media (prefers-color-scheme: dark) {
+  .effismLite-calendarMonthYear {
+    color: #f8fafc;
+  }
+  .effismLite-calendarNav:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  .effismLite-calendarDay {
+    color: #94a3b8;
+  }
+  .effismLite-calendarDay:hover:not(.is-disabled):not(.is-selected) {
+    background: #1e293b;
+    color: white;
+  }
+}

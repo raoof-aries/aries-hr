@@ -1,3 +1,6 @@
+import { useState } from "react";
+import EffismLiteTimeModal from "../EffismLiteTimeModal/EffismLiteTimeModal";
+import EffismLiteCalendar from "../EffismLiteCalendar/EffismLiteCalendar";
 import "./DatePickerField.css";
 
 export default function DatePickerField({
@@ -12,18 +15,32 @@ export default function DatePickerField({
   max,
   min,
 }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const openPicker = () => {
+    if (!disabled) {
+      setPickerOpen(true);
+    }
+  };
+
+  const handleDateSelect = (dateStr) => {
+    onChange({
+      target: {
+        value: dateStr,
+      },
+    });
+    setPickerOpen(false);
+  };
+
   return (
-    <label
-      className={`effismLite-field${className ? ` ${className}` : ""}`}
-      htmlFor={id}
-    >
+    <div className={`effismLite-field${className ? ` ${className}` : ""}`}>
       <div className="effismLite-fieldLabelRow">
-        <span className="effismLite-fieldLabel">{label}</span>
+        <label className="effismLite-fieldLabel" htmlFor={id}>
+          {label}
+        </label>
         {indicator}
       </div>
-      <div
-        className={`effismLite-pickerField${disabled ? " is-disabled" : ""}`}
-      >
+      <div className={`effismLite-pickerField${disabled ? " is-disabled" : ""}`} onClick={openPicker}>
         <span className="effismLite-pickerValue">{formatDisplayValue(value)}</span>
 
         <span className="effismLite-pickerIcon" aria-hidden="true">
@@ -43,19 +60,21 @@ export default function DatePickerField({
             <path d="M3 10h18"></path>
           </svg>
         </span>
+      </div>
 
-        <input
-          id={id}
-          className="effismLite-pickerNativeInput"
-          type="date"
+      <EffismLiteTimeModal
+        open={pickerOpen}
+        title={label}
+        onClose={() => setPickerOpen(false)}
+        onApply={() => setPickerOpen(false)}
+      >
+        <EffismLiteCalendar
           value={value}
-          onChange={onChange}
-          disabled={disabled}
-          readOnly={disabled}
+          onChange={handleDateSelect}
           max={max}
           min={min}
         />
-      </div>
-    </label>
+      </EffismLiteTimeModal>
+    </div>
   );
 }
