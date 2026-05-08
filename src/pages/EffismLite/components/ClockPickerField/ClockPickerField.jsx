@@ -133,7 +133,7 @@ export default function ClockPickerField({
 
       <EffismLiteTimeModal
         open={pickerOpen}
-        title={`${label} — time (24h)`}
+        title={label}
         onClose={() => setPickerOpen(false)}
         onApply={applyPicker}
       >

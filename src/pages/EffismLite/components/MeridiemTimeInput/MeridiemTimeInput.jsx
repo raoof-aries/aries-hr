@@ -154,7 +154,7 @@ export default function MeridiemTimeInput({
 
       <EffismLiteTimeModal
         open={pickerOpen}
-        title={`${label} — time`}
+        title={label}
         onClose={() => setPickerOpen(false)}
         onApply={applyPicker}
       >
