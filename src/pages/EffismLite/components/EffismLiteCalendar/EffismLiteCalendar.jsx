@@ -66,6 +66,12 @@ export default function EffismLiteCalendar({ value, onChange, max, min }) {
     );
   }
 
+  // Fill in empty slots at the end to keep the grid height constant (6 weeks * 7 days = 42 cells)
+  const remainingCells = 42 - days.length;
+  for (let i = 0; i < remainingCells; i++) {
+    days.push(<div key={`empty-end-${i}`} className="effismLite-calendarDay is-empty" />);
+  }
+
   return (
     <div className="effismLite-calendar">
       <div className="effismLite-calendarHeader">
