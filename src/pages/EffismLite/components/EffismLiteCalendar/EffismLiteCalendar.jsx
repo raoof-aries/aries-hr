@@ -1,9 +1,20 @@
 import { useState } from "react";
 import "./EffismLiteCalendar.css";
 
-export default function EffismLiteCalendar({ value, onChange, max, min }) {
+export default function EffismLiteCalendar({ 
+  value, 
+  onChange, 
+  max, 
+  min, 
+  showHeader = true,
+  viewDate: externalViewDate,
+  onViewDateChange
+}) {
   const currentDate = value ? new Date(value) : new Date();
-  const [viewDate, setViewDate] = useState(new Date(currentDate.getFullYear(), currentDate.getMonth(), 1));
+  const [internalViewDate, setInternalViewDate] = useState(new Date(currentDate.getFullYear(), currentDate.getMonth(), 1));
+
+  const viewDate = externalViewDate || internalViewDate;
+  const setViewDate = onViewDateChange || setInternalViewDate;
 
   const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
@@ -74,37 +85,39 @@ export default function EffismLiteCalendar({ value, onChange, max, min }) {
 
   return (
     <div className="effismLite-calendar">
-      <div className="effismLite-calendarHeader">
-        <div className="effismLite-calendarHeaderNavRow">
-          <button 
-            type="button" 
-            className={`effismLite-calendarNav is-prev ${isPrevDisabled ? "is-disabled" : ""}`} 
-            onClick={handlePrevMonth}
-            disabled={isPrevDisabled}
-            aria-label="Previous month"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-          </button>
-          
-          <h3 className="effismLite-calendarMonthYear">
-            {monthNames[month]} {year}
-          </h3>
-          
-          <button 
-            type="button" 
-            className={`effismLite-calendarNav is-next ${isNextDisabled ? "is-disabled" : ""}`} 
-            onClick={handleNextMonth}
-            disabled={isNextDisabled}
-            aria-label="Next month"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </button>
+      {showHeader && (
+        <div className="effismLite-calendarHeader">
+          <div className="effismLite-calendarHeaderNavRow">
+            <button 
+              type="button" 
+              className={`effismLite-calendarNav is-prev ${isPrevDisabled ? "is-disabled" : ""}`} 
+              onClick={handlePrevMonth}
+              disabled={isPrevDisabled}
+              aria-label="Previous month"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            
+            <h3 className="effismLite-calendarMonthYear">
+              {monthNames[month]} {year}
+            </h3>
+            
+            <button 
+              type="button" 
+              className={`effismLite-calendarNav is-next ${isNextDisabled ? "is-disabled" : ""}`} 
+              onClick={handleNextMonth}
+              disabled={isNextDisabled}
+              aria-label="Next month"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       <div className="effismLite-calendarGrid">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(day => (
           <div key={day} className="effismLite-calendarWeekday">{day}</div>

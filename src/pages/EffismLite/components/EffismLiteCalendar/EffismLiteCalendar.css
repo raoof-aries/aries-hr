@@ -51,10 +51,10 @@
 }
 
 .effismLite-calendarMonthYear {
-  font-weight: 800;
-  font-size: 1.25rem;
+  font-weight: 500;
+  font-size: 1.1rem;
   color: #014342 !important;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   text-align: center;
   margin: 0;
   white-space: nowrap;
@@ -90,7 +90,7 @@
   background: transparent;
   cursor: pointer;
   color: #0f172a;
-  font-weight: 700;
+  font-weight: 600;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
@@ -112,7 +112,7 @@
   font-weight: 700;
 }
 
-.effismLite-calendarDay.is-today::after {
+.effismLite-calendarDay.is-today:not(.is-selected)::after {
   content: "";
   position: absolute;
   bottom: 4px;

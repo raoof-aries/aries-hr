@@ -81,7 +81,13 @@ export default function EffismLiteTimeModal({
         data-disable-pull-refresh
       >
         <div className="effismLite-modalHead">
-          <span className="effismLite-modalTitle">{title}</span>
+          <div className="effismLite-modalTitleContainer">
+            {typeof title === "string" ? (
+              <span className="effismLite-modalTitle">{title}</span>
+            ) : (
+              title
+            )}
+          </div>
           <button
             type="button"
             className="effismLite-modalClose"

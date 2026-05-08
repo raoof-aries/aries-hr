@@ -17,6 +17,62 @@ export default function DatePickerField({
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  const [viewDate, setViewDate] = useState(() => {
+    const d = value ? new Date(value) : new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+
+  const handlePrevMonth = (e) => {
+    e.stopPropagation();
+    setViewDate(new Date(year, month - 1, 1));
+  };
+
+  const handleNextMonth = (e) => {
+    e.stopPropagation();
+    setViewDate(new Date(year, month + 1, 1));
+  };
+
+  const isPrevDisabled = min && new Date(year, month, 0) < new Date(min);
+  const isNextDisabled = max && new Date(year, month + 1, 1) > new Date(max);
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const modalHeader = (
+    <div className="effismLite-calendarHeaderNavRow" style={{ width: '100%' }}>
+      <button 
+        type="button" 
+        className={`effismLite-calendarNav is-prev ${isPrevDisabled ? "is-disabled" : ""}`} 
+        onClick={handlePrevMonth}
+        disabled={isPrevDisabled}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      
+      <h3 className="effismLite-calendarMonthYear">
+        {monthNames[month]} {year}
+      </h3>
+      
+      <button 
+        type="button" 
+        className={`effismLite-calendarNav is-next ${isNextDisabled ? "is-disabled" : ""}`} 
+        onClick={handleNextMonth}
+        disabled={isNextDisabled}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  );
+
   const openPicker = () => {
     if (!disabled) {
       setPickerOpen(true);
@@ -64,7 +120,7 @@ export default function DatePickerField({
 
       <EffismLiteTimeModal
         open={pickerOpen}
-        title={label}
+        title={modalHeader}
         onClose={() => setPickerOpen(false)}
         onApply={() => setPickerOpen(false)}
       >
@@ -73,6 +129,9 @@ export default function DatePickerField({
           onChange={handleDateSelect}
           max={max}
           min={min}
+          showHeader={false}
+          viewDate={viewDate}
+          onViewDateChange={setViewDate}
         />
       </EffismLiteTimeModal>
     </div>
