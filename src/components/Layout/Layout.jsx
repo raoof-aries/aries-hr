@@ -192,6 +192,26 @@ const menuItems = [
       </svg>
     ),
   },
+  {
+    id: "time-tracker",
+    title: "Time Tracker",
+    route: "/time-tracker",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+    ),
+  },
 ];
 
 export default function Layout({ children }) {
@@ -439,6 +459,7 @@ export default function Layout({ children }) {
       "/effism-locking": "Effism Locking",
       "/effism-lite": "EFFISM Lite",
       "/break-time-log": "Break Time Log",
+      "/time-tracker": "Time Tracker",
     };
     // Handle exact pathname match
     const currentPath = location.pathname;
@@ -511,7 +532,7 @@ export default function Layout({ children }) {
           <nav className="layout-nav">
             {menuItems.filter(item => {
               if (user?.usertype === 3) {
-                return item.id === "dashboard" || item.id === "profile";
+                return item.id === "time-tracker" || item.id === "profile";
               }
               return true;
             }).map((item) => {
@@ -798,147 +819,151 @@ export default function Layout({ children }) {
           ) : (
             // Other Pages Header: Back icon on left, page title in center, notification on right
             <>
-              <button
-                className="layout-header-back"
-                onClick={() => navigate("/")}
-                aria-label="Go back"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+              {user?.usertype !== 3 && (
+                <button
+                  className="layout-header-back"
+                  onClick={() => navigate("/")}
+                  aria-label="Go back"
                 >
-                  <path d="M19 12H5M12 19l-7-7 7-7"></path>
-                </svg>
-              </button>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                  </svg>
+                </button>
+              )}
               <h1 className="layout-header-title">{getPageTitle()}</h1>
               <div className="layout-header-right">
-                <div className="layout-notifications" ref={notificationRef}>
-                  <button
-                    className="layout-notification-button layout-notification-button--light"
-                    onClick={() => {
-                      if (isMobile) {
-                        navigate("/notifications");
-                      } else {
-                        setNotificationOpen(!notificationOpen);
-                      }
-                    }}
-                    aria-label="Notifications"
-                  >
-                    <LuBell size={20} />
-                    {unreadCount > 0 && (
-                      <span
-                        className="layout-notification-badge"
-                        aria-label={`${unreadCount} unread notifications`}
-                      ></span>
-                    )}
-                  </button>
-                  {!isMobile && notificationOpen && (
-                    <div className="layout-notification-dropdown">
-                      <div className="layout-notification-header">
-                        <h3>Notifications</h3>
-                        <button
-                          className="layout-notification-close"
-                          onClick={() => setNotificationOpen(false)}
-                          aria-label="Close notifications"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                {user?.usertype !== 3 && (
+                  <div className="layout-notifications" ref={notificationRef}>
+                    <button
+                      className="layout-notification-button layout-notification-button--light"
+                      onClick={() => {
+                        if (isMobile) {
+                          navigate("/notifications");
+                        } else {
+                          setNotificationOpen(!notificationOpen);
+                        }
+                      }}
+                      aria-label="Notifications"
+                    >
+                      <LuBell size={20} />
+                      {unreadCount > 0 && (
+                        <span
+                          className="layout-notification-badge"
+                          aria-label={`${unreadCount} unread notifications`}
+                        ></span>
+                      )}
+                    </button>
+                    {!isMobile && notificationOpen && (
+                      <div className="layout-notification-dropdown">
+                        <div className="layout-notification-header">
+                          <h3>Notifications</h3>
+                          <button
+                            className="layout-notification-close"
+                            onClick={() => setNotificationOpen(false)}
+                            aria-label="Close notifications"
                           >
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-                      </div>
-                      <div className="layout-notification-list">
-                        {notifications.length > 0 ? (
-                          <>
-                            {today.length > 0 && (
-                              <>
-                                <div className="layout-notification-group-header">
-                                  Today
-                                </div>
-                                {today.map((notif) => (
-                                  <div
-                                    key={notif.id}
-                                    className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                    onClick={() => markAsRead(notif.id)}
-                                  >
-                                    <div className="layout-notification-icon">
-                                      {notif.icon}
-                                    </div>
-                                    <div className="layout-notification-content">
-                                      <p className="layout-notification-title">
-                                        {notif.title}
-                                      </p>
-                                      <p className="layout-notification-message">
-                                        {notif.message}
-                                      </p>
-                                      <span className="layout-notification-time">
-                                        {formatTimeAgo(notif.timestamp)}
-                                      </span>
-                                    </div>
-                                    {!notif.read && (
-                                      <div className="layout-notification-unread-dot"></div>
-                                    )}
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="layout-notification-list">
+                          {notifications.length > 0 ? (
+                            <>
+                              {today.length > 0 && (
+                                <>
+                                  <div className="layout-notification-group-header">
+                                    Today
                                   </div>
-                                ))}
-                              </>
-                            )}
-                            {older.length > 0 && (
-                              <>
-                                <div className="layout-notification-group-header">
-                                  Older
-                                </div>
-                                {older.map((notif) => (
-                                  <div
-                                    key={notif.id}
-                                    className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                    onClick={() => markAsRead(notif.id)}
-                                  >
-                                    <div className="layout-notification-icon">
-                                      {notif.icon}
+                                  {today.map((notif) => (
+                                    <div
+                                      key={notif.id}
+                                      className={`layout-notification-item ${notif.read ? "read" : ""}`}
+                                      onClick={() => markAsRead(notif.id)}
+                                    >
+                                      <div className="layout-notification-icon">
+                                        {notif.icon}
+                                      </div>
+                                      <div className="layout-notification-content">
+                                        <p className="layout-notification-title">
+                                          {notif.title}
+                                        </p>
+                                        <p className="layout-notification-message">
+                                          {notif.message}
+                                        </p>
+                                        <span className="layout-notification-time">
+                                          {formatTimeAgo(notif.timestamp)}
+                                        </span>
+                                      </div>
+                                      {!notif.read && (
+                                        <div className="layout-notification-unread-dot"></div>
+                                      )}
                                     </div>
-                                    <div className="layout-notification-content">
-                                      <p className="layout-notification-title">
-                                        {notif.title}
-                                      </p>
-                                      <p className="layout-notification-message">
-                                        {notif.message}
-                                      </p>
-                                      <span className="layout-notification-time">
-                                        {formatTimeAgo(notif.timestamp)}
-                                      </span>
-                                    </div>
-                                    {!notif.read && (
-                                      <div className="layout-notification-unread-dot"></div>
-                                    )}
+                                  ))}
+                                </>
+                              )}
+                              {older.length > 0 && (
+                                <>
+                                  <div className="layout-notification-group-header">
+                                    Older
                                   </div>
-                                ))}
-                              </>
-                            )}
-                          </>
-                        ) : (
-                          <div className="layout-notification-empty">
-                            No notifications
-                          </div>
-                        )}
+                                  {older.map((notif) => (
+                                    <div
+                                      key={notif.id}
+                                      className={`layout-notification-item ${notif.read ? "read" : ""}`}
+                                      onClick={() => markAsRead(notif.id)}
+                                    >
+                                      <div className="layout-notification-icon">
+                                        {notif.icon}
+                                      </div>
+                                      <div className="layout-notification-content">
+                                        <p className="layout-notification-title">
+                                          {notif.title}
+                                        </p>
+                                        <p className="layout-notification-message">
+                                          {notif.message}
+                                        </p>
+                                        <span className="layout-notification-time">
+                                          {formatTimeAgo(notif.timestamp)}
+                                        </span>
+                                      </div>
+                                      {!notif.read && (
+                                        <div className="layout-notification-unread-dot"></div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <div className="layout-notification-empty">
+                              No notifications
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -969,92 +994,128 @@ export default function Layout({ children }) {
       {/* Mobile Bottom Navbar */}
       {isRegularUser && (
         <nav className="layout-mobile-nav">
-          <Link
-            to="/"
-            className={`layout-mobile-nav-item ${location.pathname === "/" ? "active" : ""}`}
-            aria-label="Dashboard"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </Link>
-          {user?.usertype !== 3 && (
-            <Link
-              to="/salary-slip"
-              className={`layout-mobile-nav-item ${location.pathname === "/salary-slip" ? "active" : ""}`}
-              aria-label="Salary"
-            >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+          {user?.usertype === 3 ? (
+            <>
+              <Link
+                to="/time-tracker"
+                className={`layout-mobile-nav-item ${location.pathname === "/time-tracker" ? "active" : ""}`}
+                aria-label="Time Tracker"
               >
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                <line x1="1" y1="10" x2="23" y2="10"></line>
-                <path d="M7 14h.01"></path>
-                <path d="M7 18h.01"></path>
-                <path d="M17 14h.01"></path>
-                <path d="M17 18h.01"></path>
-              </svg>
-            </Link>
-          )}
-          {user?.usertype !== 3 && (
-            <Link
-              to="/incentive-slip"
-              className={`layout-mobile-nav-item ${location.pathname === "/incentive-slip" ? "active" : ""}`}
-              aria-label="Incentive"
-            >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                <LuClock3 size={22} />
+              </Link>
+              <Link
+                to="/profile"
+                className={`layout-mobile-nav-item ${location.pathname === "/profile" ? "active" : ""}`}
+                aria-label="Profile"
               >
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-              </svg>
-            </Link>
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </Link>
+              <button
+                className="layout-mobile-nav-item"
+                onClick={handleLogout}
+                aria-label="Logout"
+              >
+                <LuLogOut size={22} />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/"
+                className={`layout-mobile-nav-item ${location.pathname === "/" ? "active" : ""}`}
+                aria-label="Dashboard"
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </Link>
+              <Link
+                to="/salary-slip"
+                className={`layout-mobile-nav-item ${location.pathname === "/salary-slip" ? "active" : ""}`}
+                aria-label="Salary"
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                  <line x1="1" y1="10" x2="23" y2="10"></line>
+                  <path d="M7 14h.01"></path>
+                  <path d="M7 18h.01"></path>
+                  <path d="M17 14h.01"></path>
+                  <path d="M17 18h.01"></path>
+                </svg>
+              </Link>
+              <Link
+                to="/incentive-slip"
+                className={`layout-mobile-nav-item ${location.pathname === "/incentive-slip" ? "active" : ""}`}
+                aria-label="Incentive"
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+              </Link>
+              <button
+                className="layout-mobile-nav-item layout-mobile-menu-toggle"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="More"
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+            </>
           )}
-          <button
-            className="layout-mobile-nav-item layout-mobile-menu-toggle"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="More"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
         </nav>
       )}
 
@@ -1094,7 +1155,7 @@ export default function Layout({ children }) {
               {menuItems
                 .filter((item) => {
                   if (user?.usertype === 3) {
-                    return item.id === "profile";
+                    return false; // All items for usertype 3 are now in the bottom nav or hidden
                   }
                   return !["dashboard", "salary", "incentive"].includes(
                     item.id,

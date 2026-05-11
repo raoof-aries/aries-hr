@@ -69,6 +69,14 @@ function TimeTrackerGuard({ children }) {
   return children;
 }
 
+function HomeRoute() {
+  const { user } = useAuth();
+  if (user?.usertype === 3) {
+    return <Navigate to="/time-tracker" replace />;
+  }
+  return <Home />;
+}
+
 function LoginRoute() {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -107,7 +115,7 @@ function AppRoutes() {
         path="/"
         element={
           <ProtectedAppRoute allowNonRegular>
-            <Home />
+            <HomeRoute />
           </ProtectedAppRoute>
         }
       />
