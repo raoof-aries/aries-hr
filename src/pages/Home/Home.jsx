@@ -169,7 +169,7 @@ export default function Home() {
       iconColor: "#0D6C5F",
       shadowColor: "rgba(1, 67, 66, 0.14)",
     }] : []),
-    ...(user?.usertype === 2 ? [{
+    ...(user?.usertype === 2 || user?.usertype === 3 ? [{
       id: "time-tracker",
       title: "Time Tracker",
       description: "Quick task entry",
@@ -351,7 +351,12 @@ export default function Home() {
       iconColor: "#327F6D",
       shadowColor: "rgba(1, 67, 66, 0.1)",
     },
-  ].map((item) => {
+  ].filter((item) => {
+    if (user?.usertype === 3) {
+      return item.id === "time-tracker";
+    }
+    return true;
+  }).map((item) => {
     if (implementedModuleIds.has(item.id)) {
       return {
         ...item,

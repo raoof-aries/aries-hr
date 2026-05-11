@@ -509,7 +509,12 @@ export default function Layout({ children }) {
           </div>
 
           <nav className="layout-nav">
-            {menuItems.map((item) => {
+            {menuItems.filter(item => {
+              if (user?.usertype === 3) {
+                return item.id === "dashboard" || item.id === "profile";
+              }
+              return true;
+            }).map((item) => {
               const isActive = location.pathname === item.route;
               return (
                 <Link
@@ -622,20 +627,24 @@ export default function Layout({ children }) {
                   <span className="home-hero-date">{formattedDate}</span>
                 </div>
                 <div className="home-hero-actions">
-                  <button
-                    className="layout-notification-button layout-notification-button--light layout-home-lock-button"
-                    onClick={() => navigate("/break-time-log")}
-                    aria-label="Break Time Log"
-                  >
-                    <LuClock3 size={20} />
-                  </button>
-                  <button
-                    className="layout-notification-button layout-notification-button--light layout-home-lock-button"
-                    onClick={() => navigate("/effism-locking")}
-                    aria-label="Effism Locking"
-                  >
-                    <LuLock size={20} />
-                  </button>
+                  {user?.usertype !== 3 && (
+                    <>
+                      <button
+                        className="layout-notification-button layout-notification-button--light layout-home-lock-button"
+                        onClick={() => navigate("/break-time-log")}
+                        aria-label="Break Time Log"
+                      >
+                        <LuClock3 size={20} />
+                      </button>
+                      <button
+                        className="layout-notification-button layout-notification-button--light layout-home-lock-button"
+                        onClick={() => navigate("/effism-locking")}
+                        aria-label="Effism Locking"
+                      >
+                        <LuLock size={20} />
+                      </button>
+                    </>
+                  )}
                   <div className="layout-notifications" ref={notificationRef}>
                     <button
                       className="layout-notification-button layout-notification-button--light"
@@ -981,47 +990,51 @@ export default function Layout({ children }) {
               <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
           </Link>
-          <Link
-            to="/salary-slip"
-            className={`layout-mobile-nav-item ${location.pathname === "/salary-slip" ? "active" : ""}`}
-            aria-label="Salary"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {user?.usertype !== 3 && (
+            <Link
+              to="/salary-slip"
+              className={`layout-mobile-nav-item ${location.pathname === "/salary-slip" ? "active" : ""}`}
+              aria-label="Salary"
             >
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-              <line x1="1" y1="10" x2="23" y2="10"></line>
-              <path d="M7 14h.01"></path>
-              <path d="M7 18h.01"></path>
-              <path d="M17 14h.01"></path>
-              <path d="M17 18h.01"></path>
-            </svg>
-          </Link>
-          <Link
-            to="/incentive-slip"
-            className={`layout-mobile-nav-item ${location.pathname === "/incentive-slip" ? "active" : ""}`}
-            aria-label="Incentive"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+                <path d="M7 14h.01"></path>
+                <path d="M7 18h.01"></path>
+                <path d="M17 14h.01"></path>
+                <path d="M17 18h.01"></path>
+              </svg>
+            </Link>
+          )}
+          {user?.usertype !== 3 && (
+            <Link
+              to="/incentive-slip"
+              className={`layout-mobile-nav-item ${location.pathname === "/incentive-slip" ? "active" : ""}`}
+              aria-label="Incentive"
             >
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-            </svg>
-          </Link>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+            </Link>
+          )}
           <button
             className="layout-mobile-nav-item layout-mobile-menu-toggle"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -1079,10 +1092,14 @@ export default function Layout({ children }) {
             </div>
             <div className="layout-mobile-menu-items">
               {menuItems
-                .filter(
-                  (item) =>
-                    !["dashboard", "salary", "incentive"].includes(item.id),
-                )
+                .filter((item) => {
+                  if (user?.usertype === 3) {
+                    return item.id === "profile";
+                  }
+                  return !["dashboard", "salary", "incentive"].includes(
+                    item.id,
+                  );
+                })
                 .map((item) => {
                   const isActive = location.pathname === item.route;
                   return (

@@ -10,7 +10,7 @@
       ]
     },
     {
-      "source": "/hrms1/",
+      "source": "/hrms/",
       "headers": [
         {
           "key": "Cache-Control",
@@ -28,7 +28,7 @@
       ]
     },
     {
-      "source": "/hrms1/sw.js",
+      "source": "/hrms/sw.js",
       "headers": [
         {
           "key": "Cache-Control",
@@ -46,7 +46,7 @@
       ]
     },
     {
-      "source": "/hrms1/manifest.webmanifest",
+      "source": "/hrms/manifest.webmanifest",
       "headers": [
         {
           "key": "Cache-Control",
@@ -58,58 +58,58 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/hrms1/",
+      "destination": "/hrms/",
       "permanent": false
     },
     {
-      "source": "/hrms1",
-      "destination": "/hrms1/",
+      "source": "/hrms",
+      "destination": "/hrms/",
       "permanent": false
     }
   ],
   "rewrites": [
     {
-      "source": "/hrms1/assets/(.*)",
+      "source": "/hrms/assets/(.*)",
       "destination": "/assets/$1"
     },
     {
-      "source": "/hrms1/icons/(.*)",
+      "source": "/hrms/icons/(.*)",
       "destination": "/icons/$1"
     },
     {
-      "source": "/hrms1/data/(.*)",
+      "source": "/hrms/data/(.*)",
       "destination": "/data/$1"
     },
     {
-      "source": "/hrms1/config/(.*)",
+      "source": "/hrms/config/(.*)",
       "destination": "/config/$1"
     },
     {
-      "source": "/hrms1/logo.png",
+      "source": "/hrms/logo.png",
       "destination": "/logo.png"
     },
     {
-      "source": "/hrms1/manifest.webmanifest",
+      "source": "/hrms/manifest.webmanifest",
       "destination": "/manifest.webmanifest"
     },
     {
-      "source": "/hrms1/registerSW.js",
+      "source": "/hrms/registerSW.js",
       "destination": "/registerSW.js"
     },
     {
-      "source": "/hrms1/sw.js",
+      "source": "/hrms/sw.js",
       "destination": "/sw.js"
     },
     {
-      "source": "/hrms1/workbox-(.*).js",
+      "source": "/hrms/workbox-(.*).js",
       "destination": "/workbox-$1.js"
     },
     {
-      "source": "/hrms1",
+      "source": "/hrms",
       "destination": "/index.html"
     },
     {
-      "source": "/hrms1/(.*)",
+      "source": "/hrms/(.*)",
       "destination": "/index.html"
     }
   ]

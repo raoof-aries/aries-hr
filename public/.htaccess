@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /hrms1/
+  RewriteBase /hrms/
 
   RewriteRule ^index\.html$ - [L]
 
