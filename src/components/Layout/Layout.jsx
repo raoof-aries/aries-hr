@@ -534,6 +534,9 @@ export default function Layout({ children }) {
               if (user?.usertype === 3) {
                 return item.id === "time-tracker" || item.id === "profile";
               }
+              if (item.id === "time-tracker") {
+                return false;
+              }
               return true;
             }).map((item) => {
               const isActive = location.pathname === item.route;
@@ -1156,6 +1159,9 @@ export default function Layout({ children }) {
                 .filter((item) => {
                   if (user?.usertype === 3) {
                     return false; // All items for usertype 3 are now in the bottom nav or hidden
+                  }
+                  if (item.id === "time-tracker") {
+                    return false;
                   }
                   return !["dashboard", "salary", "incentive"].includes(
                     item.id,

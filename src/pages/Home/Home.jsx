@@ -142,7 +142,7 @@ export default function Home() {
         : "rgba(1, 67, 66, 0.14)",
       cardTone: isOnBreak ? "warning" : null,
     },
-    ...(user?.usertype === 1 ? [{
+    ...(user?.usertype === 1 || user?.usertype === 2 ? [{
       id: "effism-lite",
       title: "EFFISM Lite",
       description: "Time log and task entry",
@@ -169,7 +169,7 @@ export default function Home() {
       iconColor: "#0D6C5F",
       shadowColor: "rgba(1, 67, 66, 0.14)",
     }] : []),
-    ...(user?.usertype === 2 || user?.usertype === 3 ? [{
+    ...(user?.usertype === 3 ? [{
       id: "time-tracker",
       title: "Time Tracker",
       description: "Quick task entry",

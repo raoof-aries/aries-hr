@@ -18,7 +18,7 @@ import TimeTracker from "./pages/TimeTracker/TimeTracker";
 function EffismLiteGuard({ children }) {
   const { user } = useAuth();
 
-  if (user?.usertype !== 1) {
+  if (user?.usertype !== 1 && user?.usertype !== 2) {
     return (
       <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
         <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "#FFF4F4", color: "#CF5B5B", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.5rem" }}>
@@ -45,7 +45,7 @@ function EffismLiteGuard({ children }) {
 function TimeTrackerGuard({ children }) {
   const { user } = useAuth();
 
-  if (user?.usertype !== 2 && user?.usertype !== 3) {
+  if (user?.usertype !== 3) {
     return (
       <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
         <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "#FFF4F4", color: "#CF5B5B", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.5rem" }}>
