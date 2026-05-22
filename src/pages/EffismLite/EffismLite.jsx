@@ -272,6 +272,7 @@ export default function EffismLite() {
   const [taskSummaryMetrics, setTaskSummaryMetrics] = useState(null);
   const [showCompleteConfirmation, setShowCompleteConfirmation] =
     useState(false);
+  const [deleteConfirmTaskId, setDeleteConfirmTaskId] = useState(null);
   const [lastEditedField, setLastEditedField] = useState("");
   const hasHydratedTimeRef = useRef(false);
   const loadedTaskDateRef = useRef("");
@@ -1143,11 +1144,20 @@ export default function EffismLite() {
   };
 
   const handleDeleteTask = (taskId) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
+    setDeleteConfirmTaskId(taskId);
+  };
+
+  const handleConfirmDeleteTask = () => {
+    if (deleteConfirmTaskId) {
       setTasks((currentTasks) =>
-        currentTasks.filter((task) => task.id !== taskId)
+        currentTasks.filter((task) => task.id !== deleteConfirmTaskId),
       );
     }
+    setDeleteConfirmTaskId(null);
+  };
+
+  const handleCancelDeleteTask = () => {
+    setDeleteConfirmTaskId(null);
   };
 
   // Accessibility: support Enter/Space on clickable task headers.
@@ -1410,6 +1420,65 @@ export default function EffismLite() {
             </div>
           </div>
         </>
+      ) : null}
+
+      {/* Delete confirmation modal */}
+      {deleteConfirmTaskId ? (
+        <div
+          className="effismLite-deleteModalOverlay"
+          role="presentation"
+          onClick={handleCancelDeleteTask}
+        >
+          <div
+            className="effismLite-deleteModalCard"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="effism-delete-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="effismLite-deleteModalIcon" aria-hidden="true">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+            </div>
+            <h3
+              id="effism-delete-modal-title"
+              className="effismLite-deleteModalTitle"
+            >
+              Delete Task?
+            </h3>
+            <p className="effismLite-deleteModalText">
+              This action cannot be undone.
+            </p>
+            <div className="effismLite-deleteModalActions">
+              <button
+                type="button"
+                className="effismLite-button effismLite-buttonGhost"
+                onClick={handleCancelDeleteTask}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="effismLite-button effismLite-deleteModalConfirmBtn"
+                onClick={handleConfirmDeleteTask}
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {isTaskStep && isTaskContentLoading ? (
@@ -2408,15 +2477,41 @@ export default function EffismLite() {
                                             )}
                                           </button>
                                         ) : (
-                                          <button
-                                            type="button"
-                                            className="effismLite-button effismLite-buttonGhost"
-                                            onClick={() =>
-                                              handleEditTask(task.id)
-                                            }
-                                          >
-                                            Edit
-                                          </button>
+                                          <div className="effismLite-taskActionsRow">
+                                            <button
+                                              type="button"
+                                              className="effismLite-button effismLite-buttonGhost"
+                                              onClick={() =>
+                                                handleEditTask(task.id)
+                                              }
+                                            >
+                                              Edit
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="effismLite-button effismLite-deleteActionBtn"
+                                              onClick={() =>
+                                                handleDeleteTask(task.id)
+                                              }
+                                            >
+                                              <svg
+                                                width="15"
+                                                height="15"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                aria-hidden="true"
+                                              >
+                                                <path d="M3 6h18" />
+                                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                              </svg>
+                                              Delete
+                                            </button>
+                                          </div>
                                         )}
                                       </div>
                                     ) : null}
