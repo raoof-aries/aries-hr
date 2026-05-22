@@ -268,6 +268,38 @@ export async function saveTimeTrackerJob(task, dateValue) {
     : addTimeTrackerJob(task, dateValue);
 }
 
+export async function deleteTimeTrackerJob(workreportId, dateValue) {
+  const normalizedWorkreportId = `${workreportId || ""}`.trim();
+  const normalizedDateValue = `${dateValue || ""}`.trim();
+
+  if (!normalizedWorkreportId || !normalizedDateValue) {
+    return {
+      success: false,
+      message: "Required fields missing: workreport_id, date",
+    };
+  }
+
+  const formData = new FormData();
+  formData.set("workreport_id", normalizedWorkreportId);
+  formData.set("date", normalizedDateValue);
+
+  const result = await postTimeTrackerAction("deleteFreelancerJob", formData);
+
+  if (!result.success) {
+    return {
+      success: false,
+      message: result.message || "Failed to delete job.",
+      payload: result.payload,
+    };
+  }
+
+  return {
+    success: true,
+    message: result.message || "Job deleted successfully.",
+    payload: result.payload,
+  };
+}
+
 export async function completeTimeTrackerJobDiary(dateValue) {
   const normalizedDate = `${dateValue || ""}`.trim();
 

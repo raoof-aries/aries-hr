@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   addEffismLiteJob,
   completeEffismLiteJobDiary,
+  deleteEffismLiteJob,
   editEffismLiteCFJob,
   editEffismLiteDelegatedJob,
   editEffismLiteJob,
@@ -90,6 +91,9 @@ const TASK_FILTER_OPTIONS = [
   { value: TASK_CATEGORY.CF, label: "CF" },
   { value: TASK_CATEGORY.DELEGATED, label: "Delegate" },
 ];
+
+// Delete API/logic stays wired; UI hidden until re-enabled in Effism Lite.
+const SHOW_TASK_DELETE_UI = false;
 
 function getTaskCategoryLabel(category) {
   return TASK_CATEGORY_LABELS[category] || "";
@@ -273,6 +277,8 @@ export default function EffismLite() {
   const [showCompleteConfirmation, setShowCompleteConfirmation] =
     useState(false);
   const [deleteConfirmTaskId, setDeleteConfirmTaskId] = useState(null);
+  const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState("");
   const [lastEditedField, setLastEditedField] = useState("");
   const hasHydratedTimeRef = useRef(false);
   const loadedTaskDateRef = useRef("");
@@ -1144,20 +1150,91 @@ export default function EffismLite() {
   };
 
   const handleDeleteTask = (taskId) => {
+    setDeleteErrorMessage("");
     setDeleteConfirmTaskId(taskId);
   };
 
-  const handleConfirmDeleteTask = () => {
-    if (deleteConfirmTaskId) {
+  const handleConfirmDeleteTask = async () => {
+    if (!deleteConfirmTaskId) {
+      return;
+    }
+
+    const taskToDelete = tasks.find((task) => task.id === deleteConfirmTaskId);
+    if (!taskToDelete) {
+      setDeleteConfirmTaskId(null);
+      setDeleteErrorMessage("");
+      return;
+    }
+
+    const workreportId = `${taskToDelete.workreportId || ""}`.trim();
+    const shouldDeleteOnServer = Boolean(workreportId && jobDetails.date);
+
+    if (!shouldDeleteOnServer) {
       setTasks((currentTasks) =>
         currentTasks.filter((task) => task.id !== deleteConfirmTaskId),
       );
+      setDeleteConfirmTaskId(null);
+      setDeleteErrorMessage("");
+      return;
     }
+
+    setIsDeleteSubmitting(true);
+    setDeleteErrorMessage("");
+
+    const result = await deleteEffismLiteJob(workreportId, jobDetails.date);
+
+    if (!result.success) {
+      setIsDeleteSubmitting(false);
+      setDeleteErrorMessage(
+        result.message || "Failed to delete job. Please try again.",
+      );
+      return;
+    }
+
+    setTasks((currentTasks) =>
+      currentTasks.filter((task) => task.id !== deleteConfirmTaskId),
+    );
+
+    setTaskErrorsByWorkreportId((currentErrors) => {
+      if (!currentErrors.has(workreportId)) {
+        return currentErrors;
+      }
+
+      const nextErrors = new Map(currentErrors);
+      nextErrors.delete(workreportId);
+      return nextErrors;
+    });
+
+    const [refreshedTasksResult, refreshedSummaryMetricsResult] =
+      await Promise.allSettled([
+        listEffismLiteJobs(jobDetails.date),
+        getEffismLiteJobDiarySummary(jobDetails.date),
+      ]);
+
+    if (refreshedTasksResult.status === "fulfilled") {
+      setTasks(
+        normalizeTaskListPayload(refreshedTasksResult.value).map(
+          mapApiTaskToEditableTask,
+        ),
+      );
+    }
+
+    if (refreshedSummaryMetricsResult.status === "fulfilled") {
+      setTaskSummaryMetrics(refreshedSummaryMetricsResult.value);
+    }
+
+    setIsDeleteSubmitting(false);
     setDeleteConfirmTaskId(null);
+    setDeleteErrorMessage("");
   };
 
   const handleCancelDeleteTask = () => {
+    if (isDeleteSubmitting) {
+      return;
+    }
+
     setDeleteConfirmTaskId(null);
+    setDeleteErrorMessage("");
   };
 
   // Accessibility: support Enter/Space on clickable task headers.
@@ -1423,7 +1500,7 @@ export default function EffismLite() {
       ) : null}
 
       {/* Delete confirmation modal */}
-      {deleteConfirmTaskId ? (
+      {SHOW_TASK_DELETE_UI && deleteConfirmTaskId ? (
         <div
           className="effismLite-deleteModalOverlay"
           role="presentation"
@@ -1461,11 +1538,17 @@ export default function EffismLite() {
             <p className="effismLite-deleteModalText">
               This action cannot be undone.
             </p>
+            {deleteErrorMessage ? (
+              <p className="effismLite-deleteModalError" role="alert">
+                {deleteErrorMessage}
+              </p>
+            ) : null}
             <div className="effismLite-deleteModalActions">
               <button
                 type="button"
                 className="effismLite-button effismLite-buttonGhost"
                 onClick={handleCancelDeleteTask}
+                disabled={isDeleteSubmitting}
               >
                 Cancel
               </button>
@@ -1473,8 +1556,19 @@ export default function EffismLite() {
                 type="button"
                 className="effismLite-button effismLite-deleteModalConfirmBtn"
                 onClick={handleConfirmDeleteTask}
+                disabled={isDeleteSubmitting}
               >
-                Yes, Delete
+                {isDeleteSubmitting ? (
+                  <>
+                    <span
+                      className="effismLite-spinner effismLite-spinnerOnButton"
+                      aria-hidden="true"
+                    />
+                    Deleting...
+                  </>
+                ) : (
+                  "Yes, Delete"
+                )}
               </button>
             </div>
           </div>
@@ -1759,7 +1853,7 @@ export default function EffismLite() {
                                           </button>
                                         ) : null}
 
-                                        {!isSummaryMode ? (
+                                        {SHOW_TASK_DELETE_UI && !isSummaryMode ? (
                                           <button
                                             type="button"
                                             className="effismLite-taskIconButton"
@@ -1981,7 +2075,7 @@ export default function EffismLite() {
                                           </button>
                                         )
                                       ) : null}
-                                      {!isSummaryMode ? (
+                                      {SHOW_TASK_DELETE_UI && !isSummaryMode ? (
                                         <button
                                           type="button"
                                           className="effismLite-taskIconButton"
@@ -2487,30 +2581,32 @@ export default function EffismLite() {
                                             >
                                               Edit
                                             </button>
-                                            <button
-                                              type="button"
-                                              className="effismLite-button effismLite-deleteActionBtn"
-                                              onClick={() =>
-                                                handleDeleteTask(task.id)
-                                              }
-                                            >
-                                              <svg
-                                                width="15"
-                                                height="15"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                aria-hidden="true"
+                                            {SHOW_TASK_DELETE_UI ? (
+                                              <button
+                                                type="button"
+                                                className="effismLite-button effismLite-deleteActionBtn"
+                                                onClick={() =>
+                                                  handleDeleteTask(task.id)
+                                                }
                                               >
-                                                <path d="M3 6h18" />
-                                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                              </svg>
-                                              Delete
-                                            </button>
+                                                <svg
+                                                  width="15"
+                                                  height="15"
+                                                  viewBox="0 0 24 24"
+                                                  fill="none"
+                                                  stroke="currentColor"
+                                                  strokeWidth="2"
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  aria-hidden="true"
+                                                >
+                                                  <path d="M3 6h18" />
+                                                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                </svg>
+                                                Delete
+                                              </button>
+                                            ) : null}
                                           </div>
                                         )}
                                       </div>

@@ -886,6 +886,64 @@ export async function editEffismLiteDelegatedJob(task, date) {
   return postEffismLiteTaskAction("editDelegatedJob", formData);
 }
 
+export async function deleteEffismLiteJob(workreportId, dateValue) {
+  const { apiBaseUrl } = await getRuntimeConfig();
+  if (!apiBaseUrl) {
+    return {
+      success: false,
+      message: "API base URL is missing.",
+    };
+  }
+
+  const normalizedWorkreportId = `${workreportId || ""}`.trim();
+  const normalizedDateValue = `${dateValue || ""}`.trim();
+
+  if (!normalizedWorkreportId || !normalizedDateValue) {
+    return {
+      success: false,
+      message: "Required fields missing: workreport_id, date",
+    };
+  }
+
+  const formData = new FormData();
+  formData.append("workreport_id", normalizedWorkreportId);
+  formData.append("date", normalizedDateValue);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}?action=deleteFreelancerJob`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !isSuccessfulPayload(payload)) {
+      return {
+        success: false,
+        message: payload?.message || "Failed to delete job.",
+        payload,
+      };
+    }
+
+    return {
+      success: true,
+      message: payload?.message || "Job deleted successfully.",
+      payload,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to delete job.",
+    };
+  }
+}
+
 export async function completeEffismLiteJobDiary(dateValue) {
   const { apiBaseUrl } = await getRuntimeConfig();
   if (!apiBaseUrl) {

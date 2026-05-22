@@ -9,6 +9,7 @@ import DatePickerField from "../EffismLite/components/DatePickerField/DatePicker
 import ClockPickerField from "../EffismLite/components/ClockPickerField/ClockPickerField";
 import {
   completeTimeTrackerJobDiary,
+  deleteTimeTrackerJob,
   getTimeTrackerDayData,
   getTimeTrackerJobDiaryStatus,
   saveTimeTrackerJob,
@@ -29,6 +30,9 @@ export default function TimeTracker() {
   const [completeMessage, setCompleteMessage] = useState("");
   const [showCompleteConfirmation, setShowCompleteConfirmation] =
     useState(false);
+  const [deleteConfirmTaskId, setDeleteConfirmTaskId] = useState(null);
+  const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState("");
   const wait = (duration) =>
     new Promise((resolve) => {
       setTimeout(resolve, duration);
@@ -304,6 +308,71 @@ export default function TimeTracker() {
     await refreshTasks();
   };
 
+  const handleDeleteTask = (taskId) => {
+    if (isDiaryComplete) {
+      return;
+    }
+
+    setDeleteErrorMessage("");
+    setDeleteConfirmTaskId(taskId);
+  };
+
+  const handleConfirmDeleteTask = async () => {
+    if (!deleteConfirmTaskId) {
+      return;
+    }
+
+    const taskToDelete = tasks.find((task) => task.id === deleteConfirmTaskId);
+    if (!taskToDelete) {
+      setDeleteConfirmTaskId(null);
+      setDeleteErrorMessage("");
+      return;
+    }
+
+    const workreportId = `${taskToDelete.workreportId || ""}`.trim();
+    const shouldDeleteOnServer = Boolean(workreportId && date);
+
+    if (!shouldDeleteOnServer) {
+      setTasks((currentTasks) =>
+        currentTasks.filter((task) => task.id !== deleteConfirmTaskId),
+      );
+      setDeleteConfirmTaskId(null);
+      setDeleteErrorMessage("");
+      return;
+    }
+
+    setIsDeleteSubmitting(true);
+    setDeleteErrorMessage("");
+
+    const result = await deleteTimeTrackerJob(workreportId, date);
+
+    if (!result.success) {
+      setIsDeleteSubmitting(false);
+      setDeleteErrorMessage(
+        result.message || "Failed to delete job. Please try again.",
+      );
+      return;
+    }
+
+    setTasks((currentTasks) =>
+      currentTasks.filter((task) => task.id !== deleteConfirmTaskId),
+    );
+    await refreshTasks();
+
+    setIsDeleteSubmitting(false);
+    setDeleteConfirmTaskId(null);
+    setDeleteErrorMessage("");
+  };
+
+  const handleCancelDeleteTask = () => {
+    if (isDeleteSubmitting) {
+      return;
+    }
+
+    setDeleteConfirmTaskId(null);
+    setDeleteErrorMessage("");
+  };
+
   return (
     <div className="timeTracker-page">
       <div className="timeTracker-toolbar">
@@ -370,6 +439,81 @@ export default function TimeTracker() {
       {!isLoading && completeStatus === "success" && !isSummaryMode && (
         <div className="timeTracker-notice is-success">{completeMessage}</div>
       )}
+
+      {deleteConfirmTaskId ? (
+        <div
+          className="timeTracker-deleteModalOverlay"
+          role="presentation"
+          onClick={handleCancelDeleteTask}
+        >
+          <div
+            className="timeTracker-deleteModalCard"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="time-tracker-delete-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="timeTracker-deleteModalIcon" aria-hidden="true">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+            </div>
+            <h3
+              id="time-tracker-delete-modal-title"
+              className="timeTracker-deleteModalTitle"
+            >
+              Delete Task?
+            </h3>
+            <p className="timeTracker-deleteModalText">
+              This action cannot be undone.
+            </p>
+            {deleteErrorMessage ? (
+              <p className="timeTracker-deleteModalError" role="alert">
+                {deleteErrorMessage}
+              </p>
+            ) : null}
+            <div className="timeTracker-deleteModalActions">
+              <button
+                type="button"
+                className="timeTracker-confirmButton timeTracker-confirmButtonGhost"
+                onClick={handleCancelDeleteTask}
+                disabled={isDeleteSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="timeTracker-confirmButton timeTracker-deleteModalConfirmBtn"
+                onClick={handleConfirmDeleteTask}
+                disabled={isDeleteSubmitting}
+              >
+                {isDeleteSubmitting ? (
+                  <>
+                    <span
+                      className="timeTracker-spinner timeTracker-spinnerOnButton"
+                      aria-hidden="true"
+                    />
+                    Deleting...
+                  </>
+                ) : (
+                  "Yes, Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {showCompleteConfirmation ? (
         <div className="timeTracker-completeConfirmCard" role="alertdialog">
@@ -497,20 +641,38 @@ export default function TimeTracker() {
                       </div>
                       <div className="timeTracker-taskActions">
                         {!isSummaryMode ? (
-                          <button
-                            type="button"
-                            className="timeTracker-taskIconButton"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              editTask(task.id);
-                            }}
-                            title="Edit task"
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
-                              <path d="m12.5 5.5 3 3" />
-                            </svg>
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              className="timeTracker-taskIconButton"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                editTask(task.id);
+                              }}
+                              title="Edit task"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="m3 21 3.8-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L3 21Z" />
+                                <path d="m12.5 5.5 3 3" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              className="timeTracker-taskIconButton"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleDeleteTask(task.id);
+                              }}
+                              aria-label="Delete task"
+                              title="Delete task"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              </svg>
+                            </button>
+                          </>
                         ) : null}
                         <button
                           type="button"
@@ -621,6 +783,37 @@ export default function TimeTracker() {
                       <span className="timeTracker-fieldLabel">Outcome</span>
                       <strong>{task.outcome || "-"}</strong>
                     </article>
+                  </div>
+                  <div className="timeTracker-taskActionsBottom is-splitActions">
+                    <button
+                      type="button"
+                      className="timeTracker-confirmButton timeTracker-confirmButtonGhost"
+                      onClick={() => editTask(task.id)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="timeTracker-deleteActionBtn"
+                      onClick={() => handleDeleteTask(task.id)}
+                    >
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      </svg>
+                      Delete
+                    </button>
                   </div>
                 </div>
               )}
