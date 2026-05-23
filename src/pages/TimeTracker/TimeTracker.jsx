@@ -740,16 +740,10 @@ export default function TimeTracker() {
                     </div>
 
                     <div className="timeTracker-taskSummaryMetricsGrid">
-                      <div className="timeTracker-taskSummaryCard">
+                      <div className="timeTracker-taskSummaryCard is-full-width">
                         <span className="timeTracker-taskSummaryLabel">Time</span>
                         <span className="timeTracker-taskSummaryValue">
                           {task.estimatedTime || "00:00"}
-                        </span>
-                      </div>
-                      <div className="timeTracker-taskSummaryCard">
-                        <span className="timeTracker-taskSummaryLabel">Act Time</span>
-                        <span className="timeTracker-taskSummaryValue">
-                          {task.actualTime || task.estimatedTime || "00:00"}
                         </span>
                       </div>
                     </div>
