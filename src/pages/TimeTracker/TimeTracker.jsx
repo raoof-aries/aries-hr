@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import {
   createTaskId,
   formatDateDisplayValue,
-  normalizeClockInput,
   formatClockInputAsTyped,
+  mapTaskErrorsFromPayload,
+  normalizeClockInput,
 } from "../EffismLite/utils/effismLiteUtils";
 import DatePickerField from "../EffismLite/components/DatePickerField/DatePickerField";
 import ClockPickerField from "../EffismLite/components/ClockPickerField/ClockPickerField";
@@ -33,6 +34,11 @@ export default function TimeTracker() {
   const [deleteConfirmTaskId, setDeleteConfirmTaskId] = useState(null);
   const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
   const [deleteErrorMessage, setDeleteErrorMessage] = useState("");
+  const [taskErrorsByWorkreportId, setTaskErrorsByWorkreportId] = useState(
+    new Map(),
+  );
+  const [hasTaskLevelCompletionErrors, setHasTaskLevelCompletionErrors] =
+    useState(false);
   const wait = (duration) =>
     new Promise((resolve) => {
       setTimeout(resolve, duration);
@@ -92,6 +98,28 @@ export default function TimeTracker() {
     };
   }, [date]);
 
+  useEffect(() => {
+    if (completeStatus !== "error") {
+      return;
+    }
+
+    if (!hasTaskLevelCompletionErrors) {
+      return;
+    }
+
+    if (taskErrorsByWorkreportId.size > 0) {
+      return;
+    }
+
+    setCompleteStatus("idle");
+    setCompleteMessage("");
+    setHasTaskLevelCompletionErrors(false);
+  }, [
+    completeStatus,
+    hasTaskLevelCompletionErrors,
+    taskErrorsByWorkreportId,
+  ]);
+
   const refreshTasks = async () => {
     const result = await getTimeTrackerDayData(date);
 
@@ -146,12 +174,17 @@ export default function TimeTracker() {
     if (result.success) {
       setCompleteStatus("success");
       setCompleteMessage(result.message || "Job diary completed successfully.");
+      setTaskErrorsByWorkreportId(new Map());
+      setHasTaskLevelCompletionErrors(false);
       await refreshTasks();
       return;
     }
 
+    const taskErrors = mapTaskErrorsFromPayload(result.payload);
     setCompleteStatus("error");
     setCompleteMessage(result.message || "Failed to complete job diary.");
+    setTaskErrorsByWorkreportId(taskErrors);
+    setHasTaskLevelCompletionErrors(taskErrors.size > 0);
   };
 
   const handleCancelComplete = () => {
@@ -289,6 +322,19 @@ export default function TimeTracker() {
       return;
     }
 
+    const savedWorkreportId = `${normalizedTask.workreportId || ""}`.trim();
+    if (savedWorkreportId) {
+      setTaskErrorsByWorkreportId((currentErrors) => {
+        if (!currentErrors.has(savedWorkreportId)) {
+          return currentErrors;
+        }
+
+        const nextErrors = new Map(currentErrors);
+        nextErrors.delete(savedWorkreportId);
+        return nextErrors;
+      });
+    }
+
     setTaskSaveState(taskId, {
       ...normalizedTask,
       isEditing: true,
@@ -395,6 +441,8 @@ export default function TimeTracker() {
               setDate(selectedDate);
               setCompleteStatus("idle");
               setCompleteMessage("");
+              setTaskErrorsByWorkreportId(new Map());
+              setHasTaskLevelCompletionErrors(false);
             }}
           />
         </div>
@@ -584,10 +632,15 @@ export default function TimeTracker() {
             No tasks found for this date.
           </div>
         ) : (
-          tasks.map((task, index) => (
+          tasks.map((task, index) => {
+            const taskSubError = taskErrorsByWorkreportId.get(
+              `${task.workreportId || ""}`.trim(),
+            );
+
+            return (
             <div
               key={task.id}
-              className={`timeTracker-taskCard ${task.isExpanded ? "is-expanded" : ""} ${task.isEditing ? "is-editing" : ""}`}
+              className={`timeTracker-taskCard ${task.isExpanded ? "is-expanded" : ""} ${task.isEditing ? "is-editing" : ""}${taskSubError ? " is-sub-error" : ""}`}
             >
               <div className="timeTracker-taskHeader" onClick={() => toggleTaskExpanded(task.id)}>
                 {task.isEditing && !isSummaryMode ? (
@@ -715,6 +768,14 @@ export default function TimeTracker() {
                             </span>
                           )}
                         </div>
+                        {taskSubError ? (
+                          <div
+                            className="timeTracker-taskSubErrorPill"
+                            role="alert"
+                          >
+                            {taskSubError}
+                          </div>
+                        ) : null}
                       </>
                     )}
                   </div>
@@ -887,7 +948,8 @@ export default function TimeTracker() {
                 </div>
               )}
             </div>
-          ))
+          );
+          })
             )}
           </div>
         </>

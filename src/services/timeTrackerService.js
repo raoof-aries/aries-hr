@@ -313,5 +313,19 @@ export async function completeTimeTrackerJobDiary(dateValue) {
   const formData = new FormData();
   formData.set("date", normalizedDate);
 
-  return postTimeTrackerAction("completeFeelancerJobdiary", formData);
+  const result = await postTimeTrackerAction("completeFeelancerJobdiary", formData);
+
+  if (!result.success) {
+    return {
+      success: false,
+      message: result.message || "Failed to complete job diary.",
+      payload: result.payload,
+    };
+  }
+
+  return {
+    success: true,
+    message: result.message || "Job diary completed successfully.",
+    payload: result.payload,
+  };
 }
