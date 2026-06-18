@@ -46,6 +46,12 @@ export default defineConfig({
         secure: true,
         rewrite: (requestPath) => requestPath.replace(/^\/arieshrms-api/, ""),
       },
+      "/arieshrms-incentive-api": {
+        target: "https://efftime.com/webservices/freelancer/",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (requestPath) => requestPath.replace(/^\/arieshrms-incentive-api/, ""),
+      },
     },
   },
 });

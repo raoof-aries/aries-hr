@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getRuntimeConfig } from "../../utils/runtimeConfig";
 import "./IncentiveSlip.css";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -138,17 +137,18 @@ function normalizeIncentiveSlips(items = []) {
     });
 }
 
-async function fetchIncentiveSlips({ apiBaseUrl, userId, year, token }) {
-  // TODO: Change listSalary action when the specific incentive slip API endpoint is ready.
-  const requestUrls = [`${apiBaseUrl}?action=listSalary`];
+async function fetchIncentiveSlips({ userId, year, token }) {
   const isLocalhost =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
-  const isAbsoluteApi = /^https?:\/\//i.test(apiBaseUrl);
 
-  if (isLocalhost && isAbsoluteApi) {
-    requestUrls.push("/arieshrms-api?action=listSalary");
+  const requestUrls = [];
+  if (isLocalhost) {
+    requestUrls.push("/arieshrms-incentive-api?action=listIncentive");
+    requestUrls.push("/arieshrms-incentive-api/action=listIncentive");
   }
+  requestUrls.push("https://efftime.com/webservices/freelancer/?action=listIncentive");
+  requestUrls.push("https://efftime.com/webservices/freelancer/action=listIncentive");
 
   const form = new FormData();
   form.set("user_id", userId);
@@ -247,15 +247,7 @@ export default function IncentiveSlip() {
       setLoadError(null);
 
       try {
-        const { apiBaseUrl } = await getRuntimeConfig();
-        if (!apiBaseUrl) {
-          throw new Error(
-            "API base URL missing. Update public/config/app-config.json."
-          );
-        }
-
         const payload = await fetchIncentiveSlips({
-          apiBaseUrl,
           userId,
           year: selectedYear === CURRENT_YEAR ? "" : selectedYear,
           token,
