@@ -6,6 +6,7 @@ import Home from "./pages/Home/Home";
 import Profile from "./pages/Profile/Profile";
 import BreakTimeLog from "./pages/BreakTimeLog/BreakTimeLog";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
+import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
 import EffismLite from "./pages/EffismLite/EffismLite";
 import FeatureUnderDevelopment from "./pages/FeatureUnderDevelopment/FeatureUnderDevelopment";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
@@ -131,7 +132,7 @@ function AppRoutes() {
         path="/incentive-slip"
         element={
           <ProtectedAppRoute>
-            <FeatureUnderDevelopment />
+            <IncentiveSlip />
           </ProtectedAppRoute>
         }
       />

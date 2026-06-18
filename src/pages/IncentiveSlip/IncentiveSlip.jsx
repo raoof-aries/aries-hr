@@ -1,7 +1,11 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { getDataUrl } from "../../utils/dataUrl";
+import { useAuth } from "../../context/AuthContext";
+import { getRuntimeConfig } from "../../utils/runtimeConfig";
 import "./IncentiveSlip.css";
 
+const CURRENT_YEAR = new Date().getFullYear();
+const FALLBACK_YEARS_TO_SHOW = 10;
+const TOKEN_STORAGE_KEY = "authToken";
 const MONTHS = [
   "January",
   "February",
@@ -17,88 +21,321 @@ const MONTHS = [
   "December",
 ];
 
-function monthIndex(monthName) {
-  const i = MONTHS.indexOf(monthName);
-  return i >= 0 ? i + 1 : 0;
+function getMonthLabel(monthValue) {
+  const monthNumber = Number.parseInt(monthValue, 10);
+  return MONTHS[monthNumber - 1] || `Month ${monthValue}`;
+}
+
+function getMonthIndex(monthValue) {
+  if (typeof monthValue === "number") {
+    return monthValue;
+  }
+
+  const parsedMonth = Number.parseInt(monthValue, 10);
+  if (Number.isFinite(parsedMonth) && parsedMonth > 0) {
+    return parsedMonth;
+  }
+
+  const monthName = `${monthValue || ""}`.trim();
+  const foundIndex = MONTHS.findIndex(
+    (label) => label.toLowerCase() === monthName.toLowerCase()
+  );
+
+  return foundIndex >= 0 ? foundIndex + 1 : 0;
+}
+
+function getSuccessfulPayload(payload) {
+  return payload?.status === true || payload?.status === "true";
+}
+
+function extractUserId(user = {}) {
+  const candidates = [
+    user.user_id,
+    user.userId,
+    user.userID,
+    user.id,
+    user.uid,
+    user.employee_id,
+    user.employeeId,
+    user.emp_id,
+    user.empId,
+    user.emp_user_id,
+    user.empUserId,
+  ];
+
+  const foundValue = candidates.find(
+    (value) => value !== null && value !== undefined && `${value}`.trim() !== ""
+  );
+
+  return foundValue ? `${foundValue}`.trim() : "";
+}
+
+function getJoiningYear(user = {}) {
+  const rawValue = `${
+    user.groupJoiningDate ||
+    user.gdoj ||
+    user.dateOfJoining ||
+    user.doj ||
+    ""
+  }`.trim();
+  const yearMatch = rawValue.match(/\b(19|20)\d{2}\b/);
+  const parsedYear = yearMatch ? Number.parseInt(yearMatch[0], 10) : NaN;
+
+  return Number.isFinite(parsedYear) && parsedYear <= CURRENT_YEAR
+    ? parsedYear
+    : null;
+}
+
+function buildYearOptions(user = {}) {
+  const joiningYear = getJoiningYear(user);
+  const earliestYear = joiningYear ?? CURRENT_YEAR - FALLBACK_YEARS_TO_SHOW;
+  const years = [];
+
+  for (let year = CURRENT_YEAR; year >= earliestYear; year -= 1) {
+    years.push(year);
+  }
+
+  return years;
+}
+
+function normalizePdfUrl(pdfUrl) {
+  const trimmedUrl = `${pdfUrl || ""}`.trim();
+  if (!trimmedUrl) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(trimmedUrl)) {
+    return trimmedUrl;
+  }
+
+  if (/^\/\//.test(trimmedUrl)) {
+    return `https:${trimmedUrl}`;
+  }
+
+  return `https://${trimmedUrl.replace(/^\/+/, "")}`;
+}
+
+function normalizeIncentiveSlips(items = []) {
+  return (Array.isArray(items) ? items : [])
+    .map((item, index) => {
+      const monthNumber = getMonthIndex(item?.month);
+      const year = Number.parseInt(item?.year, 10) || CURRENT_YEAR;
+
+      return {
+        key: `${year}-${monthNumber || index + 1}-${index}`,
+        year,
+        monthNumber,
+        monthLabel: getMonthLabel(item?.month),
+        pdf: normalizePdfUrl(item?.pdf),
+      };
+    })
+    .sort((a, b) => {
+      if (b.year !== a.year) {
+        return b.year - a.year;
+      }
+
+      return b.monthNumber - a.monthNumber;
+    });
+}
+
+async function fetchIncentiveSlips({ apiBaseUrl, userId, year, token }) {
+  // TODO: Change listSalary action when the specific incentive slip API endpoint is ready.
+  const requestUrls = [`${apiBaseUrl}?action=listSalary`];
+  const isLocalhost =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+  const isAbsoluteApi = /^https?:\/\//i.test(apiBaseUrl);
+
+  if (isLocalhost && isAbsoluteApi) {
+    requestUrls.push("/arieshrms-api?action=listSalary");
+  }
+
+  const form = new FormData();
+  form.set("user_id", userId);
+
+  if (year) {
+    form.set("year", `${year}`);
+  }
+
+  const authToken = token || localStorage.getItem(TOKEN_STORAGE_KEY) || "";
+  let response = null;
+  let payload = null;
+  let networkError = null;
+
+  for (const requestUrl of requestUrls) {
+    try {
+      response = await fetch(requestUrl, {
+        method: "POST",
+        headers: authToken
+          ? {
+              Authorization: `Bearer ${authToken}`,
+            }
+          : {},
+        body: form,
+      });
+
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
+
+      networkError = null;
+      break;
+    } catch (error) {
+      networkError = error;
+      response = null;
+      payload = null;
+    }
+  }
+
+  if (!response) {
+    throw new Error(
+      networkError?.message ||
+        "Cannot reach incentive API from the browser. If you are testing locally, restart the dev server so the proxy is active."
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      payload?.message || `Incentive slip request failed (HTTP ${response.status})`
+    );
+  }
+
+  if (!getSuccessfulPayload(payload)) {
+    throw new Error(payload?.message || "Incentive slip data was not returned.");
+  }
+
+  return payload;
 }
 
 export default function IncentiveSlip() {
-  const currentYear = new Date().getFullYear();
-  const [incentiveData, setIncentiveData] = useState({ incentiveSlips: [] });
+  const { user, token } = useAuth();
+  const [incentiveSlips, setIncentiveSlips] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const years = useMemo(() => {
-    const yrs = Array.from(
-      new Set(incentiveData.incentiveSlips.map((s) => s.year))
-    );
-    return yrs.sort((a, b) => b - a);
-  }, [incentiveData]);
-
-  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [loadError, setLoadError] = useState(null);
+  const years = useMemo(() => buildYearOptions(user), [user]);
+  const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(getDataUrl("data/incentiveSlips.json"));
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        setIncentiveData(data);
-        const yrs = Array.from(new Set(data.incentiveSlips.map((s) => s.year)));
-        const sortedYears = yrs.sort((a, b) => b - a);
-        if (sortedYears.includes(currentYear)) {
-          setSelectedYear(currentYear);
-        } else if (sortedYears.length > 0) {
-          setSelectedYear(sortedYears[0]);
-        }
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error loading incentive slips:", error);
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, [currentYear]);
+    if (years.length > 0 && !years.includes(selectedYear)) {
+      setSelectedYear(years[0]);
+    }
+  }, [years, selectedYear]);
 
   useEffect(() => {
     setSelectedMonth("All");
   }, [selectedYear]);
 
-  const monthsForYear = useMemo(() => {
-    return incentiveData.incentiveSlips
-      .filter((s) => s.year === selectedYear)
-      .map((s) => s.month)
-      .filter((v, i, a) => a.indexOf(v) === i);
-  }, [incentiveData, selectedYear]);
+  useEffect(() => {
+    let isCancelled = false;
 
-  const filtered = useMemo(() => {
-    let items = incentiveData.incentiveSlips.filter(
-      (s) => s.year === selectedYear
+    const loadIncentiveSlips = async () => {
+      const userId = extractUserId(user);
+
+      if (!userId) {
+        setIncentiveSlips([]);
+        setLoadError("Employee ID was not found in the current session.");
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setLoadError(null);
+
+      try {
+        const { apiBaseUrl } = await getRuntimeConfig();
+        if (!apiBaseUrl) {
+          throw new Error(
+            "API base URL missing. Update public/config/app-config.json."
+          );
+        }
+
+        const payload = await fetchIncentiveSlips({
+          apiBaseUrl,
+          userId,
+          year: selectedYear === CURRENT_YEAR ? "" : selectedYear,
+          token,
+        });
+
+        if (isCancelled) {
+          return;
+        }
+
+        setIncentiveSlips(normalizeIncentiveSlips(payload?.data));
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        console.error("Error loading incentive slips:", error);
+        setIncentiveSlips([]);
+        setLoadError(error.message || "Failed to load incentive slips");
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadIncentiveSlips();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedYear, token, user]);
+
+  const monthsForYear = useMemo(() => {
+    const uniqueMonths = Array.from(
+      new Set(incentiveSlips.map((item) => item.monthLabel))
     );
 
+    return uniqueMonths.sort(
+      (left, right) => getMonthIndex(right) - getMonthIndex(left)
+    );
+  }, [incentiveSlips]);
+
+  const filtered = useMemo(() => {
+    let items = incentiveSlips.filter((item) => item.year === Number(selectedYear));
+
     if (selectedMonth !== "All") {
-      items = items.filter((s) => s.month === selectedMonth);
+      items = items.filter((item) => item.monthLabel === selectedMonth);
     }
 
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       items = items.filter(
-        (s) =>
-          s.month.toLowerCase().includes(q) ||
-          s.pdf.toLowerCase().includes(q) ||
-          (s.id && s.id.toLowerCase().includes(q))
+        (item) =>
+          item.monthLabel.toLowerCase().includes(q) ||
+          `${item.year}`.includes(q) ||
+          item.pdf.toLowerCase().includes(q)
       );
     }
 
-    items.sort((a, b) => monthIndex(b.month) - monthIndex(a.month));
+    items.sort((a, b) => {
+      if (b.year !== a.year) {
+        return b.year - a.year;
+      }
+
+      return b.monthNumber - a.monthNumber;
+    });
+
     return items;
-  }, [incentiveData, selectedYear, selectedMonth, query]);
+  }, [query, incentiveSlips, selectedMonth, selectedYear]);
 
   const handleDownload = async (pdfUrl, fileName) => {
+    if (!pdfUrl) {
+      return;
+    }
+
     try {
       const response = await fetch(pdfUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -110,16 +347,41 @@ export default function IncentiveSlip() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download failed:", error);
-      // Fallback to opening in new tab
-      window.open(pdfUrl, "_blank");
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
-
 
   if (isLoading) {
     return (
       <div className="incentiveSlip-container">
         <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="incentiveSlip-container">
+        <div
+          style={{
+            padding: "2rem",
+            textAlign: "center",
+            maxWidth: "24rem",
+            margin: "2rem auto",
+          }}
+        >
+          <p style={{ color: "var(--color-error, #c00)", marginBottom: "0.5rem" }}>
+            Failed to load incentive slips
+          </p>
+          <p style={{ fontSize: "0.9rem", color: "#666" }}>{loadError}</p>
+        </div>
       </div>
     );
   }
@@ -132,7 +394,7 @@ export default function IncentiveSlip() {
           <div className="incentiveSlip-searchFilterRow">
             <input
               type="search"
-              placeholder="Search month, file or id..."
+              placeholder="Search month or file..."
               className="filter-search incentiveSlip-search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -167,6 +429,7 @@ export default function IncentiveSlip() {
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
                 aria-label="Select year"
+                disabled={years.length === 0}
               >
                 {years.map((y) => (
                   <option key={y} value={y}>
@@ -223,7 +486,7 @@ export default function IncentiveSlip() {
           </div>
         ) : (
           filtered.map((item) => (
-            <article className="slip-item incentiveSlip-item" key={item.id}>
+            <article className="slip-item incentiveSlip-item" key={item.key}>
               <div className="slip-itemTop incentiveSlip-itemTop">
                 <div className="slip-itemIcon incentiveSlip-itemIcon">
                   <svg
@@ -243,12 +506,12 @@ export default function IncentiveSlip() {
 
                 <div className="slip-itemLeft incentiveSlip-itemLeft">
                   <div className="slip-itemTitle incentiveSlip-itemTitle">
-                    {item.month}
+                    {item.monthLabel}
                   </div>
                   <div className="slip-itemMeta incentiveSlip-itemMeta">
-                    Slip ID:{" "}
+                    Year:{" "}
                     <span className="slip-metaValue incentiveSlip-metaValue">
-                      {item.id}
+                      {item.year}
                     </span>
                   </div>
                 </div>
@@ -258,10 +521,10 @@ export default function IncentiveSlip() {
                   onClick={() =>
                     handleDownload(
                       item.pdf,
-                      `incentive-slip-${item.month}-${item.year}.pdf`
+                      `incentive-slip-${item.monthLabel}-${item.year}.pdf`
                     )
                   }
-                  aria-label={`Download incentive slip ${item.month}`}
+                  aria-label={`Download incentive slip ${item.monthLabel} ${item.year}`}
                 >
                   <svg
                     width="20"
