@@ -46,9 +46,12 @@ export default function BreakTimeEntryModal({
 
     const loadBreakOutReasons = async () => {
       try {
-        const response = await fetch(getDataUrl("config/break-time-options.json"), {
-          cache: "no-store",
-        });
+        const response = await fetch(
+          getDataUrl("config/break-time-options.json"),
+          {
+            cache: "no-store",
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);

@@ -449,6 +449,7 @@ export default function Layout({ children }) {
       "/": "HRMS",
       "/salary-slip": "Salary",
       "/incentive-slip": "Incentive",
+      "/cpe": "CPE",
       "/allowance": "Allowance",
       "/allowance/upload": "Upload Allowance",
       "/health": "Health",

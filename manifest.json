@@ -1,7 +1,7 @@
 {
   "name": "Aries HRMS",
   "short_name": "Aries HRMS",
-  "start_url": "/hrms/",
+  "start_url": "/hrms1/",
   "display": "standalone",
   "background_color": "#014342",
   "theme_color": "#014342",

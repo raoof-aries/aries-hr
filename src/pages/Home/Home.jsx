@@ -39,7 +39,7 @@ export default function Home() {
   );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "hospital-assistance", "incentive"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "hospital-assistance", "incentive", "cpe"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
@@ -237,9 +237,9 @@ export default function Home() {
           <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.57a.75.75 0 0 0 .92.918l5.84-1.49A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.714 9.714 0 0 1-4.96-1.362l-.356-.212-3.69.941.978-3.585-.232-.368A9.715 9.715 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
         </svg>
       ),
-      bgColor: "#E0F8EC",
-      iconColor: "#128c5e",
-      shadowColor: "rgba(18, 140, 94, 0.16)",
+      bgColor: "#FFF3E0",
+      iconColor: "#e68900",
+      shadowColor: "rgba(230, 137, 0, 0.16)",
     },
     {
       id: "incentive",
@@ -263,6 +263,29 @@ export default function Home() {
       bgColor: "#E3F4EE",
       iconColor: "#12725F",
       shadowColor: "rgba(1, 67, 66, 0.13)",
+    },
+    {
+      id: "cpe",
+      title: "CPE",
+      description: "Watch training videos",
+      route: "/cpe",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      ),
+      bgColor: "#E3F2FD",
+      iconColor: "#1976D2",
+      shadowColor: "rgba(25, 118, 210, 0.16)",
     },
     {
       id: "allowance",
