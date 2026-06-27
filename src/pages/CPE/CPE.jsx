@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import './CPE.css';
 import CpePlayer from './CpePlayer';
 
@@ -7,7 +8,7 @@ const DUMMY_VIDEOS = [
   {
     id: '1',
     title: 'Introduction to Workplace Safety',
-    description: 'Learn the basics of maintaining a safe environment at work.',
+    description: 'Learn the basics of maintaining a safe environment at work, including hazard recognition, safety protocols, and emergency procedures.',
     duration: '0:46',
     url: 'https://vjs.zencdn.net/v/oceans.mp4',
     status: 'pending' // 'pending' | 'watched'
@@ -15,7 +16,7 @@ const DUMMY_VIDEOS = [
   {
     id: '2',
     title: 'Advanced Communication Skills',
-    description: 'Enhance your communication skills for better team collaboration.',
+    description: 'Enhance your communication skills for better team collaboration, active listening, and conflict resolution.',
     duration: '0:46',
     url: 'https://vjs.zencdn.net/v/oceans.mp4',
     status: 'pending'
@@ -23,7 +24,7 @@ const DUMMY_VIDEOS = [
   {
     id: '3',
     title: 'Time Management Fundamentals',
-    description: 'Discover effective techniques to manage your time and increase productivity.',
+    description: 'Discover effective techniques to manage your time, prioritize tasks, and increase overall day-to-day productivity.',
     duration: '0:46',
     url: 'https://vjs.zencdn.net/v/oceans.mp4',
     status: 'watched'
@@ -31,7 +32,7 @@ const DUMMY_VIDEOS = [
   {
     id: '4',
     title: 'Leadership in the Digital Age',
-    description: 'Strategies for leading teams effectively in modern digital workplaces.',
+    description: 'Strategies for leading teams effectively in modern digital workplaces, managing remote employees, and fostering innovation.',
     duration: '0:46',
     url: 'https://vjs.zencdn.net/v/oceans.mp4',
     status: 'watched'
@@ -41,7 +42,11 @@ const DUMMY_VIDEOS = [
 const CPE = () => {
   const [activeTab, setActiveTab] = useState('pending');
   const [videos, setVideos] = useState(DUMMY_VIDEOS);
-  const [activeVideo, setActiveVideo] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Retrieve active video from URL parameters
+  const activeVideoId = searchParams.get('video');
+  const activeVideo = videos.find(v => v.id === activeVideoId) || null;
 
   const filteredVideos = videos.filter(video => video.status === activeTab);
 
@@ -56,9 +61,8 @@ const CPE = () => {
     <div className="cpe-container">
       {activeVideo ? (
         <CpePlayer 
-          url={activeVideo.url} 
-          title={activeVideo.title}
-          onClose={() => setActiveVideo(null)}
+          video={activeVideo}
+          onClose={() => setSearchParams({})}
           onComplete={() => handleVideoComplete(activeVideo.id)}
         />
       ) : (
@@ -91,30 +95,28 @@ const CPE = () => {
               </div>
             ) : (
               filteredVideos.map(video => (
-                <article className="cpe-item" key={video.id} onClick={() => setActiveVideo(video)}>
+                <article 
+                  className="cpe-item" 
+                  key={video.id} 
+                  onClick={() => setSearchParams({ video: video.id })}
+                >
                   <h3 className="cpe-itemTitle">{video.title}</h3>
                   <p className="cpe-itemDescription">{video.description}</p>
-                  
                   <div className="cpe-itemFooter">
                     <span className="cpe-itemDuration">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
                       </svg>
-                      {video.duration}
+                      {video.duration} mins
                     </span>
-                    
                     <button 
                       className={`cpe-watchButton ${video.status === 'watched' ? 'watched' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setActiveVideo(video);
+                        setSearchParams({ video: video.id });
                       }}
-                      aria-label={video.status === 'watched' ? 'Watch again' : 'Watch video'}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                      </svg>
                       {video.status === 'watched' ? 'Watch Again' : 'Watch'}
                     </button>
                   </div>

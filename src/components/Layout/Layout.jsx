@@ -826,7 +826,13 @@ export default function Layout({ children }) {
               {user?.usertype !== 3 && (
                 <button
                   className="layout-header-back"
-                  onClick={() => navigate("/")}
+                  onClick={() => {
+                    if (location.pathname === "/cpe" && location.search.includes("video=")) {
+                      navigate("/cpe");
+                    } else {
+                      navigate("/");
+                    }
+                  }}
                   aria-label="Go back"
                 >
                   <svg
