@@ -11,10 +11,10 @@ export const features = [
     description: "Access your incentive payment slips",
     route: "/incentive-slip",
   },
-  {
+  /* {
     id: "cpe",
     title: "CPE",
     description: "Watch continuous professional education videos",
     route: "/cpe",
-  },
+  }, */
 ];
