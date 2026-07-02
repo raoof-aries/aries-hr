@@ -1,6 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./EffismLocking.css";
+import DatePickerField from "../EffismLite/components/DatePickerField/DatePickerField";
+import EffismLiteDropdown from "../EffismLite/components/EffismLiteDropdown/EffismLiteDropdown";
+import { formatDateDisplayValue } from "../EffismLite/utils/effismLiteUtils";
+import "../EffismLite/EffismLite.css";
 
 const LOCK_RESPONSE_KEY = "effismLockResponse";
 const LOCK_TYPES = ["Personal", "Medical", "Official"];
@@ -24,17 +28,12 @@ export default function EffismLocking() {
   const [lockResponse, setLockResponse] = useState(getInitialLockResponse);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    name: employeeName,
     type: "",
     fromDate: "",
     toDate: "",
     contactNumber: "",
     remarks: "",
   });
-
-  useEffect(() => {
-    setFormData((prev) => ({ ...prev, name: employeeName }));
-  }, [employeeName]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -46,6 +45,28 @@ export default function EffismLocking() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!formData.type) {
+      alert("Please select a locking type.");
+      return;
+    }
+    if (!formData.fromDate) {
+      alert("Please select From date.");
+      return;
+    }
+    if (!formData.toDate) {
+      alert("Please select To date.");
+      return;
+    }
+    if (!formData.contactNumber) {
+      alert("Please enter a contact number.");
+      return;
+    }
+    if (!formData.remarks) {
+      alert("Please enter remarks.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Frontend-only mocked lock response.
@@ -105,7 +126,7 @@ export default function EffismLocking() {
                     className="effismLocking-control"
                     type="text"
                     name="name"
-                    value={formData.name}
+                    value={employeeName}
                     readOnly
                   />
                 </div>
@@ -116,21 +137,13 @@ export default function EffismLocking() {
                   Type<span className="effismLocking-required">*</span>
                 </label>
                 <div className="effismLocking-field">
-                  <select
+                  <EffismLiteDropdown
                     id="effism-type"
-                    className="effismLocking-control"
-                    name="type"
                     value={formData.type}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select an Option</option>
-                    {LOCK_TYPES.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, type: val }))}
+                    options={LOCK_TYPES.map((option) => ({ value: option, label: option }))}
+                    placeholder="Select an Option"
+                  />
                 </div>
               </div>
 
@@ -139,31 +152,21 @@ export default function EffismLocking() {
                   Duration<span className="effismLocking-required">*</span>
                 </label>
                 <div className="effismLocking-field effismLocking-durationCell">
-                  <div className="effismLocking-dateGroup">
-                    <label htmlFor="effism-from-date">From</label>
-                    <input
-                      id="effism-from-date"
-                      className="effismLocking-control"
-                      type="date"
-                      name="fromDate"
-                      value={formData.fromDate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="effismLocking-dateGroup">
-                    <label htmlFor="effism-to-date">To</label>
-                    <input
-                      id="effism-to-date"
-                      className="effismLocking-control"
-                      type="date"
-                      name="toDate"
-                      value={formData.toDate}
-                      onChange={handleChange}
-                      min={formData.fromDate || undefined}
-                      required
-                    />
-                  </div>
+                  <DatePickerField
+                    id="effism-from-date"
+                    label="From"
+                    value={formData.fromDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, fromDate: e.target.value }))}
+                    formatDisplayValue={formatDateDisplayValue}
+                  />
+                  <DatePickerField
+                    id="effism-to-date"
+                    label="To"
+                    value={formData.toDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, toDate: e.target.value }))}
+                    min={formData.fromDate || undefined}
+                    formatDisplayValue={formatDateDisplayValue}
+                  />
                 </div>
               </div>
 

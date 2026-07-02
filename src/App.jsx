@@ -10,6 +10,7 @@ import SalarySlip from "./pages/SalarySlip/SalarySlip";
 // import CPE from "./pages/CPE/CPE";
 import EffismLite from "./pages/EffismLite/EffismLite";
 import FeatureUnderDevelopment from "./pages/FeatureUnderDevelopment/FeatureUnderDevelopment";
+import EffismLocking from "./pages/EffismLocking/EffismLocking";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Layout from "./components/Layout/Layout";
 import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper";
@@ -205,7 +206,7 @@ function AppRoutes() {
         path="/effism-locking"
         element={
           <ProtectedAppRoute>
-            <FeatureUnderDevelopment />
+            <EffismLocking />
           </ProtectedAppRoute>
         }
       />
