@@ -6,7 +6,7 @@ import Home from "./pages/Home/Home";
 import Profile from "./pages/Profile/Profile";
 import BreakTimeLog from "./pages/BreakTimeLog/BreakTimeLog";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
-import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
+// import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
 // import CPE from "./pages/CPE/CPE";
 import EffismLite from "./pages/EffismLite/EffismLite";
 import FeatureUnderDevelopment from "./pages/FeatureUnderDevelopment/FeatureUnderDevelopment";
@@ -129,14 +129,14 @@ function AppRoutes() {
           </ProtectedAppRoute>
         }
       />
-      <Route
+      {/* <Route
         path="/incentive-slip"
         element={
           <ProtectedAppRoute>
             <IncentiveSlip />
           </ProtectedAppRoute>
         }
-      />
+      /> */}
       {/* <Route
         path="/cpe"
         element={

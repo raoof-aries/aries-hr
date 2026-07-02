@@ -62,7 +62,7 @@ const menuItems = [
       </svg>
     ),
   },
-  {
+  /* {
     id: "incentive",
     title: "Incentive",
     route: "/incentive-slip",
@@ -80,7 +80,7 @@ const menuItems = [
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
       </svg>
     ),
-  },
+  }, */
   {
     id: "allowance",
     title: "Allowance",
@@ -1086,7 +1086,7 @@ export default function Layout({ children }) {
                   <path d="M17 18h.01"></path>
                 </svg>
               </Link>
-              <Link
+              {/* <Link
                 to="/incentive-slip"
                 className={`layout-mobile-nav-item ${location.pathname === "/incentive-slip" ? "active" : ""}`}
                 aria-label="Incentive"
@@ -1103,7 +1103,7 @@ export default function Layout({ children }) {
                 >
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                 </svg>
-              </Link>
+              </Link> */}
               <button
                 className="layout-mobile-nav-item layout-mobile-menu-toggle"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
