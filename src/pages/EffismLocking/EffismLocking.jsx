@@ -1,39 +1,116 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./EffismLocking.css";
 import DatePickerField from "../EffismLite/components/DatePickerField/DatePickerField";
 import EffismLiteDropdown from "../EffismLite/components/EffismLiteDropdown/EffismLiteDropdown";
 import { formatDateDisplayValue } from "../EffismLite/utils/effismLiteUtils";
 import "../EffismLite/EffismLite.css";
+import { getUsers, getLeaveTypes, lockUser, unlockUser } from "../../services/lockService";
 
-const LOCK_RESPONSE_KEY = "effismLockResponse";
-const LOCK_TYPES = ["Personal", "Medical", "Official"];
+function extractUserId(user = {}) {
+  if (!user) return "";
+  const candidates = [
+    user.user_id,
+    user.userId,
+    user.userID,
+    user.id,
+    user.uid,
+    user.employee_id,
+    user.employeeId,
+    user.emp_id,
+    user.empId,
+    user.emp_user_id,
+    user.empUserId,
+  ];
 
-function getInitialLockResponse() {
-  try {
-    return Number(localStorage.getItem(LOCK_RESPONSE_KEY)) === 1 ? 1 : 0;
-  } catch {
-    return 0;
-  }
+  const foundValue = candidates.find(
+    (value) => value !== null && value !== undefined && `${value}`.trim() !== ""
+  );
+
+  return foundValue ? `${foundValue}`.trim() : "";
 }
 
 export default function EffismLocking() {
   const { user, userName } = useAuth();
-  const employeeName = useMemo(() => {
-    const displayName = user?.name || userName || "Employee";
-    const employeeCode = user?.employeeCode || user?.employee_code;
-    return employeeCode ? `${displayName} - ${employeeCode}` : displayName;
-  }, [user, userName]);
-
-  const [lockResponse, setLockResponse] = useState(getInitialLockResponse);
+  
+  const [users, setUsers] = useState([]);
+  const [lockTypes, setLockTypes] = useState([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
+  
+  const [lockResponse, setLockResponse] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    userId: "",
     type: "",
     fromDate: "",
     toDate: "",
     contactNumber: "",
     remarks: "",
   });
+
+  const loggedInUserId = useMemo(() => extractUserId(user), [user]);
+
+  // Fetch users and lock types on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      try {
+        setIsLoadingData(true);
+        const [usersList, typesList] = await Promise.all([
+          getUsers(),
+          getLeaveTypes()
+        ]);
+        
+        if (isMounted) {
+          setUsers(usersList);
+          setLockTypes(typesList);
+          
+          // Default to logged-in user if available and in the list, otherwise select first user
+          if (loggedInUserId) {
+            setFormData(prev => ({ ...prev, userId: loggedInUserId }));
+          } else if (usersList.length > 0) {
+            setFormData(prev => ({ ...prev, userId: String(usersList[0].user_id) }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load lock screen data:", error);
+        if (isMounted) {
+          setErrorMsg(error?.message || "Failed to load users or lock types.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingData(false);
+        }
+      }
+    }
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, [loggedInUserId]);
+
+  // Update lock state based on selected user
+  useEffect(() => {
+    if (formData.userId) {
+      const isLocked = Number(localStorage.getItem(`effismLockResponse_${formData.userId}`)) === 1 ? 1 : 0;
+      setLockResponse(isLocked);
+    }
+  }, [formData.userId]);
+
+  const selectedUserName = useMemo(() => {
+    const selected = users.find((u) => String(u.user_id) === String(formData.userId));
+    if (selected) {
+      return selected.full_name_code;
+    }
+    
+    if (String(formData.userId) === String(loggedInUserId)) {
+      const displayName = user?.name || userName || "Employee";
+      const employeeCode = user?.employeeCode || user?.employee_code;
+      return employeeCode ? `${displayName} - ${employeeCode}` : displayName;
+    }
+    return formData.userId ? `User #${formData.userId}` : "Employee";
+  }, [users, formData.userId, user, userName, loggedInUserId]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -46,6 +123,10 @@ export default function EffismLocking() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (!formData.userId) {
+      alert("Please select a user.");
+      return;
+    }
     if (!formData.type) {
       alert("Please select a locking type.");
       return;
@@ -69,17 +150,65 @@ export default function EffismLocking() {
 
     setIsSubmitting(true);
 
-    // Frontend-only mocked lock response.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setLockResponse(1);
-    localStorage.setItem(LOCK_RESPONSE_KEY, "1");
-    setIsSubmitting(false);
+    try {
+      await lockUser({
+        userId: formData.userId,
+        type: formData.type,
+        fromDate: formData.fromDate,
+        toDate: formData.toDate,
+        contactNumber: formData.contactNumber,
+        remarks: formData.remarks,
+      });
+      
+      setLockResponse(1);
+      localStorage.setItem(`effismLockResponse_${formData.userId}`, "1");
+    } catch (err) {
+      alert(err.message || "Failed to submit user lock request.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleUnlock = () => {
-    setLockResponse(0);
-    localStorage.setItem(LOCK_RESPONSE_KEY, "0");
+  const handleUnlock = async () => {
+    if (!formData.userId) return;
+    setIsSubmitting(true);
+    try {
+      await unlockUser({ userId: formData.userId });
+      setLockResponse(0);
+      localStorage.setItem(`effismLockResponse_${formData.userId}`, "0");
+    } catch (err) {
+      alert(err.message || "Failed to submit user unlock request.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoadingData) {
+    return (
+      <div className="effismLocking-container">
+        <div className="effismLocking-card" style={{ padding: "3rem", textAlign: "center", color: "#64748b" }}>
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="effismLocking-container">
+        <div className="effismLocking-card" style={{ padding: "2rem", textAlign: "center", color: "#ef4444" }}>
+          <p>{errorMsg}</p>
+          <button 
+            className="effismLocking-submit" 
+            onClick={() => window.location.reload()}
+            style={{ marginTop: "1rem" }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="effismLocking-container">
@@ -102,14 +231,15 @@ export default function EffismLocking() {
               </svg>
             </div>
             <h3>Effism Locked</h3>
-            <p>Your profile lock request is active.</p>
+            <p>Profile lock request is active for <strong>{selectedUserName}</strong>.</p>
             <div className="effismLocking-lockedActions">
               <button
                 className="effismLocking-submit effismLocking-unlock"
                 type="button"
                 onClick={handleUnlock}
+                disabled={isSubmitting}
               >
-                Unlock
+                {isSubmitting ? "Unlocking..." : "Click to unlock Effism"}
               </button>
             </div>
           </div>
@@ -121,13 +251,15 @@ export default function EffismLocking() {
                   Name<span className="effismLocking-required">*</span>
                 </label>
                 <div className="effismLocking-field">
-                  <input
+                  <EffismLiteDropdown
                     id="effism-name"
-                    className="effismLocking-control"
-                    type="text"
-                    name="name"
-                    value={employeeName}
-                    readOnly
+                    value={formData.userId}
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, userId: val }))}
+                    options={users.map((item) => ({
+                      value: String(item.user_id),
+                      label: item.full_name_code || `User #${item.user_id}`,
+                    }))}
+                    placeholder="Select a User"
                   />
                 </div>
               </div>
@@ -141,7 +273,10 @@ export default function EffismLocking() {
                     id="effism-type"
                     value={formData.type}
                     onValueChange={(val) => setFormData(prev => ({ ...prev, type: val }))}
-                    options={LOCK_TYPES.map((option) => ({ value: option, label: option }))}
+                    options={lockTypes.map((item) => ({
+                      value: String(item.id || item.type),
+                      label: item.type || `Type #${item.id}`,
+                    }))}
                     placeholder="Select an Option"
                   />
                 </div>

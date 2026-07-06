@@ -1064,27 +1064,18 @@ export default function Layout({ children }) {
                 </svg>
               </Link>
               <Link
-                to="/salary-slip"
-                className={`layout-mobile-nav-item ${location.pathname === "/salary-slip" ? "active" : ""}`}
-                aria-label="Salary"
+                to="/break-time-log"
+                className={`layout-mobile-nav-item ${location.pathname === "/break-time-log" ? "active" : ""}`}
+                aria-label="Break"
               >
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                  <line x1="1" y1="10" x2="23" y2="10"></line>
-                  <path d="M7 14h.01"></path>
-                  <path d="M7 18h.01"></path>
-                  <path d="M17 14h.01"></path>
-                  <path d="M17 18h.01"></path>
-                </svg>
+                <LuClock3 size={22} />
+              </Link>
+              <Link
+                to="/effism-locking"
+                className={`layout-mobile-nav-item ${location.pathname === "/effism-locking" ? "active" : ""}`}
+                aria-label="Lock"
+              >
+                <LuLock size={22} />
               </Link>
               {/* <Link
                 to="/incentive-slip"
@@ -1170,7 +1161,7 @@ export default function Layout({ children }) {
                   if (item.id === "time-tracker") {
                     return false;
                   }
-                  return !["dashboard", "salary", "incentive"].includes(
+                  return !["dashboard", "incentive"].includes(
                     item.id,
                   );
                 })
