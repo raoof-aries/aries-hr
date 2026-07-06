@@ -289,14 +289,14 @@ export default function EffismLocking() {
                 <div className="effismLocking-field effismLocking-durationCell">
                   <DatePickerField
                     id="effism-from-date"
-                    label="From"
+                    placeholder="Select from date"
                     value={formData.fromDate}
                     onChange={(e) => setFormData(prev => ({ ...prev, fromDate: e.target.value }))}
                     formatDisplayValue={formatDateDisplayValue}
                   />
                   <DatePickerField
                     id="effism-to-date"
-                    label="To"
+                    placeholder="Select to date"
                     value={formData.toDate}
                     onChange={(e) => setFormData(prev => ({ ...prev, toDate: e.target.value }))}
                     min={formData.fromDate || undefined}

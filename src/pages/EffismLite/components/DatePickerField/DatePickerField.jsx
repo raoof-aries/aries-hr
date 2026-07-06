@@ -14,6 +14,7 @@ export default function DatePickerField({
   indicator = null,
   max,
   min,
+  placeholder,
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -90,14 +91,18 @@ export default function DatePickerField({
 
   return (
     <div className={`effismLite-field${className ? ` ${className}` : ""}`}>
-      <div className="effismLite-fieldLabelRow">
-        <label className="effismLite-fieldLabel" htmlFor={id}>
-          {label}
-        </label>
-        {indicator}
-      </div>
+      {(label || indicator) && (
+        <div className="effismLite-fieldLabelRow">
+          <label className="effismLite-fieldLabel" htmlFor={id}>
+            {label}
+          </label>
+          {indicator}
+        </div>
+      )}
       <div className={`effismLite-pickerField${disabled ? " is-disabled" : ""}`} onClick={openPicker}>
-        <span className="effismLite-pickerValue">{formatDisplayValue(value)}</span>
+        <span className={`effismLite-pickerValue${!value ? " is-placeholder" : ""}`}>
+          {value ? formatDisplayValue(value) : (placeholder || "Select date")}
+        </span>
 
         <span className="effismLite-pickerIcon" aria-hidden="true">
           <svg
