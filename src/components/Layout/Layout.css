@@ -1887,3 +1887,17 @@
     display: none;
   }
 }
+
+/* Locked State indicator for the lock button */
+.layout-home-lock-button.is-locked svg,
+.layout-mobile-nav-item.is-locked svg {
+  stroke: #ef4444 !important;
+}
+
+.layout-home-lock-button.is-locked {
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.layout-home-lock-button.is-locked:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+}

@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { getRuntimeConfig } from "../utils/runtimeConfig";
+import { getProfile } from "../services/profileService";
 
 const AuthContext = createContext(null);
 const TOKEN_STORAGE_KEY = "authToken";
@@ -47,20 +49,17 @@ function normalizeUser(apiUser = {}) {
     name,
     employeeCode: apiUser.employee_code || "-",
     designation: apiUser.designation || "-",
-    reportingPerson:
-      apiUser.reporting_person ||
-      apiUser.reportingPerson ||
-      (apiUser.parent_id ? `#${apiUser.parent_id}` : "-"),
+    reportingPerson: apiUser.reporting_person || apiUser.parent_name || "-",
     hourlyRate: apiUser.hourly_rate
       ? `${apiUser.hourly_rate} ${apiUser.currency || ""}`.trim()
       : "-",
     dateOfBirth: formatDateValue(apiUser.dob),
-    company: apiUser.company || apiUser.emp_company_id || "-",
-    division: apiUser.division || apiUser.emp_division_id || "-",
-    subDivision: apiUser.subDivision || apiUser.emp_subdivision_id || "-",
-    jobType: apiUser.jobType || apiUser.emp_type || "-",
+    company: apiUser.emp_company_name || "-",
+    division: apiUser.emp_division_name || "-",
+    subDivision: apiUser.emp_subdivision_name || "-",
+    jobType: apiUser.emp_type_name || "-",
     jobCategory: apiUser.work_category_name || "-",
-    reportingTime: apiUser.reportingTime || apiUser.reporting_time || "-",
+    reportingTime: apiUser.reporting_time || "-",
     dateOfJoining: formatDateValue(apiUser.doj),
     groupJoiningDate: formatDateValue(apiUser.gdoj),
     qualificationIndex: apiUser.qualificationIndex || "-",
@@ -68,9 +67,10 @@ function normalizeUser(apiUser = {}) {
       total: "-",
       relevant: "-",
     },
-    profileImageUrl: apiUser.profile_img_url || apiUser.profileImageUrl || "",
+    profileImageUrl: apiUser.profile_img_url || "",
   };
 }
+
 
 function clearStoredSession() {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -79,11 +79,36 @@ function clearStoredSession() {
 }
 
 export function AuthProvider({ children }) {
+  const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const [user, setUser] = useState(null);
   const [token, setToken] = useState("");
+
+  // Tracks whether the user is authenticated inside event listeners
+  const isAuthenticatedRef = useRef(false);
+  // Timestamp of the last background refresh (for visibility cooldown)
+  const lastRefreshRef = useRef(0);
+
+  useEffect(() => {
+    isAuthenticatedRef.current = isAuthenticated;
+  }, [isAuthenticated]);
+
+  /**
+   * Silently fetches fresh user data from the API and updates state + localStorage.
+   * Never throws. If the API fails (offline, server error), cached data is kept as-is.
+   */
+  const refreshUser = async () => {
+    const freshData = await getProfile();
+    if (!freshData) return;
+
+    const normalizedUser = normalizeUser(freshData);
+    setUser(normalizedUser);
+    setUserName(normalizedUser?.name || "");
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(normalizedUser));
+    lastRefreshRef.current = Date.now();
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -98,6 +123,9 @@ export function AuthProvider({ children }) {
         setUser(normalizedUser);
         setUserName(normalizedUser?.name || "");
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(normalizedUser));
+        // Fire a background refresh immediately after restoring cached session
+        // so any changes made in CRM are picked up on every app open / reload
+        void refreshUser();
       } catch (error) {
         console.error("Invalid stored user session:", error);
         clearStoredSession();
@@ -120,6 +148,96 @@ export function AuthProvider({ children }) {
 
     window.addEventListener("auth-failure", handleAuthFailure);
     return () => window.removeEventListener("auth-failure", handleAuthFailure);
+  }, []);
+
+  // Refresh user data when the app comes back to the foreground.
+  // 5-second cooldown prevents rapid back-and-forth switches from spamming the API.
+  const VISIBILITY_COOLDOWN_MS = 5_000;
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "visible" &&
+        isAuthenticatedRef.current &&
+        Date.now() - lastRefreshRef.current > VISIBILITY_COOLDOWN_MS
+      ) {
+        void refreshUser();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
+
+  // 1. Periodically refresh user data (every 30 seconds) while authenticated & tab is visible
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void refreshUser();
+      }
+    }, 30_000); // 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [isAuthenticated]);
+
+  // 2. Refresh user data on route changes if at least 15 seconds have passed since the last fetch
+  const ROUTE_CHANGE_COOLDOWN_MS = 15_000;
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const timeSinceLastRefresh = Date.now() - lastRefreshRef.current;
+    if (timeSinceLastRefresh > ROUTE_CHANGE_COOLDOWN_MS) {
+      void refreshUser();
+    }
+  }, [location.pathname, isAuthenticated]);
+
+  // 3. Keep the authUser localStorage item in sync with the user React state
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+      // Also update effismLockResponse_${userId} to keep backward compatibility with Lock Page
+      const userId = user.user_id || user.userId || user.id || user.uid;
+      if (userId !== undefined && userId !== null) {
+        const isLockValue = user.is_lock !== undefined ? Number(user.is_lock) : (user.isLock !== undefined ? Number(user.isLock) : 0);
+        localStorage.setItem(`effismLockResponse_${userId}`, String(isLockValue));
+      }
+    } else {
+      localStorage.removeItem(USER_STORAGE_KEY);
+    }
+  }, [user]);
+
+  // 4. Synchronize user details and token updates across multiple tabs/windows
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === USER_STORAGE_KEY) {
+        if (e.newValue) {
+          try {
+            const parsedUser = JSON.parse(e.newValue);
+            setUser(parsedUser);
+            setUserName(parsedUser.name || "");
+          } catch (err) {
+            console.error("Failed to parse user from storage event:", err);
+          }
+        } else {
+          setUser(null);
+          setUserName("");
+        }
+      } else if (e.key === TOKEN_STORAGE_KEY) {
+        if (e.newValue) {
+          setToken(e.newValue);
+          setIsAuthenticated(true);
+        } else {
+          setToken("");
+          setIsAuthenticated(false);
+          setUser(null);
+          setUserName("");
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const login = async (username, password) => {
@@ -240,6 +358,7 @@ export function AuthProvider({ children }) {
     token,
     login,
     logout,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

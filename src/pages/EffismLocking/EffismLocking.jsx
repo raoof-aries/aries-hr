@@ -31,7 +31,7 @@ function extractUserId(user = {}) {
 }
 
 export default function EffismLocking() {
-  const { user, userName } = useAuth();
+  const { user, userName, refreshUser } = useAuth();
   
   const [users, setUsers] = useState([]);
   const [lockTypes, setLockTypes] = useState([]);
@@ -93,10 +93,30 @@ export default function EffismLocking() {
   // Update lock state based on selected user
   useEffect(() => {
     if (formData.userId) {
-      const isLocked = Number(localStorage.getItem(`effismLockResponse_${formData.userId}`)) === 1 ? 1 : 0;
+      let isLocked = 0;
+
+      // 1. If it's the logged-in user, check the AuthContext user object
+      if (String(formData.userId) === String(loggedInUserId)) {
+        isLocked = user && (Number(user.is_lock) === 1 || Number(user.isLock) === 1) ? 1 : 0;
+      } else {
+        // 2. Otherwise, check the users list
+        const selected = users.find((u) => String(u.user_id) === String(formData.userId));
+        if (selected) {
+          isLocked = Number(selected.is_lock) === 1 || Number(selected.isLock) === 1 ? 1 : 0;
+        }
+      }
+
+      // 3. Fallback to localStorage if not found/zero in profile/users API
+      if (isLocked === 0) {
+        const localVal = localStorage.getItem(`effismLockResponse_${formData.userId}`);
+        if (localVal !== null) {
+          isLocked = Number(localVal) === 1 ? 1 : 0;
+        }
+      }
+
       setLockResponse(isLocked);
     }
-  }, [formData.userId]);
+  }, [formData.userId, user, users, loggedInUserId]);
 
   const selectedUserName = useMemo(() => {
     const selected = users.find((u) => String(u.user_id) === String(formData.userId));
@@ -162,6 +182,16 @@ export default function EffismLocking() {
       
       setLockResponse(1);
       localStorage.setItem(`effismLockResponse_${formData.userId}`, "1");
+
+      // Update local users array
+      setUsers(prevUsers => prevUsers.map(u => 
+        String(u.user_id) === String(formData.userId) ? { ...u, is_lock: 1 } : u
+      ));
+
+      // Refresh AuthContext profile if locking self
+      if (String(formData.userId) === String(loggedInUserId) && refreshUser) {
+        await refreshUser().catch(console.error);
+      }
     } catch (err) {
       alert(err.message || "Failed to submit user lock request.");
     } finally {
@@ -176,6 +206,16 @@ export default function EffismLocking() {
       await unlockUser({ userId: formData.userId });
       setLockResponse(0);
       localStorage.setItem(`effismLockResponse_${formData.userId}`, "0");
+
+      // Update local users array
+      setUsers(prevUsers => prevUsers.map(u => 
+        String(u.user_id) === String(formData.userId) ? { ...u, is_lock: 0 } : u
+      ));
+
+      // Refresh AuthContext profile if unlocking self
+      if (String(formData.userId) === String(loggedInUserId) && refreshUser) {
+        await refreshUser().catch(console.error);
+      }
     } catch (err) {
       alert(err.message || "Failed to submit user unlock request.");
     } finally {

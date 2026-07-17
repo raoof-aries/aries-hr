@@ -662,9 +662,10 @@ export default function Layout({ children }) {
                         <LuClock3 size={20} />
                       </button>
                       <button
-                        className="layout-notification-button layout-notification-button--light layout-home-lock-button"
+                        className={`layout-notification-button layout-notification-button--light layout-home-lock-button ${Number(user?.is_lock) === 1 ? "is-locked" : ""}`}
                         onClick={() => navigate("/effism-locking")}
                         aria-label="Effism Locking"
+                        title={Number(user?.is_lock) === 1 ? "Effism is Locked" : "Effism Locking"}
                       >
                         <LuLock size={20} />
                       </button>
@@ -1072,8 +1073,9 @@ export default function Layout({ children }) {
               </Link>
               <Link
                 to="/effism-locking"
-                className={`layout-mobile-nav-item ${location.pathname === "/effism-locking" ? "active" : ""}`}
+                className={`layout-mobile-nav-item ${location.pathname === "/effism-locking" ? "active" : ""} ${Number(user?.is_lock) === 1 ? "is-locked" : ""}`}
                 aria-label="Lock"
+                title={Number(user?.is_lock) === 1 ? "Effism is Locked" : "Lock"}
               >
                 <LuLock size={22} />
               </Link>
