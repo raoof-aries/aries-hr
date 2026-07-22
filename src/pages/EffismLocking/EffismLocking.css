@@ -209,3 +209,32 @@
     width: auto;
   }
 }
+
+/* Validation styles */
+.effismLocking-errorText {
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 6px;
+  display: block;
+  animation: effismLocking-fadeInError 0.2s ease-in-out;
+}
+
+@keyframes effismLocking-fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Invalid field borders */
+.effismLocking-field.is-invalid .effismLocking-control,
+.effismLocking-field.is-invalid .effismLite-dropdownTrigger,
+.effismLite-field.is-invalid .effismLite-pickerField {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+}

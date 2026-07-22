@@ -49,7 +49,14 @@ export default function EffismLocking() {
     remarks: "",
   });
 
+  const [errors, setErrors] = useState({});
+
   const loggedInUserId = useMemo(() => extractUserId(user), [user]);
+
+  // Clear errors when the selected user changes
+  useEffect(() => {
+    setErrors({});
+  }, [formData.userId]);
 
   // Fetch users and lock types on mount
   useEffect(() => {
@@ -138,36 +145,43 @@ export default function EffismLocking() {
       ...prev,
       [name]: value,
     }));
+    if (value) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const newErrors = {};
     if (!formData.userId) {
-      alert("Please select a user.");
-      return;
+      newErrors.userId = "Please select a user.";
     }
     if (!formData.type) {
-      alert("Please select a locking type.");
-      return;
+      newErrors.type = "Please select a locking type.";
     }
     if (!formData.fromDate) {
-      alert("Please select From date.");
-      return;
+      newErrors.fromDate = "Please select From date.";
     }
     if (!formData.toDate) {
-      alert("Please select To date.");
-      return;
+      newErrors.toDate = "Please select To date.";
     }
     if (!formData.contactNumber) {
-      alert("Please enter a contact number.");
-      return;
+      newErrors.contactNumber = "Please enter a contact number.";
     }
     if (!formData.remarks) {
-      alert("Please enter remarks.");
+      newErrors.remarks = "Please enter remarks.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
+    setErrors({});
     setIsSubmitting(true);
 
     try {
@@ -211,6 +225,17 @@ export default function EffismLocking() {
       setUsers(prevUsers => prevUsers.map(u => 
         String(u.user_id) === String(formData.userId) ? { ...u, is_lock: 0 } : u
       ));
+
+      // Auto clear the form on successful unlock
+      setFormData(prev => ({
+        userId: prev.userId,
+        type: "",
+        fromDate: "",
+        toDate: "",
+        contactNumber: "",
+        remarks: "",
+      }));
+      setErrors({});
 
       // Refresh AuthContext profile if unlocking self
       if (String(formData.userId) === String(loggedInUserId) && refreshUser) {
@@ -284,23 +309,29 @@ export default function EffismLocking() {
             </div>
           </div>
         ) : (
-          <form className="effismLocking-form" onSubmit={handleSubmit}>
+          <form className="effismLocking-form" onSubmit={handleSubmit} noValidate>
             <div className="effismLocking-grid">
               <div className="effismLocking-row">
                 <label className="effismLocking-label" htmlFor="effism-name">
                   Name<span className="effismLocking-required">*</span>
                 </label>
-                <div className="effismLocking-field">
+                <div className={`effismLocking-field ${errors.userId ? "is-invalid" : ""}`}>
                   <EffismLiteDropdown
                     id="effism-name"
                     value={formData.userId}
-                    onValueChange={(val) => setFormData(prev => ({ ...prev, userId: val }))}
+                    onValueChange={(val) => {
+                      setFormData(prev => ({ ...prev, userId: val }));
+                      if (val) setErrors(prev => ({ ...prev, userId: "" }));
+                    }}
                     options={users.map((item) => ({
                       value: String(item.user_id),
                       label: item.full_name_code || `User #${item.user_id}`,
                     }))}
                     placeholder="Select a User"
                   />
+                  {errors.userId && (
+                    <span className="effismLocking-errorText">{errors.userId}</span>
+                  )}
                 </div>
               </div>
 
@@ -308,17 +339,24 @@ export default function EffismLocking() {
                 <label className="effismLocking-label" htmlFor="effism-type">
                   Type<span className="effismLocking-required">*</span>
                 </label>
-                <div className="effismLocking-field">
+                <div className={`effismLocking-field ${errors.type ? "is-invalid" : ""}`}>
                   <EffismLiteDropdown
                     id="effism-type"
                     value={formData.type}
-                    onValueChange={(val) => setFormData(prev => ({ ...prev, type: val }))}
+                    onValueChange={(val) => {
+                      setFormData(prev => ({ ...prev, type: val }));
+                      if (val) setErrors(prev => ({ ...prev, type: "" }));
+                    }}
                     options={lockTypes.map((item) => ({
                       value: String(item.id || item.type),
                       label: item.type || `Type #${item.id}`,
                     }))}
                     placeholder="Select an Option"
+                    searchable={true}
                   />
+                  {errors.type && (
+                    <span className="effismLocking-errorText">{errors.type}</span>
+                  )}
                 </div>
               </div>
 
@@ -327,21 +365,41 @@ export default function EffismLocking() {
                   Duration<span className="effismLocking-required">*</span>
                 </label>
                 <div className="effismLocking-field effismLocking-durationCell">
-                  <DatePickerField
-                    id="effism-from-date"
-                    placeholder="Select from date"
-                    value={formData.fromDate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, fromDate: e.target.value }))}
-                    formatDisplayValue={formatDateDisplayValue}
-                  />
-                  <DatePickerField
-                    id="effism-to-date"
-                    placeholder="Select to date"
-                    value={formData.toDate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, toDate: e.target.value }))}
-                    min={formData.fromDate || undefined}
-                    formatDisplayValue={formatDateDisplayValue}
-                  />
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <DatePickerField
+                      id="effism-from-date"
+                      placeholder="Select from date"
+                      value={formData.fromDate}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData(prev => ({ ...prev, fromDate: val }));
+                        if (val) setErrors(prev => ({ ...prev, fromDate: "" }));
+                      }}
+                      className={errors.fromDate ? "is-invalid" : ""}
+                      formatDisplayValue={formatDateDisplayValue}
+                    />
+                    {errors.fromDate && (
+                      <span className="effismLocking-errorText">{errors.fromDate}</span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <DatePickerField
+                      id="effism-to-date"
+                      placeholder="Select to date"
+                      value={formData.toDate}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData(prev => ({ ...prev, toDate: val }));
+                        if (val) setErrors(prev => ({ ...prev, toDate: "" }));
+                      }}
+                      min={formData.fromDate || undefined}
+                      className={errors.toDate ? "is-invalid" : ""}
+                      formatDisplayValue={formatDateDisplayValue}
+                    />
+                    {errors.toDate && (
+                      <span className="effismLocking-errorText">{errors.toDate}</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -350,7 +408,7 @@ export default function EffismLocking() {
                   Contact number in case of emergency
                   <span className="effismLocking-required">*</span>
                 </label>
-                <div className="effismLocking-field">
+                <div className={`effismLocking-field ${errors.contactNumber ? "is-invalid" : ""}`}>
                   <input
                     id="effism-contact"
                     className="effismLocking-control"
@@ -358,8 +416,10 @@ export default function EffismLocking() {
                     name="contactNumber"
                     value={formData.contactNumber}
                     onChange={handleChange}
-                    required
                   />
+                  {errors.contactNumber && (
+                    <span className="effismLocking-errorText">{errors.contactNumber}</span>
+                  )}
                 </div>
               </div>
 
@@ -367,15 +427,17 @@ export default function EffismLocking() {
                 <label className="effismLocking-label" htmlFor="effism-remarks">
                   Remarks<span className="effismLocking-required">*</span>
                 </label>
-                <div className="effismLocking-field">
+                <div className={`effismLocking-field ${errors.remarks ? "is-invalid" : ""}`}>
                   <textarea
                     id="effism-remarks"
                     className="effismLocking-control effismLocking-remarks"
                     name="remarks"
                     value={formData.remarks}
                     onChange={handleChange}
-                    required
                   />
+                  {errors.remarks && (
+                    <span className="effismLocking-errorText">{errors.remarks}</span>
+                  )}
                 </div>
               </div>
 
