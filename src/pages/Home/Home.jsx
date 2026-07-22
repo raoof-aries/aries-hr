@@ -39,7 +39,7 @@ export default function Home() {
   );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
@@ -221,7 +221,7 @@ export default function Home() {
       iconColor: "#166D5F",
       shadowColor: "rgba(1, 67, 66, 0.12)",
     },
-    /* {
+    {
       id: "hospital-assistance",
       title: "Hospital Assistance",
       description: "Chat with us on WhatsApp",
@@ -240,7 +240,7 @@ export default function Home() {
       bgColor: "#FFF3E0",
       iconColor: "#e68900",
       shadowColor: "rgba(230, 137, 0, 0.16)",
-    }, */
+    },
     {
       id: "incentive",
       title: "Incentive",
