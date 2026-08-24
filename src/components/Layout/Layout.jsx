@@ -828,8 +828,17 @@ export default function Layout({ children }) {
                 <button
                   className="layout-header-back"
                   onClick={() => {
-                    if (location.pathname === "/cpe" && location.search.includes("video=")) {
-                      navigate("/cpe");
+                    if (location.pathname === "/cpe") {
+                      const params = new URLSearchParams(location.search);
+                      if (params.get("video")) {
+                        params.delete("video");
+                        const rest = params.toString();
+                        navigate(rest ? `/cpe?${rest}` : "/cpe");
+                      } else if (params.get("category")) {
+                        navigate("/cpe");
+                      } else {
+                        navigate("/");
+                      }
                     } else {
                       navigate("/");
                     }
