@@ -139,6 +139,10 @@ export default function EffismLocking() {
     return formData.userId ? `User #${formData.userId}` : "Employee";
   }, [users, formData.userId, user, userName, loggedInUserId]);
 
+  const selectedLockType = useMemo(() => {
+    return lockTypes.find((item) => String(item.id) === String(formData.type));
+  }, [lockTypes, formData.type]);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({
@@ -176,6 +180,14 @@ export default function EffismLocking() {
       newErrors.remarks = "Please enter remarks.";
     }
 
+    if (selectedLockType && selectedLockType.fields) {
+      selectedLockType.fields.forEach((field) => {
+        if (!formData[field.name]) {
+          newErrors[field.name] = `Please enter ${field.label || field.name}.`;
+        }
+      });
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -185,14 +197,22 @@ export default function EffismLocking() {
     setIsSubmitting(true);
 
     try {
-      await lockUser({
+      const payload = {
         userId: formData.userId,
         type: formData.type,
         fromDate: formData.fromDate,
         toDate: formData.toDate,
         contactNumber: formData.contactNumber,
         remarks: formData.remarks,
-      });
+      };
+
+      if (selectedLockType && selectedLockType.fields) {
+        selectedLockType.fields.forEach((field) => {
+          payload[field.name] = formData[field.name];
+        });
+      }
+
+      await lockUser(payload);
       
       setLockResponse(1);
       localStorage.setItem(`effismLockResponse_${formData.userId}`, "1");
@@ -344,8 +364,34 @@ export default function EffismLocking() {
                     id="effism-type"
                     value={formData.type}
                     onValueChange={(val) => {
-                      setFormData(prev => ({ ...prev, type: val }));
-                      if (val) setErrors(prev => ({ ...prev, type: "" }));
+                      setFormData(prev => {
+                        const baseForm = {
+                          userId: prev.userId,
+                          type: val,
+                          fromDate: prev.fromDate,
+                          toDate: prev.toDate,
+                          contactNumber: prev.contactNumber,
+                          remarks: prev.remarks,
+                        };
+                        const nextType = lockTypes.find(item => String(item.id) === String(val));
+                        if (nextType && nextType.fields) {
+                          nextType.fields.forEach(field => {
+                            baseForm[field.name] = "";
+                          });
+                        }
+                        return baseForm;
+                      });
+
+                      setErrors(prev => {
+                        const nextErrors = { ...prev };
+                        delete nextErrors.type;
+                        if (selectedLockType && selectedLockType.fields) {
+                          selectedLockType.fields.forEach(field => {
+                            delete nextErrors[field.name];
+                          });
+                        }
+                        return nextErrors;
+                      });
                     }}
                     options={lockTypes.map((item) => ({
                       value: String(item.id || item.type),
@@ -359,6 +405,49 @@ export default function EffismLocking() {
                   )}
                 </div>
               </div>
+
+              {selectedLockType &&
+                selectedLockType.fields &&
+                selectedLockType.fields.map((field) => (
+                  <div key={field.name} className="effismLocking-row">
+                    <label className="effismLocking-label" htmlFor={`effism-${field.name}`}>
+                      {field.label}
+                      <span className="effismLocking-required">*</span>
+                    </label>
+                    <div className={`effismLocking-field ${errors[field.name] ? "is-invalid" : ""}`}>
+                      {field.type === "date" ? (
+                        <DatePickerField
+                          id={`effism-${field.name}`}
+                          placeholder={`Select ${field.label.toLowerCase()}`}
+                          value={formData[field.name] || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormData((prev) => ({ ...prev, [field.name]: val }));
+                            if (val) setErrors((prev) => ({ ...prev, [field.name]: "" }));
+                          }}
+                          className={errors[field.name] ? "is-invalid" : ""}
+                          formatDisplayValue={formatDateDisplayValue}
+                        />
+                      ) : (
+                        <input
+                          id={`effism-${field.name}`}
+                          className="effismLocking-control"
+                          type={field.type || "text"}
+                          name={field.name}
+                          value={formData[field.name] || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormData((prev) => ({ ...prev, [field.name]: val }));
+                            if (val) setErrors((prev) => ({ ...prev, [field.name]: "" }));
+                          }}
+                        />
+                      )}
+                      {errors[field.name] && (
+                        <span className="effismLocking-errorText">{errors[field.name]}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
 
               <div className="effismLocking-row">
                 <label className="effismLocking-label">
