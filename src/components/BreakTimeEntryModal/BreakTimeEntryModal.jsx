@@ -3,12 +3,6 @@ import { createPortal } from "react-dom";
 import { getDataUrl } from "../../utils/dataUrl";
 import "./BreakTimeEntryModal.css";
 
-const DEFAULT_BREAK_OUT_REASONS = [
-  "Breakfast",
-  "Lunch",
-  "Client Visit",
-  "Personal",
-];
 const OTHER_REASON = "Other";
 const REASON_PLACEHOLDER = "";
 
@@ -29,9 +23,7 @@ export default function BreakTimeEntryModal({
   onClose,
   onSubmit,
 }) {
-  const [availableReasons, setAvailableReasons] = useState(
-    DEFAULT_BREAK_OUT_REASONS,
-  );
+  const [availableReasons, setAvailableReasons] = useState([]);
   const [reason, setReason] = useState(REASON_PLACEHOLDER);
   const [customReason, setCustomReason] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -67,7 +59,7 @@ export default function BreakTimeEntryModal({
         console.error("Unable to load break time options:", error);
 
         if (!isCancelled) {
-          setAvailableReasons(DEFAULT_BREAK_OUT_REASONS);
+          setAvailableReasons([]);
         }
       }
     };
