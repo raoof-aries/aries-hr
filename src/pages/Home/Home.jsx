@@ -39,7 +39,7 @@ export default function Home() {
   );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance", "cpe"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
@@ -264,7 +264,7 @@ export default function Home() {
       iconColor: "#12725F",
       shadowColor: "rgba(1, 67, 66, 0.13)",
     },
-    /* {
+    {
       id: "cpe",
       title: "CPE",
       description: "Watch training videos",
@@ -286,7 +286,7 @@ export default function Home() {
       bgColor: "#E3F2FD",
       iconColor: "#1976D2",
       shadowColor: "rgba(25, 118, 210, 0.16)",
-    }, */
+    },
     {
       id: "allowance",
       title: "Allowance",
