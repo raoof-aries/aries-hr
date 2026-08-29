@@ -830,6 +830,10 @@ export default function Layout({ children }) {
                   onClick={() => {
                     if (location.pathname === "/cpe") {
                       const params = new URLSearchParams(location.search);
+                      if (params.get("exam")) {
+                        window.dispatchEvent(new CustomEvent("cpe-exam-back-attempt"));
+                        return;
+                      }
                       if (params.get("video")) {
                         params.delete("video");
                         const rest = params.toString();

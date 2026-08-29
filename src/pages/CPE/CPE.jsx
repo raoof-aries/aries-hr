@@ -1,43 +1,44 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { 
   LuPlay, 
-  LuCheck, 
   LuClock, 
   LuRotateCcw, 
-  LuGraduationCap, 
   LuAward, 
-  LuBookOpen,
   LuSparkles,
+  LuPrinter,
+  LuX,
+  LuGraduationCap,
   LuFolder,
   LuTv,
   LuPresentation,
   LuBrain,
   LuUsers,
   LuLayers,
-  LuInfo,
-  LuArrowLeft,
-  LuChevronRight
+  LuBookOpen,
+  LuChevronRight,
+  LuCheck
 } from 'react-icons/lu';
 import './CPE.css';
 import CpePlayer from './CpePlayer';
+import CpeExamPage from './CpeExamPage';
+import { useAuth } from '../../context/AuthContext';
 
 // 1. Parent Categories Definition (Aries HR Design System)
 const PARENT_CATEGORIES = [
   {
     id: 'ceo-commandments',
     title: 'CEO Commandments',
-    description: 'Core organizational policies & ethics',
     icon: LuFolder,
     badgeText: null,
-    totalText: 'Core Directives',
+    totalText: null,
     accentColor: '#D97706',
     bgColor: '#FEF3C7',
   },
   {
     id: '2026-cpe-ceo',
     title: '2026 CPE (Framed By CEO)',
-    description: 'Annual strategic milestones & vision',
     icon: LuTv,
     hasInfo: false,
     badgeText: null,
@@ -48,7 +49,6 @@ const PARENT_CATEGORIES = [
   {
     id: 'ceo-videos',
     title: 'CEO Videos',
-    description: 'Executive townhall addresses & talks',
     icon: LuPresentation,
     badgeText: null,
     totalText: '14 Videos',
@@ -58,7 +58,6 @@ const PARENT_CATEGORIES = [
   {
     id: 'ai-videos',
     title: 'AI Videos',
-    description: 'AI tools, workflows & automation',
     icon: LuBrain,
     badgeText: null,
     totalText: '13 Videos',
@@ -68,7 +67,6 @@ const PARENT_CATEGORIES = [
   {
     id: 'general-topics',
     title: 'General Topics',
-    description: 'Safety, soft skills & team efficiency',
     icon: LuUsers,
     badgeText: '18',
     totalText: '108 Videos',
@@ -78,7 +76,6 @@ const PARENT_CATEGORIES = [
   {
     id: 'division-topics',
     title: 'Division Topics',
-    description: 'Departmental standards & SOPs',
     icon: LuLayers,
     badgeText: '36',
     totalText: '41 Videos',
@@ -88,177 +85,251 @@ const PARENT_CATEGORIES = [
   {
     id: 'external-training',
     title: 'External Training',
-    description: 'Industry certifications & workshops',
     icon: LuGraduationCap,
     badgeText: null,
-    totalText: 'Certificates',
+    totalText: null,
     accentColor: '#D97706',
     bgColor: '#FFFBEB',
   },
   {
     id: 'my-training-details',
     title: 'My Training Details',
-    description: 'Learning record & completed history',
     icon: LuAward,
     badgeText: null,
-    totalText: 'History Logs',
+    totalText: null,
     accentColor: '#059669',
     bgColor: '#ECFDF5',
   },
   {
     id: 'hartoise',
     title: 'Hartoise',
-    description: 'Company knowledge base & library',
     icon: LuBookOpen,
     badgeText: null,
-    totalText: 'Knowledge Portal',
+    totalText: null,
     accentColor: '#475569',
     bgColor: '#F1F5F9',
   },
 ];
 
-// 2. Training module videos dataset organized by category
+// 2. Training module dataset organized by category with table fields
 const INITIAL_VIDEOS = [
   // General Topics
   {
     id: '1',
+    slNo: 1,
     categoryId: 'general-topics',
-    title: 'Introduction to Workplace Safety',
-    description: 'Learn the essentials of maintaining a safe environment at work, hazard recognition, and emergency response procedures.',
-    duration: '0:46',
-    category: 'Health & Safety',
-    bannerGradient: 'linear-gradient(135deg, #0F7A67 0%, #084339 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'pending'
+    title: 'CPR, AED and First-Aid Comprehensive Training',
+    tag: 'QHSE',
+    duration: '2:00',
+    passMark: '15 / 20',
+    score: null,
+    status: 'pending',
+    videoWatched: false,
+    examAttended: false,
+    examScore: null,
+    examPassed: false,
+    hasCertificate: false,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   {
     id: '2',
+    slNo: 2,
     categoryId: 'general-topics',
-    title: 'Advanced Communication Skills',
-    description: 'Enhance your workplace communication, master active listening, and resolve team conflicts with confidence.',
+    title: 'Advanced Communication Skills & Active Listening',
+    tag: 'HR',
     duration: '0:46',
-    category: 'Soft Skills',
-    bannerGradient: 'linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'pending'
+    passMark: '15 / 20',
+    score: null,
+    status: 'pending',
+    videoWatched: false,
+    examAttended: false,
+    examScore: null,
+    examPassed: false,
+    hasCertificate: false,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   {
     id: '3',
+    slNo: 3,
     categoryId: 'general-topics',
-    title: 'Time Management Fundamentals',
-    description: 'Discover practical techniques to prioritize daily tasks, overcome procrastination, and boost productivity.',
+    title: 'Time Management & Focus Fundamentals',
+    tag: 'GEN',
     duration: '0:46',
-    category: 'Productivity',
-    bannerGradient: 'linear-gradient(135deg, #D97706 0%, #92400E 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'watched'
+    passMark: '15 / 20',
+    score: '20 / 20',
+    status: 'watched',
+    statusText: 'Excellent Score : 20 / 20',
+    videoWatched: true,
+    examAttended: true,
+    examScore: 20,
+    examPassed: true,
+    hasCertificate: true,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   {
     id: '4',
+    slNo: 4,
     categoryId: 'general-topics',
-    title: 'Leadership in the Digital Age',
-    description: 'Strategies for leading hybrid teams, fostering psychological safety, and driving continuous innovation.',
+    title: 'Leadership in the Digital Age & Hybrid Teams',
+    tag: 'MGT',
     duration: '0:46',
-    category: 'Leadership',
-    bannerGradient: 'linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'watched'
+    passMark: '15 / 20',
+    score: '19 / 20',
+    status: 'watched',
+    statusText: 'Excellent Score : 19 / 20',
+    videoWatched: true,
+    examAttended: true,
+    examScore: 19,
+    examPassed: true,
+    hasCertificate: true,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   // CEO Commandments
   {
     id: '5',
+    slNo: 1,
     categoryId: 'ceo-commandments',
     title: 'Company Mission & Core Values 2026',
-    description: 'Understanding the overarching organizational vision, customer-first principles, and cultural pillars.',
+    tag: 'EXEC',
     duration: '1:15',
-    category: 'Strategy',
-    bannerGradient: 'linear-gradient(135deg, #B91C1C 0%, #7F1D1D 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'pending'
+    passMark: '15 / 20',
+    score: null,
+    status: 'pending',
+    videoWatched: false,
+    examAttended: false,
+    examScore: null,
+    examPassed: false,
+    hasCertificate: false,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   // 2026 CPE (Framed By CEO)
   {
     id: '6',
+    slNo: 1,
     categoryId: '2026-cpe-ceo',
     title: '2026 Organizational Growth & Goals',
-    description: 'Key milestones, departmental targets, and professional competency frameworks for 2026.',
+    tag: 'STRATEGY',
     duration: '2:30',
-    category: 'Executive',
-    bannerGradient: 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'pending'
+    passMark: '15 / 20',
+    score: null,
+    status: 'pending',
+    videoWatched: false,
+    examAttended: false,
+    examScore: null,
+    examPassed: false,
+    hasCertificate: false,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   // CEO Videos
   {
     id: '7',
+    slNo: 1,
     categoryId: 'ceo-videos',
-    title: 'Quarterly Townhall & CEO Address',
-    description: 'Insights from executive leadership on current accomplishments and upcoming market opportunities.',
+    title: 'Quarterly Townhall & Executive Address',
+    tag: 'EXEC',
     duration: '3:00',
-    category: 'Executive',
-    bannerGradient: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'pending'
+    passMark: '15 / 20',
+    score: null,
+    status: 'pending',
+    videoWatched: false,
+    examAttended: false,
+    examScore: null,
+    examPassed: false,
+    hasCertificate: false,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   // AI Videos
   {
     id: '8',
+    slNo: 28,
     categoryId: 'ai-videos',
-    title: 'Leveraging AI in Daily Operations',
-    description: 'Best practices for prompt engineering, workflow automation, and ethical generative AI utilization.',
-    duration: '0:46',
-    category: 'Technology',
-    bannerGradient: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'pending'
+    title: 'Prompt Engineering for AI Applications',
+    tag: 'AI',
+    duration: '3:00',
+    passMark: '15 / 20',
+    score: null,
+    status: 'watched',
+    statusText: 'Video Watched',
+    videoWatched: true,
+    examAttended: false,
+    examScore: null,
+    examPassed: false,
+    hasCertificate: false,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   // Division Topics
   {
     id: '9',
+    slNo: 1,
     categoryId: 'division-topics',
-    title: 'Division Quality Standards & SOPs',
-    description: 'Operational guidelines and standard operating procedures tailored for our division members.',
+    title: 'Division Quality Standards & SOP Guidelines',
+    tag: 'QA',
     duration: '0:46',
-    category: 'Operations',
-    bannerGradient: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'pending'
+    passMark: '15 / 20',
+    score: null,
+    status: 'pending',
+    videoWatched: false,
+    examAttended: false,
+    examScore: null,
+    examPassed: false,
+    hasCertificate: false,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   // External Training
   {
     id: '10',
+    slNo: 1,
     categoryId: 'external-training',
-    title: 'Global Compliance & Industry Certifications',
-    description: 'External regulatory standards, compliance requirements, and continuing education certification.',
-    duration: '1:45',
-    category: 'Compliance',
-    bannerGradient: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'watched'
+    title: 'HR Technology & Future Trends',
+    tag: 'AIMRI',
+    duration: '0:30',
+    passMark: '15 / 20',
+    score: '20 / 20',
+    status: 'watched',
+    statusText: 'Excellent Score : 20 / 20',
+    videoWatched: true,
+    examAttended: true,
+    examScore: 20,
+    examPassed: true,
+    hasCertificate: true,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   // My Training Details
   {
     id: '11',
+    slNo: 1,
     categoryId: 'my-training-details',
-    title: 'Personalized Skills Matrix Review',
-    description: 'Self-assessment guide and roadmap for ongoing professional milestones and career advancement.',
+    title: 'Personalized Skills Matrix & Competency Review',
+    tag: 'HR',
     duration: '0:46',
-    category: 'Career Growth',
-    bannerGradient: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'watched'
+    passMark: '15 / 20',
+    score: '18 / 20',
+    status: 'watched',
+    statusText: 'Excellent Score : 18 / 20',
+    videoWatched: true,
+    examAttended: true,
+    examScore: 18,
+    examPassed: true,
+    hasCertificate: true,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
   // Hartoise
   {
     id: '12',
+    slNo: 1,
     categoryId: 'hartoise',
-    title: 'Hartoise System Navigation & Features',
-    description: 'Comprehensive walkthrough of knowledge management, shared repositories, and document access.',
+    title: 'Hartoise System Navigation & Knowledge Base',
+    tag: 'SYS',
     duration: '0:46',
-    category: 'Systems',
-    bannerGradient: 'linear-gradient(135deg, #475569 0%, #334155 100%)',
-    url: 'https://vjs.zencdn.net/v/oceans.mp4',
-    status: 'pending'
+    passMark: '15 / 20',
+    score: null,
+    status: 'pending',
+    videoWatched: false,
+    examAttended: false,
+    examScore: null,
+    examPassed: false,
+    hasCertificate: false,
+    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   }
 ];
 
@@ -266,15 +337,19 @@ const CPE = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('pending');
   const [videos, setVideos] = useState(INITIAL_VIDEOS);
+  const [selectedCertificateVideo, setSelectedCertificateVideo] = useState(null);
+  const { user, userName } = useAuth();
 
   // URL state
   const selectedCategoryId = searchParams.get('category');
   const activeVideoId = searchParams.get('video');
+  const activeExamVideoId = searchParams.get('exam');
 
   const selectedCategory = PARENT_CATEGORIES.find(c => c.id === selectedCategoryId) || null;
   const activeVideo = videos.find(v => v.id === activeVideoId) || null;
+  const activeExamVideo = videos.find(v => v.id === activeExamVideoId) || null;
 
-  // Filter videos for selected category (or fallback to category match)
+  // Videos filtered for selected category
   const categoryVideos = selectedCategoryId 
     ? videos.filter(v => v.categoryId === selectedCategoryId)
     : [];
@@ -285,7 +360,45 @@ const CPE = () => {
 
   const handleVideoComplete = (videoId) => {
     setVideos(prev => 
-      prev.map(v => v.id === videoId ? { ...v, status: 'watched' } : v)
+      prev.map(v => v.id === videoId ? { 
+        ...v, 
+        videoWatched: true
+      } : v)
+    );
+  };
+
+  const handleOpenExam = (video) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('exam', video.id);
+    setSearchParams(nextParams);
+  };
+
+  const handleCloseExam = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('exam');
+    setSearchParams(nextParams);
+  };
+
+  const handleExamScoreSubmit = (videoId, score, passed, isFullMark) => {
+    setVideos(prev => 
+      prev.map(v => {
+        if (v.id !== videoId) return v;
+        return {
+          ...v,
+          videoWatched: true,
+          examAttended: true,
+          examScore: score,
+          examPassed: passed,
+          score: `${score} / 20`,
+          status: passed ? 'watched' : v.status,
+          statusText: isFullMark 
+            ? 'Excellent Score : 20 / 20' 
+            : passed 
+              ? `Passed Score : ${score} / 20` 
+              : `Score : ${score} / 20 (Pass: 15)`,
+          hasCertificate: passed
+        };
+      })
     );
   };
 
@@ -294,8 +407,12 @@ const CPE = () => {
     setActiveTab('pending');
   };
 
-  const handleBackToCategories = () => {
-    setSearchParams({});
+  const handleOpenVideo = (videoId) => {
+    if (selectedCategoryId) {
+      setSearchParams({ category: selectedCategoryId, video: videoId });
+    } else {
+      setSearchParams({ video: videoId });
+    }
   };
 
   const handleClosePlayer = () => {
@@ -306,7 +423,103 @@ const CPE = () => {
     }
   };
 
-  // 1. VIDEO PLAYER VIEW
+  const handlePrintCertificate = (video, e) => {
+    if (e) e.stopPropagation();
+    setSelectedCertificateVideo(video);
+  };
+
+  const handleCloseCertificate = () => {
+    setSelectedCertificateVideo(null);
+  };
+
+  const renderCertificateModal = () => {
+    if (!selectedCertificateVideo) return null;
+    return createPortal(
+      <div className="cpe-modal-overlay" onClick={handleCloseCertificate}>
+        <div className="cpe-cert-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="cpe-cert-modal-header">
+            <div className="cpe-cert-modal-title-wrap">
+              <LuAward size={20} className="cpe-cert-modal-icon" />
+              <h3>Training Certificate</h3>
+            </div>
+            <button 
+              className="cpe-cert-close-btn"
+              onClick={handleCloseCertificate}
+              aria-label="Close certificate"
+            >
+              <LuX size={18} />
+            </button>
+          </div>
+
+          <div className="cpe-cert-preview">
+            <div className="cpe-cert-frame">
+              <div className="cpe-cert-watermark">
+                <LuGraduationCap size={120} />
+              </div>
+              <div className="cpe-cert-badge-top">
+                <LuCheck size={16} strokeWidth={2.8} />
+                <span>Aries HR • CPE Certified</span>
+              </div>
+              <h2 className="cpe-cert-name">Certificate of Completion</h2>
+              <p className="cpe-cert-sub">This is proudly presented to</p>
+              <h1 className="cpe-cert-recipient">{user?.name || userName || "Employee"}</h1>
+              <p className="cpe-cert-text">
+                For successfully completing the training module and achieving the required score:
+              </p>
+              <h4 className="cpe-cert-topic">
+                {selectedCertificateVideo.title}{' '}
+                {selectedCertificateVideo.tag && `(${selectedCertificateVideo.tag})`}
+              </h4>
+              <div className="cpe-cert-stats-grid">
+                <div className="cpe-cert-stat">
+                  <span>Sl.No</span>
+                  <strong>#{selectedCertificateVideo.slNo}</strong>
+                </div>
+                <div className="cpe-cert-stat">
+                  <span>Pass Mark</span>
+                  <strong>{selectedCertificateVideo.passMark}</strong>
+                </div>
+                <div className="cpe-cert-stat">
+                  <span>Duration</span>
+                  <strong>{selectedCertificateVideo.duration}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="cpe-cert-modal-footer">
+            <button 
+              className="cpe-cert-download-btn"
+              onClick={() => {
+                window.print();
+              }}
+            >
+              <LuPrinter size={16} />
+              <span>Print Certificate</span>
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
+  // 1. ASSESSMENT EXAM FULL PAGE VIEW (Replaces popup with dedicated mobile-friendly page)
+  if (activeExamVideo) {
+    return (
+      <div className="cpe-container">
+        <CpeExamPage 
+          video={activeExamVideo}
+          onClose={handleCloseExam}
+          onSubmitScore={handleExamScoreSubmit}
+          onOpenCertificate={(video) => setSelectedCertificateVideo(video)}
+        />
+        {renderCertificateModal()}
+      </div>
+    );
+  }
+
+  // 2. VIDEO PLAYER VIEW
   if (activeVideo) {
     return (
       <div className="cpe-container">
@@ -314,12 +527,14 @@ const CPE = () => {
           video={activeVideo}
           onClose={handleClosePlayer}
           onComplete={() => handleVideoComplete(activeVideo.id)}
+          onOpenExam={handleOpenExam}
         />
+        {renderCertificateModal()}
       </div>
     );
   }
 
-  // 2. INNER CATEGORY LISTING VIEW
+  // 2. INNER CATEGORY LISTING VIEW (Clean Kanban Cards - No redundant All Categories link/arrow)
   if (selectedCategory) {
     const totalCount = categoryVideos.length;
     const completedCount = watchedVideos.length;
@@ -329,17 +544,8 @@ const CPE = () => {
       <div className="cpe-container">
         <div className="cpe-listing-wrapper">
           
-          {/* Breadcrumb / Back Bar */}
+          {/* Inner Header Row (Title & Module Count - No redundant '< All Categories' link) */}
           <div className="cpe-inner-header-bar">
-            <button 
-              className="cpe-back-nav-btn"
-              onClick={handleBackToCategories}
-              aria-label="Back to categories"
-            >
-              <LuArrowLeft size={18} />
-              <span>All Categories</span>
-            </button>
-            
             <div className="cpe-inner-title-row">
               <h2 className="cpe-inner-title">{selectedCategory.title}</h2>
               <span className="cpe-inner-count-tag">{totalCount} Modules</span>
@@ -349,14 +555,7 @@ const CPE = () => {
           {/* Category Progress Card */}
           <div className="cpe-overview-card">
             <div className="cpe-overview-header">
-              <div 
-                className="cpe-overview-icon-badge"
-                style={{ background: selectedCategory.accentColor }}
-              >
-                <selectedCategory.icon size={20} />
-              </div>
               <div className="cpe-overview-title-group">
-                <div className="cpe-overview-kicker">{selectedCategory.totalText}</div>
                 <h3 className="cpe-overview-title">Category Progress</h3>
               </div>
               <div className="cpe-overview-pct-badge">
@@ -383,7 +582,7 @@ const CPE = () => {
             </div>
           </div>
 
-          {/* Segmented Pill Navigation */}
+          {/* Segmented Pill Tabs */}
           <div className="cpe-tabs-container">
             <div className="cpe-segmented-tabs" role="tablist">
               <button 
@@ -407,15 +606,15 @@ const CPE = () => {
             </div>
           </div>
 
-          {/* Video Cards List */}
-          <section className="cpe-cards-list" aria-live="polite">
+          {/* Kanban Cards List */}
+          <section className="cpe-kanban-list" aria-live="polite">
             {filteredVideos.length === 0 ? (
               <div className="cpe-empty-state">
                 <div className="cpe-empty-icon-wrap">
                   {activeTab === 'pending' ? (
                     <LuAward size={34} />
                   ) : (
-                    <LuBookOpen size={34} />
+                    <LuSparkles size={34} />
                   )}
                 </div>
                 <h3 className="cpe-empty-title">
@@ -423,8 +622,8 @@ const CPE = () => {
                 </h3>
                 <p className="cpe-empty-desc">
                   {activeTab === 'pending' 
-                    ? `Great job! You have completed all assigned training videos in ${selectedCategory.title}.` 
-                    : "Videos you finish watching will appear here so you can review them at any time."}
+                    ? `Great job! You have completed all assigned training video modules in ${selectedCategory.title}.` 
+                    : "Modules you finish will appear here where you can watch again or print certificates."}
                 </p>
                 {activeTab === 'pending' && watchedVideos.length > 0 && (
                   <button 
@@ -438,81 +637,129 @@ const CPE = () => {
             ) : (
               filteredVideos.map((video, index) => (
                 <article 
-                  className={`cpe-card ${video.status === 'watched' ? 'cpe-card--watched' : ''}`} 
+                  className="cpe-kanban-card" 
                   key={video.id} 
                   style={{ '--card-order': index }}
-                  onClick={() => setSearchParams({ category: selectedCategoryId, video: video.id })}
                 >
-                  {/* Card Visual Banner / Thumbnail */}
-                  <div 
-                    className="cpe-card-banner" 
-                    style={{ background: video.bannerGradient }}
-                  >
-                    <div className="cpe-card-banner-grid" />
-                    
-                    <div className="cpe-banner-top">
-                      <span className="cpe-category-pill">
-                        {video.category}
+                  {/* Top Row: Sl.No, Title & Status */}
+                  <div className="cpe-kanban-header">
+                    <div className="cpe-kanban-slno">
+                      <span>{video.slNo}</span>
+                    </div>
+
+                    <div className="cpe-kanban-title-wrap">
+                      <h3 className="cpe-kanban-title">
+                        {video.title}{' '}
+                        {video.tag && <span className="cpe-kanban-tag">({video.tag})</span>}
+                      </h3>
+                    </div>
+
+                    {video.status === 'watched' && (
+                      <div className="cpe-kanban-status-badge">
+                        <span className="cpe-status-text-green">
+                          {video.statusText || 'Video Watched'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Middle Row: Duration & Pass Mark */}
+                  <div className="cpe-kanban-details-row">
+                    <div className="cpe-kanban-detail-item">
+                      <span className="cpe-detail-label">Duration:</span>
+                      <span className="cpe-detail-val cpe-duration-val">
+                        <LuClock size={13} />
+                        {video.duration}
                       </span>
-                      {video.status === 'watched' ? (
-                        <span className="cpe-status-pill cpe-status-pill--completed">
-                          <LuCheck size={12} strokeWidth={2.8} />
-                          Completed
+                    </div>
+
+                    <div className="cpe-kanban-detail-item">
+                      <span className="cpe-detail-label">Pass Mark:</span>
+                      <span className="cpe-detail-val">
+                        {video.passMark}
+                      </span>
+                    </div>
+
+                    {video.score && (
+                      <div className="cpe-kanban-detail-item">
+                        <span className="cpe-detail-label">Score:</span>
+                        <span className="cpe-detail-val cpe-score-val">
+                          {video.score}
                         </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bottom Row: Actions */}
+                  <div className="cpe-kanban-footer">
+                    <div className="cpe-kanban-actions-left">
+                      {video.videoWatched ? (
+                        <button 
+                          type="button"
+                          className="cpe-table-btn"
+                          onClick={() => handleOpenVideo(video.id)}
+                        >
+                          <LuRotateCcw size={13} />
+                          <span>Watch Again</span>
+                        </button>
                       ) : (
-                        <span className="cpe-status-pill cpe-status-pill--pending">
-                          Pending
-                        </span>
+                        <button 
+                          type="button"
+                          className="cpe-table-btn"
+                          onClick={() => handleOpenVideo(video.id)}
+                        >
+                          <LuPlay size={13} />
+                          <span>Start Video</span>
+                        </button>
+                      )}
+
+                      {/* Attend or Re-attend Exam Button */}
+                      {video.videoWatched && (
+                        !video.examAttended ? (
+                          <button
+                            type="button"
+                            className="cpe-table-btn cpe-table-btn--exam-attend"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenExam(video);
+                            }}
+                          >
+                            <LuGraduationCap size={13} />
+                            <span>Attend Exam</span>
+                          </button>
+                        ) : video.examScore === 20 ? (
+                          <span className="cpe-kanban-full-badge">
+                            <LuSparkles size={12} />
+                            <span>Full Marks (20/20)</span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="cpe-table-btn cpe-table-btn--exam-reattend"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenExam(video);
+                            }}
+                          >
+                            <LuRotateCcw size={13} />
+                            <span>Re-attend Exam</span>
+                          </button>
+                        )
                       )}
                     </div>
 
-                    <div className="cpe-banner-center">
-                      <div className="cpe-play-badge">
-                        <LuPlay size={20} fill="currentColor" />
+                    {video.hasCertificate && (
+                      <div className="cpe-kanban-actions-right">
+                        <button
+                          type="button"
+                          className="cpe-table-btn cpe-table-btn--print"
+                          onClick={(e) => handlePrintCertificate(video, e)}
+                        >
+                          <LuPrinter size={13} />
+                          <span>Print</span>
+                        </button>
                       </div>
-                    </div>
-
-                    <div className="cpe-banner-bottom">
-                      <span className="cpe-duration-tag">
-                        <LuClock size={12} />
-                        <span>{video.duration} mins</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Card Body */}
-                  <div className="cpe-card-body">
-                    <div className="cpe-card-header-row">
-                      <h3 className="cpe-card-title">{video.title}</h3>
-                    </div>
-                    
-                    <p className="cpe-card-desc">{video.description}</p>
-                    
-                    <div className="cpe-card-footer">
-                      <div className="cpe-card-module-tag">
-                        Module {String(video.id).padStart(2, '0')}
-                      </div>
-
-                      <button 
-                        className={`cpe-action-btn ${video.status === 'watched' ? 'cpe-action-btn--watched' : 'cpe-action-btn--primary'}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSearchParams({ category: selectedCategoryId, video: video.id });
-                        }}
-                      >
-                        {video.status === 'watched' ? (
-                          <>
-                            <LuRotateCcw size={14} />
-                            <span>Watch Again</span>
-                          </>
-                        ) : (
-                          <>
-                            <LuPlay size={14} fill="currentColor" />
-                            <span>Watch Video</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
+                    )}
                   </div>
                 </article>
               ))
@@ -520,11 +767,13 @@ const CPE = () => {
           </section>
 
         </div>
+
+        {renderCertificateModal()}
       </div>
     );
   }
 
-  // 3. PARENT MAIN VIEW (Status Table/Dashboard + Category Grid)
+  // 3. PARENT MAIN VIEW (Status Table/Dashboard + 9 Training Categories Grid)
   return (
     <div className="cpe-container">
       <div className="cpe-parent-wrapper">
@@ -532,10 +781,9 @@ const CPE = () => {
         {/* TOP: CPE Status / 2026 Dashboard Card */}
         <section className="cpe-status-card" aria-label="CPE Status 2026">
           
-          {/* Card Header: 2026 CPE Status + Progress Pill */}
+          {/* Card Header: CPE Status + Progress Pill */}
           <div className="cpe-status-head">
             <div className="cpe-status-badge-title">
-              <span className="cpe-status-badge-pill">2026</span>
               <h2 className="cpe-status-main-title">CPE Status</h2>
             </div>
             <div className="cpe-status-overall-pct">
@@ -565,79 +813,63 @@ const CPE = () => {
             </div>
           </div>
 
-          {/* Category Breakdown (General, Division, External) */}
-          <div className="cpe-status-breakdown">
-            <div className="cpe-breakdown-heading">Category Breakdown</div>
-
-            <div className="cpe-breakdown-list">
-              
-              {/* 1. General */}
-              <div className="cpe-breakdown-item">
-                <div className="cpe-breakdown-info">
-                  <div className="cpe-breakdown-title-group">
-                    <span className="cpe-breakdown-name">General</span>
-                    <span className="cpe-breakdown-status-tag cpe-status-tag--done">
-                      <LuCheck size={10} strokeWidth={3} />
-                      Done
-                    </span>
-                  </div>
-                  <div className="cpe-breakdown-hours-group">
-                    <span className="cpe-breakdown-hours cpe-text--done">12:30</span>
-                    <span className="cpe-breakdown-target">/ 12:30 hrs</span>
-                    <span className="cpe-breakdown-excess-pill">Excess: +06:30</span>
-                  </div>
-                </div>
-                <div className="cpe-breakdown-track">
-                  <div className="cpe-breakdown-fill cpe-fill--green" style={{ width: '100%' }} />
-                </div>
+          {/* 3 Breakdown Columns - In a Row */}
+          <div className="cpe-status-grid-3">
+            
+            {/* Column 1: General */}
+            <div className="cpe-status-col-card cpe-col--done">
+              <span className="cpe-col-name">General</span>
+              <span className="cpe-col-tag cpe-tag--done">
+                <LuCheck size={10} strokeWidth={3} />
+                Done
+              </span>
+              <div className="cpe-col-hours">
+                <span className="cpe-col-val cpe-val--done">12:30</span>
+                <span className="cpe-col-target">/ 12:30</span>
               </div>
-
-              {/* 2. Division */}
-              <div className="cpe-breakdown-item">
-                <div className="cpe-breakdown-info">
-                  <div className="cpe-breakdown-title-group">
-                    <span className="cpe-breakdown-name">Division</span>
-                    <span className="cpe-breakdown-status-tag cpe-status-tag--pending">
-                      11:30 left
-                    </span>
-                  </div>
-                  <div className="cpe-breakdown-hours-group">
-                    <span className="cpe-breakdown-hours cpe-text--pending">1:00</span>
-                    <span className="cpe-breakdown-target">/ 12:30 hrs</span>
-                    <span className="cpe-breakdown-excess-muted">Excess: Nil</span>
-                  </div>
-                </div>
-                <div className="cpe-breakdown-track">
-                  <div className="cpe-breakdown-fill cpe-fill--amber" style={{ width: '8%' }} />
-                </div>
+              <div className="cpe-col-bar">
+                <div className="cpe-col-fill cpe-fill--green" style={{ width: '100%' }} />
               </div>
-
-              {/* 3. External */}
-              <div className="cpe-breakdown-item">
-                <div className="cpe-breakdown-info">
-                  <div className="cpe-breakdown-title-group">
-                    <span className="cpe-breakdown-name">External</span>
-                    <span className="cpe-breakdown-status-tag cpe-status-tag--pending">
-                      10:00 left
-                    </span>
-                  </div>
-                  <div className="cpe-breakdown-hours-group">
-                    <span className="cpe-breakdown-hours cpe-text--pending">15:00</span>
-                    <span className="cpe-breakdown-target">/ 25:00 hrs</span>
-                    <span className="cpe-breakdown-excess-muted">Excess: Nil</span>
-                  </div>
-                </div>
-                <div className="cpe-breakdown-track">
-                  <div className="cpe-breakdown-fill cpe-fill--teal" style={{ width: '60%' }} />
-                </div>
-              </div>
-
+              <span className="cpe-col-excess cpe-excess--blue">+06:30 Excess</span>
             </div>
+
+            {/* Column 2: Division */}
+            <div className="cpe-status-col-card cpe-col--pending">
+              <span className="cpe-col-name">Division</span>
+              <span className="cpe-col-tag cpe-tag--pending">
+                11:30 left
+              </span>
+              <div className="cpe-col-hours">
+                <span className="cpe-col-val cpe-val--amber">1:00</span>
+                <span className="cpe-col-target">/ 12:30</span>
+              </div>
+              <div className="cpe-col-bar">
+                <div className="cpe-col-fill cpe-fill--amber" style={{ width: '8%' }} />
+              </div>
+              <span className="cpe-col-excess cpe-excess--muted">Excess: 0</span>
+            </div>
+
+            {/* Column 3: External */}
+            <div className="cpe-status-col-card cpe-col--pending">
+              <span className="cpe-col-name">External</span>
+              <span className="cpe-col-tag cpe-tag--pending">
+                10:00 left
+              </span>
+              <div className="cpe-col-hours">
+                <span className="cpe-col-val cpe-val--amber">15:00</span>
+                <span className="cpe-col-target">/ 25:00</span>
+              </div>
+              <div className="cpe-col-bar">
+                <div className="cpe-col-fill cpe-fill--teal" style={{ width: '60%' }} />
+              </div>
+              <span className="cpe-col-excess cpe-excess--muted">Excess: 0</span>
+            </div>
+
           </div>
 
         </section>
 
-        {/* BOTTOM: 9 Parent Modules Grid */}
+        {/* BOTTOM: 9 Parent Categories Grid */}
         <section className="cpe-categories-section">
           <div className="cpe-section-header">
             <h3 className="cpe-section-title">Training Categories</h3>
@@ -682,18 +914,15 @@ const CPE = () => {
                     <h4 className="cpe-parent-title">
                       {category.title}
                     </h4>
-                    {category.description && (
-                      <p className="cpe-parent-desc">
-                        {category.description}
-                      </p>
-                    )}
                   </div>
 
-                  <div className="cpe-parent-footer-row">
-                    <span className="cpe-parent-footer-pill">
-                      {category.totalText}
-                    </span>
-                  </div>
+                  {category.totalText && (
+                    <div className="cpe-parent-footer-row">
+                      <span className="cpe-parent-footer-pill">
+                        {category.totalText}
+                      </span>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -706,3 +935,5 @@ const CPE = () => {
 };
 
 export default CPE;
+
+

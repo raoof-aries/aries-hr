@@ -5,16 +5,32 @@ import {
   LuVolume2, 
   LuVolumeX, 
   LuMaximize, 
-  LuArrowLeft
+  LuArrowLeft,
+  LuAward,
+  LuSparkles,
+  LuRotateCcw,
+  LuClock,
+  LuGraduationCap
 } from 'react-icons/lu';
 import { FiMoreVertical } from 'react-icons/fi';
 import './CPE.css';
 
-const CpePlayer = ({ video, onClose, onComplete }) => {
+const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
   const { url, title, description, duration: durationLabel, status } = video;
   
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+  
+  // Track if video has finished playing
+  const [hasFinishedVideo, setHasFinishedVideo] = useState(
+    Boolean(video.videoWatched || video.status === 'watched')
+  );
+
+  useEffect(() => {
+    if (video.videoWatched || video.status === 'watched') {
+      setHasFinishedVideo(true);
+    }
+  }, [video.videoWatched, video.status]);
   
   // Player state
   const [isPlaying, setIsPlaying] = useState(true);
@@ -111,7 +127,10 @@ const CpePlayer = ({ video, onClose, onComplete }) => {
 
     // Check complete
     if (duration && videoElem.currentTime / duration >= 0.99) {
-      if (onComplete) onComplete();
+      if (!hasFinishedVideo) {
+        setHasFinishedVideo(true);
+        if (onComplete) onComplete();
+      }
     }
   };
 
@@ -185,6 +204,14 @@ const CpePlayer = ({ video, onClose, onComplete }) => {
 
   return (
     <div className="cpe-player-page-wrapper">
+      {/* Top Navigation Bar */}
+      <div className="cpe-player-top-bar">
+        <button type="button" className="cpe-player-back-btn" onClick={onClose}>
+          <LuArrowLeft size={16} />
+          <span>Back to Modules</span>
+        </button>
+        {video.tag && <span className="cpe-player-top-tag">{video.tag}</span>}
+      </div>
       
       {/* Unified Player Card Container */}
       <div className="cpe-player-card">
@@ -207,6 +234,7 @@ const CpePlayer = ({ video, onClose, onComplete }) => {
               onLoadedMetadata={handleLoadedMetadata}
               onEnded={() => {
                 setIsPlaying(false);
+                setHasFinishedVideo(true);
                 if (onComplete) onComplete();
               }}
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
@@ -321,15 +349,81 @@ const CpePlayer = ({ video, onClose, onComplete }) => {
         <div className="cpe-details-section">
           <h2 className="cpe-details-title">{title}</h2>
           
-          <p className="cpe-details-desc">{description}</p>
+          {description && <p className="cpe-details-desc">{description}</p>}
 
           <div className="cpe-details-meta">
-            <span className={`cpe-meta-badge ${status}`}>
-              {status}
+            <span className={`cpe-meta-badge ${hasFinishedVideo ? 'watched' : 'pending'}`}>
+              {hasFinishedVideo ? 'Video Watched' : 'In Progress'}
             </span>
             <span className="cpe-meta-duration-pill">
               {durationLabel} mins
             </span>
+          </div>
+
+          {/* Exam Assessment Banner */}
+          <div className="cpe-player-exam-banner">
+            {hasFinishedVideo ? (
+              <div className="cpe-player-exam-flex">
+                <div className="cpe-player-exam-info">
+                  <div className="cpe-player-exam-title-row">
+                    <LuAward size={20} className="cpe-player-exam-icon" />
+                    <span className="cpe-player-exam-title">
+                      {video.examAttended ? 'Module Assessment Status' : 'Assessment Exam Available'}
+                    </span>
+                    {video.examAttended && (
+                      <span className={`cpe-exam-score-chip ${video.examScore === 20 ? 'chip-full' : video.examPassed ? 'chip-pass' : 'chip-fail'}`}>
+                        Score: {video.examScore} / 20 {video.examScore === 20 ? '• Full Mark' : video.examPassed ? '• Passed' : '• Failed'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="cpe-player-exam-text">
+                    {video.examAttended ? (
+                      video.examScore === 20 ? (
+                        "Congratulations! You achieved full marks (20 / 20). No re-attend needed."
+                      ) : video.examPassed ? (
+                        `Great job passing with ${video.examScore} / 20 marks! You can re-attend anytime to aim for full marks.`
+                      ) : (
+                        `You scored ${video.examScore} / 20 marks. Pass mark is 15 / 20. Please re-attend the exam to earn your certificate.`
+                      )
+                    ) : (
+                      "Video completed! Take the 20-mark assessment exam (Pass mark: 15 / 20) to certify completion."
+                    )}
+                  </p>
+                </div>
+
+                <div className="cpe-player-exam-action-wrap">
+                  {!video.examAttended ? (
+                    <button 
+                      type="button" 
+                      className="cpe-exam-primary-btn cpe-btn-attend"
+                      onClick={() => onOpenExam && onOpenExam(video)}
+                    >
+                      <LuGraduationCap size={17} />
+                      <span>Attend Exam</span>
+                    </button>
+                  ) : video.examScore === 20 ? (
+                    <div className="cpe-full-mark-indicator">
+                      <LuSparkles size={16} />
+                      <span>Full Marks (20/20)</span>
+                    </div>
+                  ) : (
+                    <button 
+                      type="button" 
+                      className="cpe-exam-primary-btn cpe-btn-reattend"
+                      onClick={() => onOpenExam && onOpenExam(video)}
+                    >
+                      <LuRotateCcw size={15} />
+                      <span>Re-attend Exam</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="cpe-player-exam-locked">
+                <LuClock size={16} />
+                <span>Finish watching the full video to unlock the 20-mark assessment exam.</span>
+              </div>
+            )}
           </div>
         </div>
 
