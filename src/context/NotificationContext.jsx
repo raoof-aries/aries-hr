@@ -1,4 +1,19 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
+import {
+  isPushNotificationSupported,
+  getPushSubscription,
+  subscribeUserToPush,
+  unsubscribeUserFromPush,
+  DEFAULT_VAPID_PUBLIC_KEY,
+} from "../utils/pwa";
 
 const NotificationContext = createContext(null);
 
@@ -38,7 +53,7 @@ const getIcon = (type) => {
     stroke: "currentColor",
     strokeWidth: "2",
     strokeLinecap: "round",
-    strokeLinejoin: "round"
+    strokeLinejoin: "round",
   };
 
   switch (type) {
@@ -68,34 +83,43 @@ const getIcon = (type) => {
   }
 };
 
+const getInitialNotifications = () => [
+  {
+    id: 1,
+    title: "New Salary Slip Available",
+    message: "Your salary slip for December 2024 is now available",
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    read: false,
+    iconType: "salary",
+  },
+  {
+    id: 2,
+    title: "Incentive Payment Processed",
+    message: "Your incentive for Q4 2024 has been processed",
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+    read: false,
+    iconType: "incentive",
+  },
+  {
+    id: 3,
+    title: "Leave Request Approved",
+    message: "Your leave request for Jan 15-20 has been approved",
+    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+    read: false,
+    iconType: "leave",
+  },
+];
+
 export function NotificationProvider({ children }) {
-  // Initialize with dummy notifications
-  const initialNotifications = [
-    {
-      id: 1,
-      title: "New Salary Slip Available",
-      message: "Your salary slip for December 2024 is now available",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      read: false,
-      iconType: "salary",
-    },
-    {
-      id: 2,
-      title: "Incentive Payment Processed",
-      message: "Your incentive for Q4 2024 has been processed",
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      read: false,
-      iconType: "incentive",
-    },
-    {
-      id: 3,
-      title: "Leave Request Approved",
-      message: "Your leave request for Jan 15-20 has been approved",
-      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      read: false,
-      iconType: "leave",
-    },
-  ];
+  const navigate = useNavigate();
+  const { isAuthenticated, token } = useAuth();
+
+  // Push notification state
+  const isPushSupported = isPushNotificationSupported();
+  const [pushPermission, setPushPermission] = useState(() =>
+    typeof Notification !== "undefined" ? Notification.permission : "default"
+  );
+  const [isPushSubscribed, setIsPushSubscribed] = useState(false);
 
   // Load notifications from localStorage or use initial
   const [notifications, setNotifications] = useState(() => {
@@ -103,42 +127,148 @@ export function NotificationProvider({ children }) {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        // Check if this is old format (has icon JSX) - if so, clear and use initial
-        if (parsed.length > 0 && parsed[0].icon && typeof parsed[0].icon === 'object') {
+        if (
+          parsed.length > 0 &&
+          parsed[0].icon &&
+          typeof parsed[0].icon === "object"
+        ) {
           localStorage.removeItem("notifications");
-          return initialNotifications;
+          return getInitialNotifications();
         }
-        // Convert timestamp strings back to Date objects and ensure iconType exists
         return parsed.map((notif) => ({
           ...notif,
           timestamp: new Date(notif.timestamp),
-          iconType: notif.iconType || "salary", // fallback for old data
+          iconType: notif.iconType || "salary",
         }));
       } catch (e) {
         console.error("Error loading notifications from localStorage:", e);
         localStorage.removeItem("notifications");
-        return initialNotifications;
+        return getInitialNotifications();
       }
     }
-    return initialNotifications;
+    return getInitialNotifications();
   });
 
-  // Save to localStorage whenever notifications change (without icon JSX)
+  // Save to localStorage whenever notifications change
   useEffect(() => {
     try {
-      const notificationsToSave = notifications.map(notif => ({
+      const notificationsToSave = notifications.map((notif) => ({
         id: notif.id,
         title: notif.title,
         message: notif.message,
-        timestamp: notif.timestamp.toISOString(),
+        timestamp:
+          notif.timestamp instanceof Date
+            ? notif.timestamp.toISOString()
+            : notif.timestamp,
         read: notif.read,
         iconType: notif.iconType,
+        url: notif.url,
       }));
       localStorage.setItem("notifications", JSON.stringify(notificationsToSave));
     } catch (e) {
       console.error("Error saving notifications to localStorage:", e);
     }
   }, [notifications]);
+
+  // Sync push subscription status on startup or auth change
+  const checkSubscriptionStatus = useCallback(async () => {
+    if (!isPushSupported) return;
+
+    if (typeof Notification !== "undefined") {
+      setPushPermission(Notification.permission);
+    }
+
+    const subscription = await getPushSubscription();
+    setIsPushSubscribed(Boolean(subscription));
+
+    // If already granted and user is authenticated, ensure backend has the subscription
+    if (
+      subscription &&
+      isAuthenticated &&
+      Notification.permission === "granted"
+    ) {
+      void subscribeUserToPush(null, DEFAULT_VAPID_PUBLIC_KEY, token);
+    }
+  }, [isPushSupported, isAuthenticated, token]);
+
+  useEffect(() => {
+    void checkSubscriptionStatus();
+  }, [checkSubscriptionStatus]);
+
+  // Handle messages sent from Service Worker (PUSH_RECEIVED & NAVIGATE_TO)
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+
+    const handleServiceWorkerMessage = (event) => {
+      const { type, payload, url } = event.data || {};
+
+      if (type === "PUSH_RECEIVED" && payload) {
+        setNotifications((prev) => [
+          {
+            id: Date.now(),
+            title: payload.title || "Notification",
+            message: payload.body || "",
+            timestamp: new Date(payload.timestamp || Date.now()),
+            read: false,
+            iconType: payload.iconType || "salary",
+            url: payload.data?.url,
+          },
+          ...prev,
+        ]);
+      } else if (type === "NAVIGATE_TO" && url) {
+        // Strip out base path if provided as full path for React Router
+        const relativeUrl = url.replace(/^\/hrms1/, "") || "/";
+        navigate(relativeUrl);
+      }
+    };
+
+    navigator.serviceWorker.addEventListener("message", handleServiceWorkerMessage);
+    return () => {
+      navigator.serviceWorker.removeEventListener(
+        "message",
+        handleServiceWorkerMessage
+      );
+    };
+  }, [navigate]);
+
+  // Public method to subscribe user to push notifications
+  const subscribePush = async () => {
+    if (!isPushSupported) {
+      return { success: false, error: "Push notifications not supported" };
+    }
+
+    const subscription = await subscribeUserToPush(
+      null,
+      DEFAULT_VAPID_PUBLIC_KEY,
+      token
+    );
+
+    if (typeof Notification !== "undefined") {
+      setPushPermission(Notification.permission);
+    }
+
+    if (subscription) {
+      setIsPushSubscribed(true);
+      return { success: true, subscription };
+    }
+
+    return {
+      success: false,
+      error:
+        Notification.permission === "denied"
+          ? "Notification permission denied by user"
+          : "Failed to create subscription",
+    };
+  };
+
+  // Public method to unsubscribe user from push notifications
+  const unsubscribePush = async () => {
+    const success = await unsubscribeUserFromPush(null, token);
+    if (success) {
+      setIsPushSubscribed(false);
+    }
+    return success;
+  };
 
   // Mark notification as read
   const markAsRead = (id) => {
@@ -156,7 +286,7 @@ export function NotificationProvider({ children }) {
   const unreadCount = notifications.filter((notif) => !notif.read).length;
 
   // Add icon to each notification
-  const notificationsWithIcons = notifications.map(notif => ({
+  const notificationsWithIcons = notifications.map((notif) => ({
     ...notif,
     icon: getIcon(notif.iconType),
   }));
@@ -166,6 +296,11 @@ export function NotificationProvider({ children }) {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    isPushSupported,
+    pushPermission,
+    isPushSubscribed,
+    subscribePush,
+    unsubscribePush,
     groupedNotifications: () => {
       const today = [];
       const older = [];
@@ -193,7 +328,9 @@ export function NotificationProvider({ children }) {
 export function useNotifications() {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error("useNotifications must be used within a NotificationProvider");
+    throw new Error(
+      "useNotifications must be used within a NotificationProvider"
+    );
   }
   return context;
 }

@@ -12,12 +12,14 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.js",
       injectRegister: null,
       registerType: "autoUpdate",
-      workbox: {
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
+      devOptions: {
+        enabled: true,
+        type: "module",
       },
       manifest: {
         name: "Aries HRMS",
@@ -41,16 +43,10 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/arieshrms-api": {
-        target: "https://www.efftime.com/webservices/effism_lite/",
+        target: "https://www.efftime.com/webservices/hrms_beta/",
         changeOrigin: true,
         secure: true,
         rewrite: (requestPath) => requestPath.replace(/^\/arieshrms-api/, ""),
-      },
-      "/arieshrms-incentive-api": {
-        target: "https://efftime.com/webservices/freelancer/",
-        changeOrigin: true,
-        secure: true,
-        rewrite: (requestPath) => requestPath.replace(/^\/arieshrms-incentive-api/, ""),
       },
     },
   },

@@ -257,7 +257,7 @@ export function AuthProvider({ children }) {
       const isAbsoluteApi = /^https?:\/\//i.test(apiBaseUrl);
 
       if (isLocalhost && isAbsoluteApi) {
-        loginUrls.push("?action=login");
+        loginUrls.push("/arieshrms-api?action=login");
       }
 
       const form = new URLSearchParams();
