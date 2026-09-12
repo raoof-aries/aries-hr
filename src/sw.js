@@ -1,8 +1,21 @@
+self.__WB_DISABLE_DEV_LOGS = true;
+
 import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
+import { NetworkOnly } from "workbox-strategies";
 
 // Clean up old caches and precache build assets injected by Vite
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
+
+// Route all API requests directly through the network
+registerRoute(
+  ({ url }) =>
+    url.pathname.startsWith("/arieshrms-api") ||
+    url.hostname === "www.efftime.com" ||
+    url.pathname.includes("/webservices/"),
+  new NetworkOnly()
+);
 
 // Activate new service worker immediately
 self.addEventListener("install", () => {
@@ -27,8 +40,8 @@ self.addEventListener("push", (event) => {
   const title = payload.title || "Aries HRMS Notification";
   const options = {
     body: payload.body || "",
-    icon: payload.icon || "/hrms1/icons/icon-192.png",
-    badge: payload.badge || "/hrms1/icons/icon-192.png",
+    icon: payload.icon || "/hrms/icons/icon-192.png",
+    badge: payload.badge || "/hrms/icons/icon-192.png",
     data: payload.data || {},
     vibrate: [100, 50, 100],
     tag: payload.tag || `aries-push-${Date.now()}`,
@@ -66,11 +79,11 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  let targetUrl = event.notification.data?.url || "/hrms1/";
+  let targetUrl = event.notification.data?.url || "/hrms/";
   if (!targetUrl.startsWith("http") && !targetUrl.startsWith("/")) {
-    targetUrl = `/hrms1/${targetUrl}`;
-  } else if (targetUrl.startsWith("/") && !targetUrl.startsWith("/hrms1")) {
-    targetUrl = `/hrms1${targetUrl}`;
+    targetUrl = `/hrms/${targetUrl}`;
+  } else if (targetUrl.startsWith("/") && !targetUrl.startsWith("/hrms")) {
+    targetUrl = `/hrms${targetUrl}`;
   }
 
   event.waitUntil(
@@ -79,7 +92,7 @@ self.addEventListener("notificationclick", (event) => {
       .then((windowClients) => {
         // If there's an existing app window open, focus it and notify navigation
         for (const client of windowClients) {
-          if (client.url && client.url.includes("/hrms1") && "focus" in client) {
+          if (client.url && client.url.includes("/hrms") && "focus" in client) {
             client.postMessage({
               type: "NAVIGATE_TO",
               url: targetUrl,

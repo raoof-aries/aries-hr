@@ -153,10 +153,12 @@ export default function QrScannerModal({
     void startCamera();
   };
 
+  const scanFrameRef = useRef(null);
+
   const scanFrame = async () => {
     const video = videoRef.current;
     if (!video || isHandlingDetectionRef.current) {
-      animationFrameRef.current = requestAnimationFrame(scanFrame);
+      animationFrameRef.current = requestAnimationFrame(() => scanFrameRef.current?.());
       return;
     }
 
@@ -189,8 +191,10 @@ export default function QrScannerModal({
       }
     }
 
-    animationFrameRef.current = requestAnimationFrame(scanFrame);
+    animationFrameRef.current = requestAnimationFrame(() => scanFrameRef.current?.());
   };
+
+  scanFrameRef.current = scanFrame;
 
   const startCamera = useCallback(async (attempt = 0) => {
     if (!window.isSecureContext) {
@@ -252,7 +256,7 @@ export default function QrScannerModal({
       await video.play();
       setPermissionState("granted");
       setScannerPhase("scanning");
-      animationFrameRef.current = requestAnimationFrame(scanFrame);
+      animationFrameRef.current = requestAnimationFrame(() => scanFrameRef.current?.());
     } catch (error) {
       console.error("Unable to start QR scanner:", error);
       const failureName = error?.name || "";

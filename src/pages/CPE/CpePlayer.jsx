@@ -16,21 +16,13 @@ import { FiMoreVertical } from 'react-icons/fi';
 import './CPE.css';
 
 const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
-  const { url, title, description, duration: durationLabel, status } = video;
+  const { url, title, description, duration: durationLabel } = video;
   
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   
-  // Track if video has finished playing
-  const [hasFinishedVideo, setHasFinishedVideo] = useState(
-    Boolean(video.videoWatched || video.status === 'watched')
-  );
-
-  useEffect(() => {
-    if (video.videoWatched || video.status === 'watched') {
-      setHasFinishedVideo(true);
-    }
-  }, [video.videoWatched, video.status]);
+  const [hasFinishedVideo, setHasFinishedVideo] = useState(false);
+  const isFinished = hasFinishedVideo || Boolean(video.videoWatched || video.status === 'watched');
   
   // Player state
   const [isPlaying, setIsPlaying] = useState(true);
@@ -127,7 +119,7 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
 
     // Check complete
     if (duration && videoElem.currentTime / duration >= 0.99) {
-      if (!hasFinishedVideo) {
+      if (!isFinished) {
         setHasFinishedVideo(true);
         if (onComplete) onComplete();
       }
@@ -352,8 +344,8 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
           {description && <p className="cpe-details-desc">{description}</p>}
 
           <div className="cpe-details-meta">
-            <span className={`cpe-meta-badge ${hasFinishedVideo ? 'watched' : 'pending'}`}>
-              {hasFinishedVideo ? 'Video Watched' : 'In Progress'}
+            <span className={`cpe-meta-badge ${isFinished ? 'watched' : 'pending'}`}>
+              {isFinished ? 'Video Watched' : 'In Progress'}
             </span>
             <span className="cpe-meta-duration-pill">
               {durationLabel} mins
@@ -362,7 +354,7 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
 
           {/* Exam Assessment Banner */}
           <div className="cpe-player-exam-banner">
-            {hasFinishedVideo ? (
+            {isFinished ? (
               <div className="cpe-player-exam-flex">
                 <div className="cpe-player-exam-info">
                   <div className="cpe-player-exam-title-row">

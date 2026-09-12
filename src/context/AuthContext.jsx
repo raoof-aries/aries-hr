@@ -80,14 +80,42 @@ function clearStoredSession() {
 
 export function AuthProvider({ children }) {
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userName, setUserName] = useState("");
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState("");
+
+  const [initialSession] = useState(() => {
+    if (typeof window === "undefined") {
+      return { token: "", user: null, isAuthenticated: false, userName: "" };
+    }
+    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+
+    if (storedToken && storedUser && !isJwtExpired(storedToken)) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        const normalizedUser = normalizeUser(parsedUser);
+        return {
+          token: storedToken,
+          user: normalizedUser,
+          isAuthenticated: true,
+          userName: normalizedUser?.name || "",
+        };
+      } catch (error) {
+        console.error("Invalid stored user session:", error);
+        clearStoredSession();
+      }
+    } else if (storedToken || storedUser) {
+      clearStoredSession();
+    }
+    return { token: "", user: null, isAuthenticated: false, userName: "" };
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState(initialSession.isAuthenticated);
+  const [isLoading] = useState(false);
+  const [userName, setUserName] = useState(initialSession.userName);
+  const [user, setUser] = useState(initialSession.user);
+  const [token, setToken] = useState(initialSession.token);
 
   // Tracks whether the user is authenticated inside event listeners
-  const isAuthenticatedRef = useRef(false);
+  const isAuthenticatedRef = useRef(initialSession.isAuthenticated);
   // Timestamp of the last background refresh (for visibility cooldown)
   const lastRefreshRef = useRef(0);
 
@@ -111,31 +139,10 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-
-    if (storedToken && storedUser && !isJwtExpired(storedToken)) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        const normalizedUser = normalizeUser(parsedUser);
-        setIsAuthenticated(true);
-        setToken(storedToken);
-        setUser(normalizedUser);
-        setUserName(normalizedUser?.name || "");
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(normalizedUser));
-        // Fire a background refresh immediately after restoring cached session
-        // so any changes made in CRM are picked up on every app open / reload
-        void refreshUser();
-      } catch (error) {
-        console.error("Invalid stored user session:", error);
-        clearStoredSession();
-      }
-    } else if (storedToken || storedUser) {
-      clearStoredSession();
+    if (initialSession.isAuthenticated) {
+      void refreshUser();
     }
-
-    setIsLoading(false);
-  }, []);
+  }, [initialSession.isAuthenticated]);
 
   useEffect(() => {
     const handleAuthFailure = () => {

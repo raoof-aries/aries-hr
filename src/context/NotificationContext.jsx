@@ -217,7 +217,7 @@ export function NotificationProvider({ children }) {
         ]);
       } else if (type === "NAVIGATE_TO" && url) {
         // Strip out base path if provided as full path for React Router
-        const relativeUrl = url.replace(/^\/hrms1/, "") || "/";
+        const relativeUrl = url.replace(/^\/hrms/, "") || "/";
         navigate(relativeUrl);
       }
     };

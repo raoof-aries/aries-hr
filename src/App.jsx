@@ -142,7 +142,7 @@ function AppRoutes() {
         path="/cpe"
         element={
           <ProtectedAppRoute>
-            <CPE />
+            <FeatureUnderDevelopment />
           </ProtectedAppRoute>
         }
       />

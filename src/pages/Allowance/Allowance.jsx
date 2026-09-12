@@ -48,7 +48,7 @@ export default function Allowance() {
     currentYear
   );
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-  const [selectedType, setSelectedType] = useState("All Types");
+  const selectedType = "All Types";
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
@@ -81,7 +81,7 @@ export default function Allowance() {
       setSelectedMonth(currentMonth);
     } else {
       // If different year, keep current selection or default to first available month
-      const monthsInYear = allowanceData.allowances
+      const monthsInYear = (allowanceData?.allowances || [])
         .filter((s) => s.year === selectedYear)
         .map((s) => s.month)
         .filter((v, i, a) => a.indexOf(v) === i);
@@ -89,7 +89,7 @@ export default function Allowance() {
         setSelectedMonth(monthsInYear[0]);
       }
     }
-  }, [selectedYear, currentYear, currentMonth, selectedMonth]);
+  }, [selectedYear, currentYear, currentMonth, selectedMonth, allowanceData]);
 
   const monthsForYear = useMemo(() => {
     return allowanceData.allowances
