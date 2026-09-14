@@ -39,7 +39,7 @@ export default function Home() {
   );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
@@ -396,7 +396,7 @@ export default function Home() {
     },
   ].filter((item) => {
     if (user?.usertype === 3) {
-      return item.id === "time-tracker";
+      return item.id === "time-tracker" || item.id === "hospital-assistance";
     }
     return true;
   }).map((item) => {
