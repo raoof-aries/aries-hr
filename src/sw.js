@@ -33,18 +33,30 @@ self.addEventListener("push", (event) => {
     try {
       payload = event.data.json();
     } catch {
-      payload = { title: "Aries HRMS", body: event.data.text() };
+      payload = { title: "Aries HRMS", message: event.data.text() };
     }
   }
 
   const title = payload.title || "Aries HRMS Notification";
+  const bodyText = payload.message || payload.body || "";
+  const iconType =
+    payload.icon_type || payload.iconType || payload.data?.iconType || "salary";
+  const targetUrl = payload.url || payload.data?.url || "/salary-slip";
+  const notificationId =
+    payload.notification_id || payload.data?.notificationId || Date.now();
+
   const options = {
-    body: payload.body || "",
-    icon: payload.icon || "/hrms/icons/icon-192.png",
-    badge: payload.badge || "/hrms/icons/icon-192.png",
-    data: payload.data || {},
+    body: bodyText,
+    icon: payload.icon || "/hrms1/icons/icon-192.png",
+    badge: payload.badge || "/hrms1/icons/icon-192.png",
+    data: {
+      url: targetUrl,
+      iconType,
+      notificationId,
+      ...(payload.data || {}),
+    },
     vibrate: [100, 50, 100],
-    tag: payload.tag || `aries-push-${Date.now()}`,
+    tag: payload.tag || `aries-push-${notificationId}`,
     renotify: true,
   };
 
@@ -56,9 +68,12 @@ self.addEventListener("push", (event) => {
         client.postMessage({
           type: "PUSH_RECEIVED",
           payload: {
+            id: notificationId,
             title,
-            body: options.body,
-            iconType: payload.data?.iconType || payload.iconType || "salary",
+            message: bodyText,
+            body: bodyText,
+            iconType,
+            url: targetUrl,
             data: options.data,
             timestamp: new Date().toISOString(),
           },
@@ -69,7 +84,7 @@ self.addEventListener("push", (event) => {
   const showNotificationPromise = self.registration
     .showNotification(title, options)
     .catch((err) => {
-      console.warn("Failed to display notification banner (check notification permission):", err);
+      console.warn("Failed to display notification banner:", err);
     });
 
   event.waitUntil(Promise.all([broadcastPromise, showNotificationPromise]));
@@ -79,11 +94,13 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  let targetUrl = event.notification.data?.url || "/hrms/";
-  if (!targetUrl.startsWith("http") && !targetUrl.startsWith("/")) {
-    targetUrl = `/hrms/${targetUrl}`;
-  } else if (targetUrl.startsWith("/") && !targetUrl.startsWith("/hrms")) {
-    targetUrl = `/hrms${targetUrl}`;
+  let rawTarget = event.notification.data?.url || "/salary-slip";
+  let targetUrl = rawTarget;
+  if (!rawTarget.startsWith("http")) {
+    const cleanPath = rawTarget
+      .replace(/^\/(hrms1|hrms)/, "")
+      .replace(/^\/?/, "/");
+    targetUrl = `/hrms1${cleanPath}`;
   }
 
   event.waitUntil(
@@ -92,7 +109,11 @@ self.addEventListener("notificationclick", (event) => {
       .then((windowClients) => {
         // If there's an existing app window open, focus it and notify navigation
         for (const client of windowClients) {
-          if (client.url && client.url.includes("/hrms") && "focus" in client) {
+          if (
+            client.url &&
+            (client.url.includes("/hrms1") || client.url.includes("/hrms")) &&
+            "focus" in client
+          ) {
             client.postMessage({
               type: "NAVIGATE_TO",
               url: targetUrl,

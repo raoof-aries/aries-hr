@@ -140,6 +140,9 @@ export function urlBase64ToUint8Array(base64String) {
 /**
  * Retrieves the current push subscription if one exists.
  */
+/**
+ * Retrieves the current push subscription if one exists.
+ */
 export async function getPushSubscription(registration = null) {
   try {
     const reg = registration || (await getSWRegistration());
@@ -153,26 +156,40 @@ export async function getPushSubscription(registration = null) {
   }
 }
 
-async function getSubscriptionEndpoint() {
-  const isLocalhost =
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1");
-
-  if (isLocalhost) {
-    return "/arieshrms-api/save-subscription.php";
-  }
-
+/**
+ * Fetches the VAPID public key from backend if available, with default fallback.
+ */
+export async function fetchVapidPublicKey() {
   try {
     const { apiBaseUrl } = await getRuntimeConfig();
     if (apiBaseUrl) {
-      return `${apiBaseUrl.replace(/\/?$/, "/")}save-subscription.php`;
+      const response = await fetch(`${apiBaseUrl}?action=getVapidPublicKey`, {
+        method: "POST",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.status && data?.publicKey) {
+          return data.publicKey;
+        }
+      }
+    }
+  } catch (error) {
+    console.warn("Unable to fetch VAPID key from backend, using default:", error);
+  }
+  return DEFAULT_VAPID_PUBLIC_KEY;
+}
+
+async function getSubscriptionEndpoint() {
+  try {
+    const { apiBaseUrl } = await getRuntimeConfig();
+    if (apiBaseUrl) {
+      return `${apiBaseUrl}?action=savePushSubscription`;
     }
   } catch {
-    // Fallback to relative path
+    // Fallback to proxy
   }
 
-  return "/arieshrms-api/save-subscription.php";
+  return "/arieshrms-api?action=savePushSubscription";
 }
 
 /**
@@ -190,61 +207,27 @@ export async function sendSubscriptionToBackend(subscription, token = null) {
     }
 
     const endpointUrl = await getSubscriptionEndpoint();
+    const subJson = subscription.toJSON ? subscription.toJSON() : subscription;
+
     const response = await fetch(endpointUrl, {
       method: "POST",
       headers,
       body: JSON.stringify({
-        subscription: subscription.toJSON ? subscription.toJSON() : subscription,
-        action: "save_push_subscription",
+        subscription: subJson,
       }),
     });
 
     if (!response.ok) {
       console.warn(
-        `Backend push subscription endpoint returned status ${response.status}. (Will be active once backend is deployed)`
+        `Backend push subscription endpoint returned status ${response.status}.`
       );
       return false;
     }
 
-    return true;
+    const data = await response.json().catch(() => null);
+    return data ? Boolean(data.status) : response.ok;
   } catch (error) {
-    console.warn(
-      "Unable to send push subscription to backend (backend may not be deployed yet):",
-      error.message
-    );
-    return false;
-  }
-}
-
-/**
- * Deletes a push subscription from the backend server.
- */
-export async function removeSubscriptionFromBackend(subscription, token = null) {
-  try {
-    if (!subscription?.endpoint) return false;
-
-    const headers = {
-      "Content-Type": "application/json",
-    };
-
-    const authToken = token || localStorage.getItem("authToken");
-    if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
-    }
-
-    const endpointUrl = await getSubscriptionEndpoint();
-    const response = await fetch(endpointUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        endpoint: subscription.endpoint,
-        action: "delete_push_subscription",
-      }),
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.warn("Unable to remove subscription from backend:", error.message);
+    console.warn("Unable to send push subscription to backend:", error.message);
     return false;
   }
 }
@@ -254,7 +237,7 @@ export async function removeSubscriptionFromBackend(subscription, token = null) 
  */
 export async function subscribeUserToPush(
   registration = null,
-  publicVapidKey = DEFAULT_VAPID_PUBLIC_KEY,
+  publicVapidKey = null,
   token = null
 ) {
   if (!isPushNotificationSupported()) {
@@ -277,7 +260,9 @@ export async function subscribeUserToPush(
 
     let subscription = await reg.pushManager.getSubscription();
     if (!subscription) {
-      const convertedKey = urlBase64ToUint8Array(publicVapidKey);
+      const activeKey =
+        publicVapidKey || (await fetchVapidPublicKey()) || DEFAULT_VAPID_PUBLIC_KEY;
+      const convertedKey = urlBase64ToUint8Array(activeKey);
       subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedKey,
@@ -295,9 +280,9 @@ export async function subscribeUserToPush(
 }
 
 /**
- * Unsubscribes the user from PushManager and removes it from backend.
+ * Unsubscribes the user from PushManager.
  */
-export async function unsubscribeUserFromPush(registration = null, token = null) {
+export async function unsubscribeUserFromPush(registration = null) {
   if (!isPushNotificationSupported()) {
     return false;
   }
@@ -310,7 +295,6 @@ export async function unsubscribeUserFromPush(registration = null, token = null)
 
     const subscription = await reg.pushManager.getSubscription();
     if (subscription) {
-      await removeSubscriptionFromBackend(subscription, token);
       await subscription.unsubscribe();
     }
 
@@ -320,3 +304,4 @@ export async function unsubscribeUserFromPush(registration = null, token = null)
     return false;
   }
 }
+

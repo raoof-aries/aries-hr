@@ -1,10 +1,27 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../../context/NotificationContext";
 import "./Notifications.css";
 
 export default function Notifications() {
-  const { notifications, markAsRead, markAllAsRead, groupedNotifications, formatTimeAgo } = useNotifications();
+  const navigate = useNavigate();
+  const {
+    notifications,
+    markAsRead,
+    markAllAsRead,
+    groupedNotifications,
+    formatTimeAgo,
+  } = useNotifications();
   const { today, older } = groupedNotifications();
+
+  const handleNotificationClick = (notif) => {
+    markAsRead(notif.id);
+    if (notif.url) {
+      const target =
+        notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/";
+      navigate(target);
+    }
+  };
 
   return (
     <div className="notifications-container">
@@ -30,17 +47,19 @@ export default function Notifications() {
                     <div
                       key={notif.id}
                       className={`notification-item ${notif.read ? "read" : ""}`}
-                      onClick={() => markAsRead(notif.id)}
+                      onClick={() => handleNotificationClick(notif)}
                     >
-                      <div className="notification-icon">
-                        {notif.icon}
-                      </div>
+                      <div className="notification-icon">{notif.icon}</div>
                       <div className="notification-content">
                         <p className="notification-title">{notif.title}</p>
                         <p className="notification-message">{notif.message}</p>
-                        <span className="notification-time">{formatTimeAgo(notif.timestamp)}</span>
+                        <span className="notification-time">
+                          {formatTimeAgo(notif.timestamp)}
+                        </span>
                       </div>
-                      {!notif.read && <div className="notification-unread-dot"></div>}
+                      {!notif.read && (
+                        <div className="notification-unread-dot"></div>
+                      )}
                     </div>
                   ))}
                 </>
@@ -52,17 +71,19 @@ export default function Notifications() {
                     <div
                       key={notif.id}
                       className={`notification-item ${notif.read ? "read" : ""}`}
-                      onClick={() => markAsRead(notif.id)}
+                      onClick={() => handleNotificationClick(notif)}
                     >
-                      <div className="notification-icon">
-                        {notif.icon}
-                      </div>
+                      <div className="notification-icon">{notif.icon}</div>
                       <div className="notification-content">
                         <p className="notification-title">{notif.title}</p>
                         <p className="notification-message">{notif.message}</p>
-                        <span className="notification-time">{formatTimeAgo(notif.timestamp)}</span>
+                        <span className="notification-time">
+                          {formatTimeAgo(notif.timestamp)}
+                        </span>
                       </div>
-                      {!notif.read && <div className="notification-unread-dot"></div>}
+                      {!notif.read && (
+                        <div className="notification-unread-dot"></div>
+                      )}
                     </div>
                   ))}
                 </>
@@ -71,7 +92,16 @@ export default function Notifications() {
           </>
         ) : (
           <div className="notifications-empty">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>

@@ -17,6 +17,7 @@ import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper"
 import AuthGateLoader from "./components/AuthGateLoader/AuthGateLoader";
 import { getIsRegularUser } from "./utils/userMode";
 import TimeTracker from "./pages/TimeTracker/TimeTracker";
+import Notifications from "./pages/Notifications/Notifications";
 
 function EffismLiteGuard({ children }) {
   const { user } = useAuth();
@@ -190,7 +191,7 @@ function AppRoutes() {
         path="/notifications"
         element={
           <ProtectedAppRoute>
-            <FeatureUnderDevelopment />
+            <Notifications />
           </ProtectedAppRoute>
         }
       />

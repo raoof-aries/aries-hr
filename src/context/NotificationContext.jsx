@@ -12,15 +12,16 @@ import {
   getPushSubscription,
   subscribeUserToPush,
   unsubscribeUserFromPush,
-  DEFAULT_VAPID_PUBLIC_KEY,
 } from "../utils/pwa";
+import { getRuntimeConfig } from "../utils/runtimeConfig";
 
 const NotificationContext = createContext(null);
 
 // Helper function to format time ago
 const formatTimeAgo = (date) => {
+  const dateObj = date instanceof Date ? date : new Date(date);
   const now = new Date();
-  const diff = now - date;
+  const diff = now - dateObj;
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
@@ -30,16 +31,17 @@ const formatTimeAgo = (date) => {
   if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
   if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
-  return date.toLocaleDateString();
+  return dateObj.toLocaleDateString();
 };
 
 // Helper function to check if date is today
 const isToday = (date) => {
+  const dateObj = date instanceof Date ? date : new Date(date);
   const today = new Date();
   return (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
+    dateObj.getDate() === today.getDate() &&
+    dateObj.getMonth() === today.getMonth() &&
+    dateObj.getFullYear() === today.getFullYear()
   );
 };
 
@@ -149,6 +151,47 @@ export function NotificationProvider({ children }) {
     return getInitialNotifications();
   });
 
+  // Fetch notifications from backend when authenticated
+  const fetchBackendNotifications = useCallback(async () => {
+    if (!isAuthenticated || !token) return;
+
+    try {
+      const { apiBaseUrl } = await getRuntimeConfig();
+      if (!apiBaseUrl) return;
+
+      const response = await fetch(`${apiBaseUrl}?action=listNotifications`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ filter: "all", page: 1, limit: 50 }),
+      });
+
+      if (!response.ok) return;
+
+      const result = await response.json();
+      if (result?.status && Array.isArray(result.data)) {
+        const mapped = result.data.map((item) => ({
+          id: item.id,
+          title: item.title,
+          message: item.message,
+          timestamp: new Date(item.created_at || Date.now()),
+          read: Boolean(Number(item.is_read)),
+          iconType: item.icon_type || "salary",
+          url: item.url,
+        }));
+        setNotifications(mapped);
+      }
+    } catch (e) {
+      console.warn("Unable to fetch backend notifications:", e);
+    }
+  }, [isAuthenticated, token]);
+
+  useEffect(() => {
+    void fetchBackendNotifications();
+  }, [fetchBackendNotifications]);
+
   // Save to localStorage whenever notifications change
   useEffect(() => {
     try {
@@ -187,7 +230,7 @@ export function NotificationProvider({ children }) {
       isAuthenticated &&
       Notification.permission === "granted"
     ) {
-      void subscribeUserToPush(null, DEFAULT_VAPID_PUBLIC_KEY, token);
+      void subscribeUserToPush(null, null, token);
     }
   }, [isPushSupported, isAuthenticated, token]);
 
@@ -203,21 +246,27 @@ export function NotificationProvider({ children }) {
       const { type, payload, url } = event.data || {};
 
       if (type === "PUSH_RECEIVED" && payload) {
-        setNotifications((prev) => [
-          {
-            id: Date.now(),
-            title: payload.title || "Notification",
-            message: payload.body || "",
-            timestamp: new Date(payload.timestamp || Date.now()),
-            read: false,
-            iconType: payload.iconType || "salary",
-            url: payload.data?.url,
-          },
-          ...prev,
-        ]);
+        const notifId = payload.id || payload.notificationId || Date.now();
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === notifId)) return prev;
+          return [
+            {
+              id: notifId,
+              title: payload.title || "Notification",
+              message: payload.message || payload.body || "",
+              timestamp: new Date(payload.timestamp || Date.now()),
+              read: false,
+              iconType: payload.iconType || payload.icon_type || "salary",
+              url: payload.url || payload.data?.url,
+            },
+            ...prev,
+          ];
+        });
       } else if (type === "NAVIGATE_TO" && url) {
         // Strip out base path if provided as full path for React Router
-        const relativeUrl = url.replace(/^\/hrms/, "") || "/";
+        const cleanUrl = url.replace(/^https?:\/\/[^/]+/, "");
+        const relativeUrl =
+          cleanUrl.replace(/^\/(hrms1|hrms)/, "").replace(/^\/?/, "/") || "/";
         navigate(relativeUrl);
       }
     };
@@ -231,17 +280,71 @@ export function NotificationProvider({ children }) {
     };
   }, [navigate]);
 
+  // Reset notifications on logout
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setNotifications(getInitialNotifications());
+    }
+  }, [isAuthenticated]);
+
+  // Mark notification as read (local + backend)
+  const markAsRead = async (id) => {
+    setNotifications((prev) =>
+      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
+    );
+
+    if (isAuthenticated && token && typeof id === "number") {
+      try {
+        const { apiBaseUrl } = await getRuntimeConfig();
+        if (apiBaseUrl) {
+          void fetch(`${apiBaseUrl}?action=markNotificationRead`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ id }),
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to mark notification as read on backend:", e);
+      }
+    }
+  };
+
+  // Mark all as read (local + backend)
+  const markAllAsRead = async () => {
+    const unreadIds = notifications.filter((n) => !n.read && typeof n.id === "number").map((n) => n.id);
+    setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
+
+    if (isAuthenticated && token && unreadIds.length > 0) {
+      try {
+        const { apiBaseUrl } = await getRuntimeConfig();
+        if (apiBaseUrl) {
+          unreadIds.forEach((id) => {
+            void fetch(`${apiBaseUrl}?action=markNotificationRead`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ id }),
+            });
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to mark all notifications as read on backend:", e);
+      }
+    }
+  };
+
   // Public method to subscribe user to push notifications
   const subscribePush = async () => {
     if (!isPushSupported) {
       return { success: false, error: "Push notifications not supported" };
     }
 
-    const subscription = await subscribeUserToPush(
-      null,
-      DEFAULT_VAPID_PUBLIC_KEY,
-      token
-    );
+    const subscription = await subscribeUserToPush(null, null, token);
 
     if (typeof Notification !== "undefined") {
       setPushPermission(Notification.permission);
@@ -263,23 +366,11 @@ export function NotificationProvider({ children }) {
 
   // Public method to unsubscribe user from push notifications
   const unsubscribePush = async () => {
-    const success = await unsubscribeUserFromPush(null, token);
+    const success = await unsubscribeUserFromPush(null);
     if (success) {
       setIsPushSubscribed(false);
     }
     return success;
-  };
-
-  // Mark notification as read
-  const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
-    );
-  };
-
-  // Mark all as read
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
   };
 
   // Get unread count
@@ -301,6 +392,7 @@ export function NotificationProvider({ children }) {
     isPushSubscribed,
     subscribePush,
     unsubscribePush,
+    fetchBackendNotifications,
     groupedNotifications: () => {
       const today = [];
       const older = [];
@@ -334,3 +426,4 @@ export function useNotifications() {
   }
   return context;
 }
+

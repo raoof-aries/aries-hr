@@ -222,6 +222,7 @@ export default function Layout({ children }) {
     notifications,
     unreadCount,
     markAsRead,
+    markAllAsRead,
     groupedNotifications,
     formatTimeAgo,
   } = useNotifications();
@@ -695,6 +696,28 @@ export default function Layout({ children }) {
                       <div className="layout-notification-dropdown">
                         <div className="layout-notification-header">
                           <h3>Notifications</h3>
+                          {unreadCount > 0 && (
+                            <button
+                              type="button"
+                              className="layout-notification-mark-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markAllAsRead();
+                              }}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#0F7A67",
+                                fontSize: "0.75rem",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                marginLeft: "auto",
+                                marginRight: "0.5rem",
+                              }}
+                            >
+                              Mark all read
+                            </button>
+                          )}
                           <button
                             className="layout-notification-close"
                             onClick={() => setNotificationOpen(false)}
@@ -727,7 +750,15 @@ export default function Layout({ children }) {
                                     <div
                                       key={notif.id}
                                       className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                      onClick={() => markAsRead(notif.id)}
+                                      onClick={() => {
+                                        markAsRead(notif.id);
+                                        if (notif.url) {
+                                          setNotificationOpen(false);
+                                          navigate(
+                                            notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/"
+                                          );
+                                        }
+                                      }}
                                     >
                                       <div className="layout-notification-icon">
                                         {notif.icon}
@@ -759,7 +790,15 @@ export default function Layout({ children }) {
                                     <div
                                       key={notif.id}
                                       className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                      onClick={() => markAsRead(notif.id)}
+                                      onClick={() => {
+                                        markAsRead(notif.id);
+                                        if (notif.url) {
+                                          setNotificationOpen(false);
+                                          navigate(
+                                            notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/"
+                                          );
+                                        }
+                                      }}
                                     >
                                       <div className="layout-notification-icon">
                                         {notif.icon}
@@ -788,6 +827,26 @@ export default function Layout({ children }) {
                               No notifications
                             </div>
                           )}
+                        </div>
+                        <div
+                          style={{
+                            padding: "0.75rem",
+                            textAlign: "center",
+                            borderTop: "1px solid #F1F5F9",
+                          }}
+                        >
+                          <Link
+                            to="/notifications"
+                            onClick={() => setNotificationOpen(false)}
+                            style={{
+                              color: "#0F7A67",
+                              fontSize: "0.8125rem",
+                              fontWeight: "600",
+                              textDecoration: "none",
+                            }}
+                          >
+                            View all notifications
+                          </Link>
                         </div>
                       </div>
                     )}
@@ -890,6 +949,28 @@ export default function Layout({ children }) {
                       <div className="layout-notification-dropdown">
                         <div className="layout-notification-header">
                           <h3>Notifications</h3>
+                          {unreadCount > 0 && (
+                            <button
+                              type="button"
+                              className="layout-notification-mark-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markAllAsRead();
+                              }}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#0F7A67",
+                                fontSize: "0.75rem",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                marginLeft: "auto",
+                                marginRight: "0.5rem",
+                              }}
+                            >
+                              Mark all read
+                            </button>
+                          )}
                           <button
                             className="layout-notification-close"
                             onClick={() => setNotificationOpen(false)}
@@ -922,7 +1003,15 @@ export default function Layout({ children }) {
                                     <div
                                       key={notif.id}
                                       className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                      onClick={() => markAsRead(notif.id)}
+                                      onClick={() => {
+                                        markAsRead(notif.id);
+                                        if (notif.url) {
+                                          setNotificationOpen(false);
+                                          navigate(
+                                            notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/"
+                                          );
+                                        }
+                                      }}
                                     >
                                       <div className="layout-notification-icon">
                                         {notif.icon}
@@ -954,7 +1043,15 @@ export default function Layout({ children }) {
                                     <div
                                       key={notif.id}
                                       className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                      onClick={() => markAsRead(notif.id)}
+                                      onClick={() => {
+                                        markAsRead(notif.id);
+                                        if (notif.url) {
+                                          setNotificationOpen(false);
+                                          navigate(
+                                            notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/"
+                                          );
+                                        }
+                                      }}
                                     >
                                       <div className="layout-notification-icon">
                                         {notif.icon}
@@ -983,6 +1080,26 @@ export default function Layout({ children }) {
                               No notifications
                             </div>
                           )}
+                        </div>
+                        <div
+                          style={{
+                            padding: "0.75rem",
+                            textAlign: "center",
+                            borderTop: "1px solid #F1F5F9",
+                          }}
+                        >
+                          <Link
+                            to="/notifications"
+                            onClick={() => setNotificationOpen(false)}
+                            style={{
+                              color: "#0F7A67",
+                              fontSize: "0.8125rem",
+                              fontWeight: "600",
+                              textDecoration: "none",
+                            }}
+                          >
+                            View all notifications
+                          </Link>
                         </div>
                       </div>
                     )}
