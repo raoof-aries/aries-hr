@@ -47,8 +47,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: bodyText,
-    icon: payload.icon || "/hrms1/icons/icon-192.png",
-    badge: payload.badge || "/hrms1/icons/icon-192.png",
+    icon: payload.icon || "/hrms2/icons/icon-192.png",
+    badge: payload.badge || "/hrms2/icons/icon-192.png",
     data: {
       url: targetUrl,
       iconType,
@@ -98,9 +98,9 @@ self.addEventListener("notificationclick", (event) => {
   let targetUrl = rawTarget;
   if (!rawTarget.startsWith("http")) {
     const cleanPath = rawTarget
-      .replace(/^\/(hrms1|hrms)/, "")
+      .replace(/^\/(hrms[0-9]*|hrms)/, "")
       .replace(/^\/?/, "/");
-    targetUrl = `/hrms1${cleanPath}`;
+    targetUrl = `/hrms2${cleanPath}`;
   }
 
   event.waitUntil(
@@ -111,7 +111,7 @@ self.addEventListener("notificationclick", (event) => {
         for (const client of windowClients) {
           if (
             client.url &&
-            (client.url.includes("/hrms1") || client.url.includes("/hrms")) &&
+            (client.url.includes("/hrms2") || client.url.includes("/hrms1") || client.url.includes("/hrms")) &&
             "focus" in client
           ) {
             client.postMessage({

@@ -755,7 +755,7 @@ export default function Layout({ children }) {
                                         if (notif.url) {
                                           setNotificationOpen(false);
                                           navigate(
-                                            notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/"
+                                            notif.url.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/"
                                           );
                                         }
                                       }}
@@ -795,7 +795,7 @@ export default function Layout({ children }) {
                                         if (notif.url) {
                                           setNotificationOpen(false);
                                           navigate(
-                                            notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/"
+                                            notif.url.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/"
                                           );
                                         }
                                       }}
@@ -1008,7 +1008,7 @@ export default function Layout({ children }) {
                                         if (notif.url) {
                                           setNotificationOpen(false);
                                           navigate(
-                                            notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/"
+                                            notif.url.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/"
                                           );
                                         }
                                       }}
@@ -1048,7 +1048,7 @@ export default function Layout({ children }) {
                                         if (notif.url) {
                                           setNotificationOpen(false);
                                           navigate(
-                                            notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/"
+                                            notif.url.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/"
                                           );
                                         }
                                       }}

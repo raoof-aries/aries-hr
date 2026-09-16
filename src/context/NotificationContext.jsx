@@ -266,7 +266,7 @@ export function NotificationProvider({ children }) {
         // Strip out base path if provided as full path for React Router
         const cleanUrl = url.replace(/^https?:\/\/[^/]+/, "");
         const relativeUrl =
-          cleanUrl.replace(/^\/(hrms1|hrms)/, "").replace(/^\/?/, "/") || "/";
+          cleanUrl.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/";
         navigate(relativeUrl);
       }
     };

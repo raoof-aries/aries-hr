@@ -17,8 +17,9 @@ export default function Notifications() {
   const handleNotificationClick = (notif) => {
     markAsRead(notif.id);
     if (notif.url) {
+      const cleanUrl = notif.url.replace(/^https?:\/\/[^/]+/, "");
       const target =
-        notif.url.replace(/^\/hrms1/, "").replace(/^\/hrms/, "") || "/";
+        cleanUrl.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/";
       navigate(target);
     }
   };
