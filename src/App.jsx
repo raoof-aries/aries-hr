@@ -18,6 +18,7 @@ import AuthGateLoader from "./components/AuthGateLoader/AuthGateLoader";
 import { getIsRegularUser } from "./utils/userMode";
 import TimeTracker from "./pages/TimeTracker/TimeTracker";
 import Notifications from "./pages/Notifications/Notifications";
+import PushNotificationModal from "./components/PushNotificationModal/PushNotificationModal";
 
 function EffismLiteGuard({ children }) {
   const { user } = useAuth();
@@ -249,6 +250,7 @@ export default function App() {
       <AuthProvider>
         <NotificationProvider>
           <AppRoutes />
+          <PushNotificationModal />
         </NotificationProvider>
       </AuthProvider>
     </MobileOnlyWrapper>

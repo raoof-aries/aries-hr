@@ -160,22 +160,33 @@ export async function getPushSubscription(registration = null) {
  * Fetches the VAPID public key from backend if available, with default fallback.
  */
 export async function fetchVapidPublicKey() {
+  const targetUrls = [];
   try {
     const { apiBaseUrl } = await getRuntimeConfig();
     if (apiBaseUrl) {
-      const response = await fetch(`${apiBaseUrl}?action=getVapidPublicKey`, {
+      targetUrls.push(`${apiBaseUrl}?action=getVapidPublicKey`);
+    }
+  } catch {
+    // ignore
+  }
+  targetUrls.push("/arieshrms-api?action=getVapidPublicKey");
+
+  for (const endpointUrl of targetUrls) {
+    try {
+      const response = await fetch(endpointUrl, {
         method: "POST",
       });
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json().catch(() => null);
         if (data?.status && data?.publicKey) {
           return data.publicKey;
         }
       }
+    } catch {
+      // try next
     }
-  } catch (error) {
-    console.warn("Unable to fetch VAPID key from backend, using default:", error);
   }
+
   return DEFAULT_VAPID_PUBLIC_KEY;
 }
 
@@ -206,26 +217,42 @@ export async function sendSubscriptionToBackend(subscription, token = null) {
       headers["Authorization"] = `Bearer ${authToken}`;
     }
 
-    const endpointUrl = await getSubscriptionEndpoint();
     const subJson = subscription.toJSON ? subscription.toJSON() : subscription;
-
-    const response = await fetch(endpointUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        subscription: subJson,
-      }),
+    const payload = JSON.stringify({
+      subscription: subJson,
+      endpoint: subJson?.endpoint,
+      keys: subJson?.keys,
     });
 
-    if (!response.ok) {
-      console.warn(
-        `Backend push subscription endpoint returned status ${response.status}.`
-      );
-      return false;
+    const targetUrls = [];
+    try {
+      const { apiBaseUrl } = await getRuntimeConfig();
+      if (apiBaseUrl) {
+        targetUrls.push(`${apiBaseUrl}?action=savePushSubscription`);
+      }
+    } catch {
+      // ignore
+    }
+    targetUrls.push("/arieshrms-api?action=savePushSubscription");
+
+    for (const endpointUrl of targetUrls) {
+      try {
+        const response = await fetch(endpointUrl, {
+          method: "POST",
+          headers,
+          body: payload,
+        });
+
+        if (response.ok) {
+          const data = await response.json().catch(() => null);
+          return data ? Boolean(data.status) : true;
+        }
+      } catch (err) {
+        console.warn(`Failed sending subscription to ${endpointUrl}:`, err.message);
+      }
     }
 
-    const data = await response.json().catch(() => null);
-    return data ? Boolean(data.status) : response.ok;
+    return false;
   } catch (error) {
     console.warn("Unable to send push subscription to backend:", error.message);
     return false;

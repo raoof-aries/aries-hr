@@ -221,16 +221,12 @@ export function NotificationProvider({ children }) {
       setPushPermission(Notification.permission);
     }
 
-    const subscription = await getPushSubscription();
-    setIsPushSubscribed(Boolean(subscription));
-
-    // If already granted and user is authenticated, ensure backend has the subscription
-    if (
-      subscription &&
-      isAuthenticated &&
-      Notification.permission === "granted"
-    ) {
-      void subscribeUserToPush(null, null, token);
+    if (typeof Notification !== "undefined" && Notification.permission === "granted" && isAuthenticated) {
+      const subscription = await subscribeUserToPush(null, null, token);
+      setIsPushSubscribed(Boolean(subscription));
+    } else {
+      const subscription = await getPushSubscription();
+      setIsPushSubscribed(Boolean(subscription));
     }
   }, [isPushSupported, isAuthenticated, token]);
 
