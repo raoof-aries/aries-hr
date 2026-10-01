@@ -82,6 +82,26 @@ const menuItems = [
     ),
   },
   {
+    id: "purchase-approval",
+    title: "Approvals",
+    route: "/purchase-approval",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M9 11l3 3L22 4"></path>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+      </svg>
+    ),
+  },
+  {
     id: "allowance",
     title: "Allowance",
     route: "/allowance",
@@ -462,11 +482,23 @@ export default function Layout({ children }) {
       "/effism-lite": "EFFISM Lite",
       "/break-time-log": "Break Time Log",
       "/time-tracker": "Time Tracker",
+      "/purchase-approval": "Purchase Approval",
+      "/purchase-approval/pending": "Pending Approvals",
+      "/purchase-approval/action": "Take Action",
     };
     // Handle exact pathname match
     const currentPath = location.pathname;
     if (currentPath.startsWith("/effism-lite")) {
       return "EFFISM Lite";
+    }
+    if (currentPath === "/purchase-approval/pending") {
+      return "Pending Approvals";
+    }
+    if (currentPath === "/purchase-approval/action") {
+      return "Take Action";
+    }
+    if (currentPath.startsWith("/purchase-approval")) {
+      return "Purchase Approval";
     }
     return routeMap[currentPath] || "HRMS";
   };
@@ -902,6 +934,12 @@ export default function Layout({ children }) {
                       } else {
                         navigate("/");
                       }
+                    } else if (location.pathname === "/purchase-approval/action") {
+                      navigate("/purchase-approval/pending");
+                    } else if (location.pathname === "/purchase-approval/pending") {
+                      navigate("/purchase-approval");
+                    } else if (location.pathname === "/purchase-approval") {
+                      navigate("/");
                     } else {
                       navigate("/");
                     }

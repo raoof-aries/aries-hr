@@ -39,7 +39,7 @@ export default function Home() {
   );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance", "purchase-approval"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
@@ -243,6 +243,30 @@ export default function Home() {
       bgColor: "#E3F4EE",
       iconColor: "#12725F",
       shadowColor: "rgba(1, 67, 66, 0.13)",
+    },
+    {
+      id: "purchase-approval",
+      title: "Purchase Approval",
+      description: "Management & purchase requests",
+      route: "/purchase-approval",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M9 11l3 3L22 4"></path>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+      ),
+      bgColor: "#E6F3EF",
+      iconColor: "#0F7A67",
+      shadowColor: "rgba(1, 67, 66, 0.14)",
     },
     {
       id: "hospital-assistance",

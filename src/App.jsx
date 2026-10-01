@@ -19,6 +19,9 @@ import { getIsRegularUser } from "./utils/userMode";
 import TimeTracker from "./pages/TimeTracker/TimeTracker";
 import Notifications from "./pages/Notifications/Notifications";
 import PushNotificationModal from "./components/PushNotificationModal/PushNotificationModal";
+import PurchaseApproval from "./pages/PurchaseApproval/PurchaseApproval";
+import PurchaseApprovalPending from "./pages/PurchaseApproval/PurchaseApprovalPending";
+import PurchaseApprovalAction from "./pages/PurchaseApproval/PurchaseApprovalAction";
 
 function EffismLiteGuard({ children }) {
   const { user } = useAuth();
@@ -237,6 +240,30 @@ function AppRoutes() {
         element={
           <ProtectedAppRoute>
             <BreakTimeLog />
+          </ProtectedAppRoute>
+        }
+      />
+      <Route
+        path="/purchase-approval"
+        element={
+          <ProtectedAppRoute>
+            <PurchaseApproval />
+          </ProtectedAppRoute>
+        }
+      />
+      <Route
+        path="/purchase-approval/pending"
+        element={
+          <ProtectedAppRoute>
+            <PurchaseApprovalPending />
+          </ProtectedAppRoute>
+        }
+      />
+      <Route
+        path="/purchase-approval/action"
+        element={
+          <ProtectedAppRoute>
+            <PurchaseApprovalAction />
           </ProtectedAppRoute>
         }
       />
