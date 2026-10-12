@@ -63,13 +63,13 @@ export default function Combo({ label, placeholder, options = [], value, onChang
             ref={searchRef}
             type="text"
             className="pa-s2-search"
-            placeholder="Search by name..."
+            placeholder="Search…"
             autoComplete="off"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <div className="pa-s2-results" role="listbox">
-            {filtered.length === 0 && <div className="pa-combo-empty">No matching approvers</div>}
+            {filtered.length === 0 && <div className="pa-combo-empty">No matches</div>}
             {filtered.map((o) => (
               <div
                 key={o.user_id}

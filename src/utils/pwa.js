@@ -190,7 +190,7 @@ export async function fetchVapidPublicKey() {
   return DEFAULT_VAPID_PUBLIC_KEY;
 }
 
-async function getSubscriptionEndpoint() {
+export async function getSubscriptionEndpoint() {
   try {
     const { apiBaseUrl } = await getRuntimeConfig();
     if (apiBaseUrl) {

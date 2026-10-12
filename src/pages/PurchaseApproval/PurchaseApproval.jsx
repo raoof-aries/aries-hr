@@ -1,8 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getApprovalStats } from "../../services/purchaseApprovalService";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  getApprovalStats,
+  ssoLogin,
+  getToken,
+} from "../../services/purchaseApprovalService";
 import { fmtAmount } from "../../utils/approvalFormat";
 import DetailsModal from "./components/DetailsModal";
+import NotifyToggle from "./components/NotifyToggle";
 import "./PurchaseApproval.css";
 
 function toDateInputValue(d) {
@@ -25,25 +30,66 @@ function defaultDateRange() {
 
 export default function PurchaseApproval() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [range, setRange] = useState(defaultDateRange);
   const [stats, setStats] = useState({
     pending_total: 0,
     approved_count: 0,
     approved_amount_aed: 0,
-    approval_limit_monthly: 500000,
+    approval_limit_monthly: 0,
     subdivisions: [],
   });
-  const [modal, setModal] = useState(null); // { subdivisionId, title } | null
+  const [modal, setModal] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState("");
 
   const loadDashboard = useCallback(async () => {
+    setLoading(true);
+    setNotice("");
+
+    // Check for SSO handoff parameters in URL
+    const employeeId = searchParams.get("employee_id");
+    const ts = searchParams.get("ts");
+    const sig = searchParams.get("sig");
+
+    if (employeeId && ts && sig) {
+      try {
+        await ssoLogin(employeeId, ts, sig);
+        // Clean URL parameters once processed
+        window.history.replaceState(
+          {},
+          "",
+          window.location.pathname + window.location.hash
+        );
+      } catch (err) {
+        setNotice(err.message || "SSO link expired or invalid.");
+      }
+    }
+
     try {
       const res = await getApprovalStats(range.from, range.to);
-      setStats(res);
+      setStats(res || {
+        pending_total: 0,
+        approved_count: 0,
+        approved_amount_aed: 0,
+        approval_limit_monthly: 0,
+        subdivisions: [],
+      });
     } catch (err) {
-      console.error("Could not load dashboard:", err);
+      if (err.status === 401) {
+        setNotice(
+          "Approval session not active. Launch with an active SSO link to authenticate."
+        );
+      } else if (err.status === 403) {
+        setNotice(err.message || "This account is not authorized as a management approver.");
+      } else {
+        setNotice(err.message || "Could not load approval dashboard.");
+      }
+    } finally {
+      setLoading(false);
     }
-  }, [range]);
+  }, [range, searchParams]);
 
   useEffect(() => {
     loadDashboard();
@@ -71,38 +117,42 @@ export default function PurchaseApproval() {
         </label>
       </div>
 
+      {notice && <div className="pa-notice-banner">{notice}</div>}
+
       {/* Stats row: 3 tiles side-by-side */}
-      <div className="pa-stats-row">
-        <button
-          type="button"
-          className="pa-stat-tile accent-navy"
-          onClick={() => navigate("/purchase-approval/pending")}
-        >
-          <div className="pa-stat-tile-value">{stats.pending_total || 0}</div>
-          <div className="pa-stat-tile-label">Purchase Approval Pending</div>
-        </button>
-        <button
-          type="button"
-          className="pa-stat-tile accent-green"
-          onClick={() =>
-            setModal({ subdivisionId: null, title: "Approved Requests" })
-          }
-        >
-          <div className="pa-stat-tile-value">{stats.approved_count || 0}</div>
-          <div className="pa-stat-tile-label">Total Approved</div>
-        </button>
-        <button
-          type="button"
-          className="pa-stat-tile accent-teal"
-          onClick={() =>
-            setModal({ subdivisionId: null, title: "Approved Requests" })
-          }
-        >
-          <div className="pa-stat-tile-value">
-            {fmtAmount(stats.approved_amount_aed || 0)}
-          </div>
-          <div className="pa-stat-tile-label">Approved Amount (AED)</div>
-        </button>
+      <div className="pa-stats-container">
+        <div className="pa-stats-row">
+          <button
+            type="button"
+            className="pa-stat-tile accent-navy"
+            onClick={() => navigate("/purchase-approval/pending")}
+          >
+            <div className="pa-stat-tile-value">{stats.pending_total || 0}</div>
+            <div className="pa-stat-tile-label">Purchase Approval Pending</div>
+          </button>
+          <button
+            type="button"
+            className="pa-stat-tile accent-green"
+            onClick={() =>
+              setModal({ subdivisionId: null, title: "Approved Requests" })
+            }
+          >
+            <div className="pa-stat-tile-value">{stats.approved_count || 0}</div>
+            <div className="pa-stat-tile-label">Total Approved</div>
+          </button>
+          <button
+            type="button"
+            className="pa-stat-tile accent-teal"
+            onClick={() =>
+              setModal({ subdivisionId: null, title: "Approved Requests" })
+            }
+          >
+            <div className="pa-stat-tile-value">
+              {fmtAmount(stats.approved_amount_aed || 0)}
+            </div>
+            <div className="pa-stat-tile-label">Approved Amount (AED)</div>
+          </button>
+        </div>
       </div>
 
       {/* Limit card */}
@@ -116,6 +166,8 @@ export default function PurchaseApproval() {
           </strong>
         </div>
       </div>
+
+      <NotifyToggle />
 
       {/* Subdivision breakdown */}
       {stats.subdivisions && stats.subdivisions.length > 0 && (

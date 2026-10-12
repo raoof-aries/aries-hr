@@ -1,10 +1,11 @@
 import React, { Fragment, useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { getActionContext, submitDecision } from "../../services/purchaseApprovalService";
 import { fmtAmount, formatDate, formatDateTime } from "../../utils/approvalFormat";
 import Combo from "./components/Combo";
 import "./PurchaseApproval.css";
+
+const QUOTE_PREVIEW_BASE = "https://markndget.com/testfile/preview.php?file=";
 
 const TABS = [
   { key: "details", label: "Details" },
@@ -19,8 +20,8 @@ const DECISIONS = [
     gate: "canApprove",
     theme: "theme-approve",
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12" />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 6L9 17l-5-5" />
       </svg>
     ),
   },
@@ -29,7 +30,7 @@ const DECISIONS = [
     label: "Cancel",
     theme: "theme-cancel",
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
         <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
       </svg>
@@ -40,8 +41,10 @@ const DECISIONS = [
     label: "Request for Clarification",
     theme: "theme-clarify",
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
       </svg>
     ),
   },
@@ -51,7 +54,7 @@ const DECISIONS = [
     gate: "canApproveWithCc",
     theme: "theme-cc",
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
         <circle cx="8.5" cy="7" r="4" />
         <polyline points="17 11 19 13 23 9" />
@@ -63,9 +66,9 @@ const DECISIONS = [
     label: "Forward To",
     theme: "theme-forward",
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="5" y1="12" x2="19" y2="12" />
-        <polyline points="12 5 19 12 12 19" />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="13 17 18 12 13 7" />
+        <polyline points="6 17 11 12 6 7" />
       </svg>
     ),
   },
@@ -74,7 +77,7 @@ const DECISIONS = [
     label: "Reject",
     theme: "theme-reject",
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />
         <line x1="6" y1="6" x2="18" y2="18" />
       </svg>
@@ -97,38 +100,43 @@ function QuoteTable({ heading, rows }) {
   return (
     <div className="pa-quote-section">
       <div className="pa-pro-table-heading">{heading}</div>
-      <div className="pa-quote-grid">
-        {rows.map((q, i) => (
-          <div key={i} className="pa-quote-card">
-            <div className="pa-quote-card-header">
-              <span className="pa-quote-level-name">{q.quote_level || `Quote #${i + 1}`}</span>
-              {q.quote_file ? (
-                <a
-                  href={q.quote_file}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="pa-quote-file-btn"
-                  title="View Quote File"
-                >
-                  <span className="pa-file-glyph">📄</span>
-                  <span>Quote File</span>
-                </a>
-              ) : null}
-            </div>
-
-            <div className="pa-quote-card-details">
-              <div className="pa-quote-amount-group">
-                <span className="pa-quote-amount">{fmtAmount(q.quote_amount)}</span>
-                <span className="pa-quote-currency">{q.currency || "AED"}</span>
-              </div>
-              {q.quote_tax_per && (
-                <div className="pa-quote-tax-badge">
-                  Tax: <strong>{String(q.quote_tax_per).includes("%") ? q.quote_tax_per : `${q.quote_tax_per}%`}</strong>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+      <div className="pa-pro-table-wrap">
+        <table className="pa-pro-table">
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>Amount</th>
+              <th>Tax %</th>
+              <th>Currency</th>
+              <th>Quote</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((q, i) => (
+              <tr key={i}>
+                <td>{q.quote_level}</td>
+                <td>{q.quote_amount}</td>
+                <td>{q.quote_tax_per}</td>
+                <td>{q.currency}</td>
+                <td>
+                  {q.quote_file ? (
+                    <a
+                      className="pa-quote-file-link"
+                      href={QUOTE_PREVIEW_BASE + encodeURIComponent(q.quote_file)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="View Quote File"
+                    >
+                      📄
+                    </a>
+                  ) : (
+                    "-"
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -174,19 +182,85 @@ function extraFields(p) {
   ];
 }
 
+function LogItem({ log, quotes, finalQuotes, downloadBase }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="pa-log-item">
+      <div className="pa-log-item-top">
+        <span className="pa-log-label">{log.label}</span>
+        <span className={`pa-log-status pa-bg-${log.colour}`}>{log.status_label}</span>
+      </div>
+      <div className="pa-log-meta">
+        By {log.username} — {formatDateTime(log.created_at)}
+      </div>
+
+      {log.is_quote_row ? (
+        <>
+          <button
+            type="button"
+            className="pa-log-toggle"
+            onClick={() => setOpen((o) => !o)}
+          >
+            {open ? "Hide" : "Show"} Remarks &amp; Quotes
+          </button>
+          {open && (
+            <div className="pa-log-detail">
+              {log.remarks && (
+                <div
+                  className="pa-remarks-box"
+                  dangerouslySetInnerHTML={{ __html: log.remarks }}
+                />
+              )}
+              {log.label === "Review Of Quote" && (
+                <QuoteTable heading="Comparison Quotes" rows={quotes} />
+              )}
+              {log.label === "Final Negotiation" && (
+                <QuoteTable heading="Final Quote" rows={finalQuotes} />
+              )}
+            </div>
+          )}
+        </>
+      ) : (
+        log.remarks && (
+          <div
+            className="pa-remarks-box"
+            style={{ marginTop: 6 }}
+            dangerouslySetInnerHTML={{ __html: log.remarks }}
+          />
+        )
+      )}
+
+      {(log.files || []).map((f, i) => (
+        <a
+          key={i}
+          className="pa-attachment-link"
+          href={`${downloadBase}${encodeURIComponent(f.file)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          📎 {f.title}
+        </a>
+      ))}
+    </div>
+  );
+}
+
 export default function PurchaseApprovalAction() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const id = params.get("id");
   const code = params.get("code") || "MANAGEMENT_APPROVAL";
+  const mode = params.get("mode") || "pwa";
+  const isLegacy = mode === "legacy" || code !== "MANAGEMENT_APPROVAL";
 
   const [tab, setTab] = useState("actions");
   const [ctx, setCtx] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isLegacy);
   const [error, setError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
+  const [frameLoading, setFrameLoading] = useState(isLegacy);
 
   const [decision, setDecision] = useState("");
   const [forwardTo, setForwardTo] = useState("");
@@ -198,24 +272,48 @@ export default function PurchaseApprovalAction() {
     setLoading(true);
     setError("");
     try {
-      const data = await getActionContext(id);
+      const data = await getActionContext(id, code);
       setCtx(data);
     } catch (err) {
       setError(err.message || "Could not load this request.");
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, code]);
 
   useEffect(() => {
     if (!id) {
       navigate("/purchase-approval/pending", { replace: true });
       return;
     }
-    load();
-  }, [id, load, navigate]);
+    if (!isLegacy) load();
+  }, [id, isLegacy, load, navigate]);
 
   if (!id) return null;
+
+  if (isLegacy) {
+    return (
+      <section className="pa-screen">
+        {frameLoading && (
+          <div className="pa-empty-state">
+            <p>Loading…</p>
+            <p style={{ fontSize: "0.8rem", color: "#64748b" }}>This may take a moment</p>
+          </div>
+        )}
+        <iframe
+          style={{ width: "100%", height: "80vh", border: "none", borderRadius: "14px" }}
+          title="Take Action"
+          src={
+            "https://purchaseapproval.markndget.com/actions/" +
+            encodeURIComponent(id) +
+            "/" +
+            encodeURIComponent(code)
+          }
+          onLoad={() => setFrameLoading(false)}
+        />
+      </section>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -228,21 +326,28 @@ export default function PurchaseApprovalAction() {
     if (decision === "NC" && (!clarifyTo || clarifyTo === "0")) {
       return setError("Please select who to request clarification from.");
     }
-    if (decision === "NC" && !remarks.trim())
+    if (decision === "NC" && !remarks.trim()) {
       return setError("Remarks are required when requesting clarification.");
-    if (decision === "R" && !remarks.trim())
+    }
+    if (decision === "R" && !remarks.trim()) {
       return setError("Remarks are required when rejecting.");
+    }
 
     setSubmitting(true);
     try {
-      const res = await submitDecision({
+      const body = {
         requesting_id: Number(ctx.requestingId),
         decision,
         remarks: remarks.trim(),
-        forward_to: forwardTo ? Number(forwardTo) : undefined,
-        clarify_to: clarifyTo ? Number(clarifyTo) : undefined,
-        userName: user?.name || user?.full_name || "Approver",
-      });
+      };
+      if (decision === "FW" || decision === "AC") {
+        body.forward_to = Number(forwardTo);
+      }
+      if (decision === "NC") {
+        body.clarify_to = Number(clarifyTo);
+      }
+
+      await submitDecision(body);
 
       const said =
         {
@@ -257,7 +362,7 @@ export default function PurchaseApprovalAction() {
       setToastMessage(said);
       setTimeout(() => {
         navigate("/purchase-approval/pending", { replace: true });
-      }, 900);
+      }, 700);
     } catch (err) {
       setError(err.message || "Could not record this decision. Please try again.");
       setSubmitting(false);
@@ -267,7 +372,8 @@ export default function PurchaseApprovalAction() {
   const p = ctx?.purchase || {};
   const a = ctx?.approver || {};
   const cc = p.category_code;
-  const alreadyApproved = Number(p.management_approval_status) === 1;
+  const alreadyApproved =
+    Number(p.management_approval_status) === 1 && ctx?.nextActionCode === "MANAGEMENT_APPROVAL";
 
   const monthlyLimit = Number(a.approval_limit_monthly) || 0;
   const pct =
@@ -299,7 +405,7 @@ export default function PurchaseApprovalAction() {
         </div>
       )}
 
-      {!loading && error && (
+      {!loading && error && !ctx && (
         <div className="pa-tabpanel">
           <div className="pa-error-banner">{error}</div>
           <button type="button" className="pa-btn pa-btn-primary pa-btn-block" onClick={load}>
@@ -308,15 +414,16 @@ export default function PurchaseApprovalAction() {
         </div>
       )}
 
-      {!loading && !error && ctx && (
+      {!loading && ctx && (
         <>
           {/* ========================================================
               ACTIONS TAB
               ======================================================== */}
           {tab === "actions" && (
             <div className="pa-tabpanel">
+              {/* Approval Authority Summary */}
               <div className="pa-navy-card">
-                <div className="pa-navy-header">&#128737; Approval Authority Summary</div>
+                <div className="pa-navy-header">🛡 Approval Authority Summary</div>
                 <div className="pa-navy-body">
                   <div className="pa-metric-grid">
                     <div className="pa-metric-tile">
@@ -359,6 +466,9 @@ export default function PurchaseApprovalAction() {
                     <span className="pa-fab-label">Amount Pending Approval</span>
                     <span className="pa-fab-amount">
                       {fmtAmount(p.final_amount)} {p.final_amount_currency}
+                      {Number(ctx.rate) !== 1 && (
+                        <span className="pa-fab-converted"> = {fmtAmount(ctx.aedAmount)} AED</span>
+                      )}
                     </span>
                   </div>
 
@@ -384,6 +494,22 @@ export default function PurchaseApprovalAction() {
                           </tbody>
                         </table>
                       </div>
+                      <div className="pa-pro-table-wrap">
+                        <table className="pa-pro-table">
+                          <tbody>
+                            <tr>
+                              <th>Initial Quoted Amount</th>
+                              <th>Discount Obtained</th>
+                              <th>Final Amount</th>
+                            </tr>
+                            <tr>
+                              <td>{fmtAmount(Number(p.final_amount) + Number(ctx.totalDiscount))}</td>
+                              <td>{fmtAmount(ctx.totalDiscount)}</td>
+                              <td>{fmtAmount(p.final_amount)}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </>
                   )}
 
@@ -392,57 +518,65 @@ export default function PurchaseApprovalAction() {
                 </div>
               </div>
 
+              {/* General Remarks */}
               {(ctx.priorRemarks || (ctx.finalRemarks && ctx.finalRemarks.length > 0)) && (
                 <div className="pa-navy-card">
-                  <div className="pa-navy-header">&#128172; General Remarks</div>
+                  <div className="pa-navy-header">💬 General Remarks</div>
                   <div className="pa-navy-body">
                     {ctx.priorRemarks && (
-                      <div className="pa-remark-box">
-                        {ctx.priorRemarks}
-                      </div>
+                      <div
+                        className="pa-remarks-box"
+                        dangerouslySetInnerHTML={{ __html: ctx.priorRemarks }}
+                      />
                     )}
                     {ctx.finalRemarks?.map((fr, i) => (
-                      <div key={i} className="pa-remark-box">
-                        <strong>{fr.full_name}:</strong> {fr.remarks}
+                      <div key={i} className="pa-remarks-box">
+                        <strong>{fr.full_name}:</strong>{" "}
+                        <span dangerouslySetInnerHTML={{ __html: fr.remarks }} />
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Action Decision Form */}
               {alreadyApproved ? (
                 <div className="pa-navy-card">
-                  <div className="pa-approved-banner">
-                    &#10003; Approval has been completed
-                  </div>
+                  <div className="pa-approval-done">&#10003; Approval has been completed</div>
                 </div>
               ) : (
                 <div className="pa-navy-card">
-                  <div className="pa-navy-header">&#9998; Record Action</div>
+                  <div className="pa-navy-header">✎ Record Action</div>
                   <div className="pa-navy-body">
                     <form onSubmit={handleSubmit}>
+                      {error && <div className="pa-error-banner">{error}</div>}
+
                       <div className="pa-decision-list">
                         {DECISIONS.map((d) => {
                           if (d.gate && !ctx[d.gate]) return null;
                           const isSelected = decision === d.value;
                           return (
-                            <button
-                              type="button"
+                            <label
                               key={d.value}
-                              className={`pa-decision-chip ${d.theme} ${isSelected ? "selected" : ""}`}
-                              onClick={() => {
-                                setDecision(d.value);
-                                setError("");
-                              }}
+                              className={`pa-action-btn ${d.theme} ${isSelected ? "selected" : ""}`}
                             >
-                              <div className="pa-decision-icon">{d.icon}</div>
-                              <div className="pa-decision-info">
-                                <div className="pa-decision-label">{d.label}</div>
-                              </div>
-                              <div className="pa-decision-check">
-                                <div className="pa-decision-check-dot" />
-                              </div>
-                            </button>
+                              <input
+                                type="radio"
+                                name="rdStatus"
+                                value={d.value}
+                                checked={isSelected}
+                                onChange={() => {
+                                  setDecision(d.value);
+                                  setError("");
+                                }}
+                                className="pa-sr-only"
+                              />
+                              <span className="pa-action-btn-icon">{d.icon}</span>
+                              <span className="pa-action-btn-label">{d.label}</span>
+                              <span className="pa-action-btn-radio">
+                                <span className="pa-action-btn-dot" />
+                              </span>
+                            </label>
                           );
                         })}
                       </div>
@@ -495,14 +629,15 @@ export default function PurchaseApprovalAction() {
               ======================================================== */}
           {tab === "details" && (
             <div className="pa-tabpanel">
-              <div className="pa-pcard">
+              {/* Basic Details */}
+              <div className="pa-pcard accent-blue">
                 <div className="pa-pcard-header">Basic Details</div>
                 <div className="pa-pcard-body">
-                  <Row label="Request Type" value={p.requesting_for || p.request_type_name} />
+                  <Row label="Request Type" value={p.requesting_for} />
                   <Row label="Request Date" value={formatDate(p.requesting_date)} />
                   <Row label="Request Generated" value={formatDateTime(p.created_at)} />
                   <Row label="Request No" value={p.request_no} />
-                  <Row label="Requested By" value={p.requested_by_name || p.requester_name} />
+                  <Row label="Requested By" value={p.requested_by_name} />
                   <Row label="Purchase Category" value={p.request_category} />
                   <Row label="Requirement" value={p.req_id} />
                   <Row label="Expense Category" value={p.expense_category_label} />
@@ -516,7 +651,8 @@ export default function PurchaseApprovalAction() {
                 </div>
               </div>
 
-              <div className="pa-pcard">
+              {/* Approval Details */}
+              <div className="pa-pcard accent-red">
                 <div className="pa-pcard-header">Approval Details</div>
                 <div className="pa-pcard-body">
                   <div className="pa-kv-row">
@@ -552,17 +688,31 @@ export default function PurchaseApprovalAction() {
                       </div>
                       <div className="pa-pro-table-wrap">
                         <table className="pa-pro-table">
-                          <tbody>
+                          <thead>
                             <tr>
                               <th>Category</th>
                               <th>Amount</th>
                             </tr>
+                          </thead>
+                          <tbody>
                             {ctx.split.map((s, si) => (
                               <Fragment key={si}>
                                 {s.category1_name && (
                                   <tr>
                                     <td>{s.category1_name}</td>
                                     <td>{fmtAmount(s.split_amount1)}</td>
+                                  </tr>
+                                )}
+                                {s.category2_name && (
+                                  <tr>
+                                    <td>{s.category2_name}</td>
+                                    <td>{fmtAmount(s.split_amount2)}</td>
+                                  </tr>
+                                )}
+                                {s.category3_name && (
+                                  <tr>
+                                    <td>{s.category3_name}</td>
+                                    <td>{fmtAmount(s.split_amount3)}</td>
                                   </tr>
                                 )}
                               </Fragment>
@@ -575,25 +725,81 @@ export default function PurchaseApprovalAction() {
                 </div>
               </div>
 
+              {/* Attachments */}
               {ctx.attachments && ctx.attachments.length > 0 && (
-                <div className="pa-pcard">
+                <div className="pa-pcard accent-cyan">
                   <div className="pa-pcard-header">Attachments</div>
                   <div className="pa-pcard-body">
                     {ctx.attachments.map((a, i) => (
-                      <div key={i} className="pa-attachment-item">
-                        <span className="pa-attachment-icon">📎</span>
-                        <span className="pa-attachment-title">{a.title}</span>
-                      </div>
+                      <a
+                        key={i}
+                        className="pa-attachment-link"
+                        href={`${ctx.downloadBase}${encodeURIComponent(a.file)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        📎 {a.title}
+                      </a>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Requisition Additional Information */}
               {p.description && (
-                <div className="pa-pcard">
+                <div className="pa-pcard accent-amber">
                   <div className="pa-pcard-header">Requisition Additional Information</div>
+                  <div
+                    className="pa-pcard-body"
+                    dangerouslySetInnerHTML={{ __html: p.description }}
+                  />
+                </div>
+              )}
+
+              {/* PO Details */}
+              {(p.lpono || p.lpo_amount) && (
+                <div className="pa-pcard accent-amber">
+                  <div className="pa-pcard-header">PO Details</div>
                   <div className="pa-pcard-body">
-                    <div className="pa-additional-info">{p.description}</div>
+                    <Row label="LPO No" value={p.lpono} />
+                    <Row
+                      label="LPO Amount"
+                      value={
+                        p.lpo_amount
+                          ? `${p.lpo_amount} ${p.lpo_amount_currency || ""}`.trim()
+                          : ""
+                      }
+                    />
+                    <Row label="LPO Generated Date" value={p.lpo_generated_date} />
+                  </div>
+                </div>
+              )}
+
+              {/* Invoice Details */}
+              {p.invoice_amount ? (
+                <div className="pa-pcard accent-green">
+                  <div className="pa-pcard-header">Invoice Details</div>
+                  <div className="pa-pcard-body">
+                    <div className="pa-kv-row">
+                      <span className="pa-kv-label">Invoice Amount</span>
+                      <span className="pa-kv-value">
+                        {p.invoice_amount} {p.invoice_currency}
+                      </span>
+                    </div>
+                    <Row label="Tax %" value={p.tax_percent ? `${p.tax_percent}%` : ""} />
+                    <Row label="Invoice Received" value={p.invoice_recieved_date} />
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Expense Allocation, SAP Entry */}
+              {(p.expense_allocated_company || p.ap_invoice) && (
+                <div className="pa-pcard accent-cyan">
+                  <div className="pa-pcard-header">Expense Allocation, SAP Entry</div>
+                  <div className="pa-pcard-body">
+                    <Row label="Expense Allocated Company" value={p.expense_allocated_company} />
+                    <Row label="AP Invoice" value={p.ap_invoice} />
+                    <Row label="AR Invoice No" value={p.ar_invoice} />
                   </div>
                 </div>
               )}
@@ -606,23 +812,19 @@ export default function PurchaseApprovalAction() {
           {tab === "log" && (
             <div className="pa-tabpanel">
               {(!ctx.actionsLog || ctx.actionsLog.length === 0) && (
-                <div className="pa-empty-state">No actions recorded yet.</div>
+                <div className="pa-empty-note">No actions recorded yet.</div>
+              )}
+              {ctx.actionsLog && ctx.actionsLog.length >= 20 && (
+                <div className="pa-empty-note">Showing the most recent 20 actions.</div>
               )}
               {ctx.actionsLog?.map((l, i) => (
-                <div key={i} className="pa-log-card">
-                  <div className="pa-log-header">
-                    <span className="pa-log-title">{l.label}</span>
-                    <span className="pa-log-badge">{l.status_label}</span>
-                  </div>
-                  <div className="pa-log-meta">
-                    By {l.username} — {formatDateTime(l.created_at)}
-                  </div>
-                  {l.remarks && (
-                    <div className="pa-log-remarks">
-                      {l.remarks}
-                    </div>
-                  )}
-                </div>
+                <LogItem
+                  key={i}
+                  log={l}
+                  quotes={ctx.quotes}
+                  finalQuotes={ctx.finalQuotes}
+                  downloadBase={ctx.downloadBase}
+                />
               ))}
             </div>
           )}

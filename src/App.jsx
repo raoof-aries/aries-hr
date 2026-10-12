@@ -22,6 +22,7 @@ import PushNotificationModal from "./components/PushNotificationModal/PushNotifi
 import PurchaseApproval from "./pages/PurchaseApproval/PurchaseApproval";
 import PurchaseApprovalPending from "./pages/PurchaseApproval/PurchaseApprovalPending";
 import PurchaseApprovalAction from "./pages/PurchaseApproval/PurchaseApprovalAction";
+import Grievance from "./pages/Grievance/Grievance";
 
 function EffismLiteGuard({ children }) {
   const { user } = useAuth();
@@ -264,6 +265,14 @@ function AppRoutes() {
         element={
           <ProtectedAppRoute>
             <PurchaseApprovalAction />
+          </ProtectedAppRoute>
+        }
+      />
+      <Route
+        path="/grievance"
+        element={
+          <ProtectedAppRoute>
+            <Grievance />
           </ProtectedAppRoute>
         }
       />
