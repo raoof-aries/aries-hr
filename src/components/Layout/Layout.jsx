@@ -519,6 +519,12 @@ export default function Layout({ children }) {
     if (currentPath === "/purchase-approval/action") {
       return "Take Action";
     }
+    if (currentPath === "/purchase-approval/approved") {
+      return "Approved Requests";
+    }
+    if (currentPath === "/purchase-approval/subdivisions") {
+      return "Subdivision Breakdown";
+    }
     if (currentPath.startsWith("/purchase-approval")) {
       return "Purchase Approval";
     }
@@ -958,7 +964,11 @@ export default function Layout({ children }) {
                       }
                     } else if (location.pathname === "/purchase-approval/action") {
                       navigate("/purchase-approval/pending");
-                    } else if (location.pathname === "/purchase-approval/pending") {
+                    } else if (
+                      location.pathname === "/purchase-approval/pending" ||
+                      location.pathname === "/purchase-approval/approved" ||
+                      location.pathname === "/purchase-approval/subdivisions"
+                    ) {
                       navigate("/purchase-approval");
                     } else if (location.pathname === "/purchase-approval") {
                       navigate("/");

@@ -22,6 +22,8 @@ import PushNotificationModal from "./components/PushNotificationModal/PushNotifi
 import PurchaseApproval from "./pages/PurchaseApproval/PurchaseApproval";
 import PurchaseApprovalPending from "./pages/PurchaseApproval/PurchaseApprovalPending";
 import PurchaseApprovalAction from "./pages/PurchaseApproval/PurchaseApprovalAction";
+import PurchaseApprovalApproved from "./pages/PurchaseApproval/PurchaseApprovalApproved";
+import PurchaseApprovalSubdivisions from "./pages/PurchaseApproval/PurchaseApprovalSubdivisions";
 import Grievance from "./pages/Grievance/Grievance";
 
 function EffismLiteGuard({ children }) {
@@ -265,6 +267,22 @@ function AppRoutes() {
         element={
           <ProtectedAppRoute>
             <PurchaseApprovalAction />
+          </ProtectedAppRoute>
+        }
+      />
+      <Route
+        path="/purchase-approval/approved"
+        element={
+          <ProtectedAppRoute>
+            <PurchaseApprovalApproved />
+          </ProtectedAppRoute>
+        }
+      />
+      <Route
+        path="/purchase-approval/subdivisions"
+        element={
+          <ProtectedAppRoute>
+            <PurchaseApprovalSubdivisions />
           </ProtectedAppRoute>
         }
       />
