@@ -53,6 +53,34 @@ function EffismLiteGuard({ children }) {
   return children;
 }
 
+function ApprovalGuard({ children }) {
+  const { user } = useAuth();
+  const type = user?.usertype ?? user?.userType ?? user?.user_type;
+
+  if (Number(type) !== 4) {
+    return (
+      <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+        <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "#FFF4F4", color: "#CF5B5B", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.5rem" }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h2 style={{ marginBottom: "0.75rem", color: "#1E293B", fontSize: "1.5rem", fontWeight: "600" }}>Access Denied</h2>
+        <p style={{ marginBottom: "2rem", color: "#64748B", maxWidth: "300px", lineHeight: "1.5" }}>You do not have permission to access the Purchase Approval module.</p>
+        <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1.5rem", backgroundColor: "#0F7A67", color: "white", borderRadius: "8px", textDecoration: "none", fontWeight: "500", transition: "background-color 0.2s" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          Return to Home
+        </Link>
+      </div>
+    );
+  }
+
+  return children;
+}
+
 function TimeTrackerGuard({ children }) {
   const { user } = useAuth();
 
@@ -250,7 +278,9 @@ function AppRoutes() {
         path="/purchase-approval"
         element={
           <ProtectedAppRoute>
-            <PurchaseApproval />
+            <ApprovalGuard>
+              <PurchaseApproval />
+            </ApprovalGuard>
           </ProtectedAppRoute>
         }
       />
@@ -258,7 +288,9 @@ function AppRoutes() {
         path="/purchase-approval/pending"
         element={
           <ProtectedAppRoute>
-            <PurchaseApprovalPending />
+            <ApprovalGuard>
+              <PurchaseApprovalPending />
+            </ApprovalGuard>
           </ProtectedAppRoute>
         }
       />
@@ -266,7 +298,9 @@ function AppRoutes() {
         path="/purchase-approval/action"
         element={
           <ProtectedAppRoute>
-            <PurchaseApprovalAction />
+            <ApprovalGuard>
+              <PurchaseApprovalAction />
+            </ApprovalGuard>
           </ProtectedAppRoute>
         }
       />
@@ -274,7 +308,9 @@ function AppRoutes() {
         path="/purchase-approval/approved"
         element={
           <ProtectedAppRoute>
-            <PurchaseApprovalApproved />
+            <ApprovalGuard>
+              <PurchaseApprovalApproved />
+            </ApprovalGuard>
           </ProtectedAppRoute>
         }
       />
@@ -282,7 +318,9 @@ function AppRoutes() {
         path="/purchase-approval/subdivisions"
         element={
           <ProtectedAppRoute>
-            <PurchaseApprovalSubdivisions />
+            <ApprovalGuard>
+              <PurchaseApprovalSubdivisions />
+            </ApprovalGuard>
           </ProtectedAppRoute>
         }
       />

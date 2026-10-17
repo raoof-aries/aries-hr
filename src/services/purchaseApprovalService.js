@@ -7,11 +7,40 @@ export const API_BASE =
 
 const TOKEN_KEY = "mgmt_approval_token";
 const NAME_KEY = "mgmt_approval_name";
+const EMP_KEY = "mgmt_approval_emp_id";
 
 export const HMAC_SECRET =
   "bfdbe25d7921ec86a07bdf5f5b1c7c0f4678d47b4341702395e70b54069076e2";
 
-export const DEFAULT_EMPLOYEE_ID = 107;
+/**
+ * Retrieves the currently authenticated user's employee_id from stored profile session.
+ * Returns null if not found (strictly no fallback to any hardcoded user).
+ */
+export function getCurrentEmployeeId() {
+  try {
+    const raw = localStorage.getItem("authUser");
+    if (raw) {
+      const user = JSON.parse(raw);
+      const candidates = [
+        user.employee_id,
+        user.employeeId,
+        user.emp_id,
+        user.empId,
+        user.id,
+        user.user_id,
+      ];
+      const found = candidates.find(
+        (v) => v !== undefined && v !== null && `${v}`.trim() !== ""
+      );
+      if (found) {
+        return String(found).trim();
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+  return null;
+}
 
 /**
  * Computes HMAC-SHA256 hex string matching PHP:
@@ -40,13 +69,17 @@ export async function computeHmacSha256(keyStr, messageStr) {
  * Generates the dynamic SSO parameters and complete URL:
  * https://purchaseapproval.markndget.com/pwa-approval/?employee_id=...&ts=...&sig=...
  */
-export async function createSsoPayload(employeeId = DEFAULT_EMPLOYEE_ID) {
+export async function createSsoPayload(employeeId = getCurrentEmployeeId()) {
+  const empId = employeeId ? String(employeeId).trim() : "";
+  if (!empId) {
+    throw new Error("Cannot authenticate: Employee ID is missing from user profile.");
+  }
   const ts = Math.floor(Date.now() / 1000);
-  const message = `${employeeId}|${ts}`;
+  const message = `${empId}|${ts}`;
   const sig = await computeHmacSha256(HMAC_SECRET, message);
-  const url = `https://purchaseapproval.markndget.com/pwa-approval/?employee_id=${employeeId}&ts=${ts}&sig=${sig}`;
+  const url = `https://purchaseapproval.markndget.com/pwa-approval/?employee_id=${empId}&ts=${ts}&sig=${sig}`;
   return {
-    employee_id: String(employeeId),
+    employee_id: empId,
     ts: String(ts),
     sig,
     url,
@@ -57,7 +90,7 @@ export async function createSsoPayload(employeeId = DEFAULT_EMPLOYEE_ID) {
  * Returns the dynamic URL:
  * https://purchaseapproval.markndget.com/pwa-approval/?employee_id=...&ts=...&sig=...
  */
-export async function generateApprovalUrl(employeeId = DEFAULT_EMPLOYEE_ID) {
+export async function generateApprovalUrl(employeeId = getCurrentEmployeeId()) {
   const payload = await createSsoPayload(employeeId);
   return payload.url;
 }
@@ -65,7 +98,7 @@ export async function generateApprovalUrl(employeeId = DEFAULT_EMPLOYEE_ID) {
 /**
  * Creates fresh SSO credentials and sends to /sso-login
  */
-export async function authenticateWithSso(employeeId = DEFAULT_EMPLOYEE_ID) {
+export async function authenticateWithSso(employeeId = getCurrentEmployeeId()) {
   const payload = await createSsoPayload(employeeId);
   const res = await fetch(`${API_BASE}/sso-login`, {
     method: "POST",
@@ -79,7 +112,7 @@ export async function authenticateWithSso(employeeId = DEFAULT_EMPLOYEE_ID) {
 
   const data = await res.json().catch(() => null);
   if (res.ok && data?.data?.token) {
-    setStoredSession(data.data.token, data.data.full_name);
+    setStoredSession(data.data.token, data.data.full_name, payload.employee_id);
     return {
       success: true,
       token: data.data.token,
@@ -99,26 +132,44 @@ export function getStoredFullName() {
   return localStorage.getItem(NAME_KEY) || "Approver";
 }
 
-export function setStoredSession(token, fullName) {
+export function setStoredSession(token, fullName, employeeId) {
   if (token) {
     localStorage.setItem(TOKEN_KEY, token);
   }
   if (fullName !== undefined) {
     localStorage.setItem(NAME_KEY, fullName || "");
   }
+  if (employeeId !== undefined && employeeId !== null) {
+    localStorage.setItem(EMP_KEY, String(employeeId));
+  }
 }
 
 export function clearStoredSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(NAME_KEY);
+  localStorage.removeItem(EMP_KEY);
 }
 
-export async function ensureSession(employeeId = DEFAULT_EMPLOYEE_ID) {
+export async function ensureSession(employeeId = getCurrentEmployeeId()) {
+  const currentEmpId = employeeId ? String(employeeId).trim() : "";
   const token = localStorage.getItem(TOKEN_KEY);
-  if (token) return token;
+  const storedEmpId = localStorage.getItem(EMP_KEY);
+
+  // If a token is already cached AND matches this current employee, reuse it:
+  if (token && storedEmpId && storedEmpId === currentEmpId) {
+    return token;
+  }
+
+  // Token is either absent OR belonged to a DIFFERENT employee -> wipe it!
+  clearStoredSession();
+
+  if (!currentEmpId) {
+    console.warn("SSO skipped: No employee ID found in user profile.");
+    return null;
+  }
 
   try {
-    const sso = await authenticateWithSso(employeeId);
+    const sso = await authenticateWithSso(currentEmpId);
     return sso.token;
   } catch (e) {
     console.error("SSO auto-login failed:", e);
@@ -157,7 +208,7 @@ export async function apiFetch(path, options = {}) {
   if (res.status === 401) {
     try {
       clearStoredSession();
-      const sso = await authenticateWithSso(DEFAULT_EMPLOYEE_ID);
+      const sso = await authenticateWithSso();
       const newToken = sso?.token;
       if (newToken) {
         headers.Authorization = "Bearer " + newToken;
@@ -202,7 +253,7 @@ export async function ssoLogin(employeeId, ts, sig) {
   }
 
   if (res.ok && data?.data?.token) {
-    setStoredSession(data.data.token, data.data.full_name);
+    setStoredSession(data.data.token, data.data.full_name, employeeId);
     return {
       success: true,
       token: data.data.token,

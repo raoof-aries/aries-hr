@@ -593,6 +593,10 @@ export default function Layout({ children }) {
 
           <nav className="layout-nav">
             {menuItems.filter(item => {
+              if (item.id === "purchase-approval") {
+                const type = user?.usertype ?? user?.userType ?? user?.user_type;
+                if (Number(type) !== 4) return false;
+              }
               if (user?.usertype === 3) {
                 return item.id === "time-tracker" || item.id === "profile";
               }
@@ -1357,6 +1361,10 @@ export default function Layout({ children }) {
             <div className="layout-mobile-menu-items">
               {menuItems
                 .filter((item) => {
+                  if (item.id === "purchase-approval") {
+                    const type = user?.usertype ?? user?.userType ?? user?.user_type;
+                    if (Number(type) !== 4) return false;
+                  }
                   if (user?.usertype === 3) {
                     return false; // All items for usertype 3 are now in the bottom nav or hidden
                   }

@@ -44,9 +44,32 @@ function normalizeUser(apiUser = {}) {
   const name =
     apiUser.full_name || apiUser.display_name || apiUser.username || "User";
 
+  const rawUserType =
+    apiUser.usertype ?? apiUser.userType ?? apiUser.user_type;
+  const parsedUserType =
+    rawUserType !== undefined && rawUserType !== null && rawUserType !== ""
+      ? Number(rawUserType)
+      : undefined;
+
+  const rawEmployeeId =
+    apiUser.employee_id ??
+    apiUser.employeeId ??
+    apiUser.emp_id ??
+    apiUser.empId ??
+    apiUser.id ??
+    apiUser.user_id;
+  const parsedEmployeeId =
+    rawEmployeeId !== undefined && rawEmployeeId !== null && `${rawEmployeeId}`.trim() !== ""
+      ? String(rawEmployeeId).trim()
+      : undefined;
+
   return {
     ...apiUser,
     name,
+    employee_id: parsedEmployeeId ?? apiUser.employee_id,
+    employeeId: parsedEmployeeId ?? apiUser.employeeId,
+    usertype: parsedUserType ?? apiUser.usertype,
+    userType: parsedUserType ?? apiUser.userType,
     employeeCode: apiUser.employee_code || "-",
     designation: apiUser.designation || "-",
     reportingPerson: apiUser.reporting_person || apiUser.parent_name || "-",
@@ -76,6 +99,9 @@ function clearStoredSession() {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
   localStorage.removeItem(USER_STORAGE_KEY);
   localStorage.removeItem(USERNAME_STORAGE_KEY);
+  localStorage.removeItem("mgmt_approval_token");
+  localStorage.removeItem("mgmt_approval_name");
+  localStorage.removeItem("mgmt_approval_emp_id");
 }
 
 export function AuthProvider({ children }) {

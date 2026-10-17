@@ -444,6 +444,12 @@ export default function Home() {
       shadowColor: "rgba(1, 67, 66, 0.1)",
     },
   ].filter((item) => {
+    if (item.id === "purchase-approval") {
+      const type = user?.usertype ?? user?.userType ?? user?.user_type;
+      if (Number(type) !== 4) {
+        return false;
+      }
+    }
     if (user?.usertype === 3) {
       return item.id === "time-tracker" || item.id === "hospital-assistance";
     }
