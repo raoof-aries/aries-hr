@@ -39,7 +39,7 @@ export default function Home() {
   );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance", "purchase-approval", "grievance"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance", "purchase-approval", "grievance", "cpe"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
