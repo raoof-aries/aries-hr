@@ -32,7 +32,7 @@ export async function getPushStatusForCurrentUser() {
       "/push/status?endpoint=" + encodeURIComponent(subscription.endpoint)
     );
     return !!status?.data?.subscribed;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -70,7 +70,7 @@ export async function unsubscribePush() {
       method: "POST",
       body: JSON.stringify({ endpoint }),
     });
-  } catch (e) {
+  } catch {
     // subscription is already gone client-side; ignore server cleanup failures
   }
 }

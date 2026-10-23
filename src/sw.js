@@ -1,19 +1,46 @@
 self.__WB_DISABLE_DEV_LOGS = true;
 
-import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
-import { registerRoute } from "workbox-routing";
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from "workbox-precaching";
+import { registerRoute, NavigationRoute } from "workbox-routing";
 import { NetworkOnly } from "workbox-strategies";
 
 // Clean up old caches and precache build assets injected by Vite
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
-// Route all API requests directly through the network
+// 1. Handle SPA navigation: Any page URL request serves the precached index.html app shell
+try {
+  const handler = createHandlerBoundToURL("index.html");
+  const navigationRoute = new NavigationRoute(handler, {
+    denylist: [
+      /\/webservices\//,
+      /arieshrms-api/,
+      /\.(?:png|jpe?g|gif|svg|webp|ico|css|js|map|json|pdf|woff2?|ttf|eot|csv|xlsx?|docx?)(\?.*)?$/i,
+    ],
+  });
+  registerRoute(navigationRoute);
+} catch {
+  try {
+    const handler = createHandlerBoundToURL("/hrms2/index.html");
+    const navigationRoute = new NavigationRoute(handler, {
+      denylist: [
+        /\/webservices\//,
+        /arieshrms-api/,
+        /\.(?:png|jpe?g|gif|svg|webp|ico|css|js|map|json|pdf|woff2?|ttf|eot|csv|xlsx?|docx?)(\?.*)?$/i,
+      ],
+    });
+    registerRoute(navigationRoute);
+  } catch (navErr) {
+    console.warn("Workbox NavigationRoute setup skipped:", navErr);
+  }
+}
+
+// 2. Route all API requests directly through the network
 registerRoute(
   ({ url }) =>
-    url.pathname.startsWith("/arieshrms-api") ||
-    url.hostname === "www.efftime.com" ||
-    url.pathname.includes("/webservices/"),
+    url.pathname.includes("arieshrms-api") ||
+    url.pathname.includes("/webservices/") ||
+    url.hostname.includes("purchaseapproval.markndget.com"),
   new NetworkOnly()
 );
 

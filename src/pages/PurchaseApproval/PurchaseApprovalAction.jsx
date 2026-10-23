@@ -1,8 +1,15 @@
-import React, { Fragment, useCallback, useEffect, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getActionContext, submitDecision } from "../../services/purchaseApprovalService";
+import {
+  getActionContext,
+  submitDecision,
+  isApprovalAccessDenied,
+  getApprovalDeniedMessage,
+} from "../../services/purchaseApprovalService";
 import { fmtAmount, formatDate, formatDateTime } from "../../utils/approvalFormat";
 import Combo from "./components/Combo";
+import ApprovalAccessDenied from "./components/ApprovalAccessDenied";
+import ApprovalLoader from "./components/ApprovalLoader";
 import "./PurchaseApproval.css";
 
 const QUOTE_PREVIEW_BASE = "https://markndget.com/testfile/preview.php?file=";
@@ -261,12 +268,22 @@ export default function PurchaseApprovalAction() {
   const [error, setError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [frameLoading, setFrameLoading] = useState(isLegacy);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [deniedMessage, setDeniedMessage] = useState("");
 
   const [decision, setDecision] = useState("");
   const [forwardTo, setForwardTo] = useState("");
   const [clarifyTo, setClarifyTo] = useState("");
   const [remarks, setRemarks] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const copyTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -274,8 +291,14 @@ export default function PurchaseApprovalAction() {
     try {
       const data = await getActionContext(id, code);
       setCtx(data);
+      setAccessDenied(false);
     } catch (err) {
-      setError(err.message || "Could not load this request.");
+      if (isApprovalAccessDenied(err)) {
+        setAccessDenied(true);
+        setDeniedMessage(getApprovalDeniedMessage(err));
+      } else {
+        setError(err.message || "Could not load this request.");
+      }
     } finally {
       setLoading(false);
     }
@@ -289,15 +312,96 @@ export default function PurchaseApprovalAction() {
     if (!isLegacy) load();
   }, [id, isLegacy, load, navigate]);
 
+  const handleCopyLink = async () => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.get("mode")) {
+      url.searchParams.set("mode", mode || "pwa");
+    }
+    if (!url.searchParams.get("id") && id) {
+      url.searchParams.set("id", String(id));
+    }
+    if (!url.searchParams.get("code") && code) {
+      url.searchParams.set("code", String(code));
+    }
+    const shareUrl = url.toString();
+
+    let success = false;
+    if (navigator?.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        success = true;
+      } catch {
+        // Fall back to DOM execCommand
+      }
+    }
+
+    if (!success) {
+      try {
+        const input = document.createElement("input");
+        input.value = shareUrl;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        input.style.left = "-9999px";
+        document.body.appendChild(input);
+        input.focus();
+        input.select();
+        success = document.execCommand("copy");
+        document.body.removeChild(input);
+      } catch {
+        // ignore
+      }
+    }
+
+    if (success) {
+      setCopiedLink(true);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopiedLink(false), 2500);
+    }
+  };
+
   if (!id) return null;
+
+  if (loading) {
+    return <ApprovalLoader />;
+  }
+
+  if (accessDenied) {
+    return (
+      <section className="pa-screen">
+        <ApprovalAccessDenied message={deniedMessage} onRetry={load} />
+      </section>
+    );
+  }
 
   if (isLegacy) {
     return (
       <section className="pa-screen">
+        <div className="pa-action-share-bar" style={{ marginTop: 0 }}>
+          <div className="pa-action-share-info">
+            <span className="pa-action-req-badge">{`Req #${id}`}</span>
+          </div>
+          <button
+            type="button"
+            className={`pa-action-share-btn ${copiedLink ? "copied" : ""}`}
+            onClick={handleCopyLink}
+            title="Copy link to clipboard"
+          >
+            {copiedLink ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+            )}
+            <span>{copiedLink ? "Copied!" : "Copy Link"}</span>
+          </button>
+        </div>
         {frameLoading && (
-          <div className="pa-empty-state">
-            <p>Loading…</p>
-            <p style={{ fontSize: "0.8rem", color: "#64748b" }}>This may take a moment</p>
+          <div style={{ padding: "2rem", textAlign: "center", color: "#64748b" }}>
+            Loading...
           </div>
         )}
         <iframe
@@ -336,7 +440,7 @@ export default function PurchaseApprovalAction() {
     setSubmitting(true);
     try {
       const body = {
-        requesting_id: Number(ctx.requestingId),
+        requesting_id: Number(ctx?.requestingId || id),
         decision,
         remarks: remarks.trim(),
       };
@@ -397,15 +501,35 @@ export default function PurchaseApprovalAction() {
         ))}
       </div>
 
+      {/* Request Info & Copy Link Bar */}
+      <div className="pa-action-share-bar">
+        <div className="pa-action-share-info">
+          <span className="pa-action-req-badge">{p.request_no ? `#${p.request_no}` : `Req #${id}`}</span>
+          {p.requester_name && <span className="pa-action-req-by">{p.requester_name}</span>}
+        </div>
+        <button
+          type="button"
+          className={`pa-action-share-btn ${copiedLink ? "copied" : ""}`}
+          onClick={handleCopyLink}
+          title="Copy link to clipboard"
+        >
+          {copiedLink ? (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          )}
+          <span>{copiedLink ? "Copied!" : "Copy Link"}</span>
+        </button>
+      </div>
+
       {toastMessage && <div className="pa-toast-box">{toastMessage}</div>}
 
-      {loading && (
-        <div className="pa-empty-state">
-          <p>Loading…</p>
-        </div>
-      )}
-
-      {!loading && error && !ctx && (
+      {error && !ctx && (
         <div className="pa-tabpanel">
           <div className="pa-error-banner">{error}</div>
           <button type="button" className="pa-btn pa-btn-primary pa-btn-block" onClick={load}>
@@ -414,7 +538,7 @@ export default function PurchaseApprovalAction() {
         </div>
       )}
 
-      {!loading && ctx && (
+      {ctx && (
         <>
           {/* ========================================================
               ACTIONS TAB

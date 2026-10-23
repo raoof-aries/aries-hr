@@ -2409,3 +2409,75 @@
   font-size: 0.9rem;
 }
 
+/* ========================================================
+   TAKE ACTION SHARE BAR
+   ======================================================== */
+.pa-action-share-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid rgba(1, 67, 66, 0.1);
+  border-radius: 14px;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.pa-action-share-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pa-action-req-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #014342;
+  background: rgba(1, 67, 66, 0.08);
+  padding: 3px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.pa-action-req-by {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pa-action-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #0F7A67;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.pa-action-share-btn:hover {
+  background: #0b5c4e;
+}
+
+.pa-action-share-btn.copied {
+  background: #059669;
+}
+
+

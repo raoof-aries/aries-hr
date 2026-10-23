@@ -1,9 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getApprovalStats } from "../../services/purchaseApprovalService";
+import {
+  getApprovalStats,
+  isApprovalAccessDenied,
+  getApprovalDeniedMessage,
+} from "../../services/purchaseApprovalService";
 import { fmtAmount } from "../../utils/approvalFormat";
 import DatePickerField from "../EffismLite/components/DatePickerField/DatePickerField";
 import { formatDateDisplayValue } from "../EffismLite/utils/effismLiteUtils";
+import ApprovalAccessDenied from "./components/ApprovalAccessDenied";
+import ApprovalLoader from "./components/ApprovalLoader";
 import "./PurchaseApproval.css";
 
 function toDateInputValue(d) {
@@ -46,6 +52,8 @@ export default function PurchaseApprovalSubdivisions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [deniedMessage, setDeniedMessage] = useState("");
 
   const loadSubdivisions = useCallback(async () => {
     setLoading(true);
@@ -53,9 +61,15 @@ export default function PurchaseApprovalSubdivisions() {
     try {
       const data = await getApprovalStats(range.from, range.to);
       setStats(data || { approved_amount_aed: 0, subdivisions: [] });
+      setAccessDenied(false);
     } catch (err) {
       console.error("Could not load subdivisions:", err);
-      setError(err.message || "Could not load subdivision breakdown.");
+      if (isApprovalAccessDenied(err)) {
+        setAccessDenied(true);
+        setDeniedMessage(getApprovalDeniedMessage(err));
+      } else {
+        setError(err.message || "Could not load subdivision breakdown.");
+      }
     } finally {
       setLoading(false);
     }
@@ -69,13 +83,26 @@ export default function PurchaseApprovalSubdivisions() {
   const totalApprovedAmount = Number(stats?.approved_amount_aed || 0);
 
   const filtered = useMemo(() => {
+    const list = stats?.subdivisions || [];
     const term = search.trim().toLowerCase();
-    if (!term) return subdivisions;
-    return subdivisions.filter((s) => {
+    if (!term) return list;
+    return list.filter((s) => {
       const name = String(s.subdivision_name || "Unassigned").toLowerCase();
       return name.includes(term);
     });
-  }, [subdivisions, search]);
+  }, [stats?.subdivisions, search]);
+
+  if (loading) {
+    return <ApprovalLoader />;
+  }
+
+  if (accessDenied) {
+    return (
+      <section className="pa-screen">
+        <ApprovalAccessDenied message={deniedMessage} onRetry={loadSubdivisions} />
+      </section>
+    );
+  }
 
   const handleSelectSubdivision = (s) => {
     navigate(
@@ -140,15 +167,8 @@ export default function PurchaseApprovalSubdivisions() {
       {/* Error state */}
       {error && <div className="pa-notice-banner">{error}</div>}
 
-      {/* Loading state */}
-      {loading && (
-        <div className="pa-empty-state">
-          <p>Loading subdivisions...</p>
-        </div>
-      )}
-
       {/* Empty state */}
-      {!loading && !error && filtered.length === 0 && (
+      {!error && filtered.length === 0 && (
         <div className="pa-empty-state">
           <div className="pa-empty-icon">&#128194;</div>
           <p>No subdivisions with approved requests in this range.</p>
@@ -156,7 +176,7 @@ export default function PurchaseApprovalSubdivisions() {
       )}
 
       {/* Kanban Cards Grid */}
-      {!loading && filtered.length > 0 && (
+      {filtered.length > 0 && (
         <div className="pa-pending-list">
           {filtered.map((s) => {
             const amount = Number(s.total_amount || 0);

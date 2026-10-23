@@ -36,7 +36,7 @@ export function getCurrentEmployeeId() {
         return String(found).trim();
       }
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
   return null;
@@ -72,7 +72,10 @@ export async function computeHmacSha256(keyStr, messageStr) {
 export async function createSsoPayload(employeeId = getCurrentEmployeeId()) {
   const empId = employeeId ? String(employeeId).trim() : "";
   if (!empId) {
-    throw new Error("Cannot authenticate: Employee ID is missing from user profile.");
+    const err = new Error("Cannot authenticate: Employee ID is missing from user profile.");
+    err.status = 403;
+    err.isSsoError = true;
+    throw err;
   }
   const ts = Math.floor(Date.now() / 1000);
   const message = `${empId}|${ts}`;
@@ -99,18 +102,33 @@ export async function generateApprovalUrl(employeeId = getCurrentEmployeeId()) {
  * Creates fresh SSO credentials and sends to /sso-login
  */
 export async function authenticateWithSso(employeeId = getCurrentEmployeeId()) {
-  const payload = await createSsoPayload(employeeId);
-  const res = await fetch(`${API_BASE}/sso-login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      employee_id: payload.employee_id,
-      ts: payload.ts,
-      sig: payload.sig,
-    }),
-  });
+  let payload;
+  try {
+    payload = await createSsoPayload(employeeId);
+  } catch (payloadErr) {
+    payloadErr.isSsoError = true;
+    throw payloadErr;
+  }
 
-  const data = await res.json().catch(() => null);
+  let res;
+  let data = null;
+  try {
+    res = await fetch(`${API_BASE}/sso-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        employee_id: payload.employee_id,
+        ts: payload.ts,
+        sig: payload.sig,
+      }),
+    });
+    data = await res.json().catch(() => null);
+  } catch (fetchErr) {
+    clearStoredSession();
+    fetchErr.isSsoError = true;
+    throw fetchErr;
+  }
+
   if (res.ok && data?.data?.token) {
     setStoredSession(data.data.token, data.data.full_name, payload.employee_id);
     return {
@@ -121,11 +139,22 @@ export async function authenticateWithSso(employeeId = getCurrentEmployeeId()) {
     };
   }
 
-  throw new Error(data?.message || "Could not authenticate via SSO link.");
+  clearStoredSession();
+  const err = new Error(data?.message || "Could not authenticate via SSO link.");
+  err.status = res.status;
+  err.data = data;
+  err.isSsoError = true;
+  throw err;
 }
 
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY) || "";
+export function getToken(employeeId = getCurrentEmployeeId()) {
+  const currentEmpId = employeeId ? String(employeeId).trim() : "";
+  const token = localStorage.getItem(TOKEN_KEY) || "";
+  const storedEmpId = localStorage.getItem(EMP_KEY) || "";
+  if (currentEmpId && storedEmpId && storedEmpId !== currentEmpId) {
+    return "";
+  }
+  return token;
 }
 
 export function getStoredFullName() {
@@ -164,8 +193,10 @@ export async function ensureSession(employeeId = getCurrentEmployeeId()) {
   clearStoredSession();
 
   if (!currentEmpId) {
-    console.warn("SSO skipped: No employee ID found in user profile.");
-    return null;
+    const err = new Error("No employee ID found in user profile.");
+    err.status = 403;
+    err.isSsoError = true;
+    throw err;
   }
 
   try {
@@ -173,7 +204,8 @@ export async function ensureSession(employeeId = getCurrentEmployeeId()) {
     return sso.token;
   } catch (e) {
     console.error("SSO auto-login failed:", e);
-    return null;
+    e.isSsoError = true;
+    throw e;
   }
 }
 
@@ -200,7 +232,7 @@ export async function apiFetch(path, options = {}) {
   let data = null;
   try {
     data = await res.json();
-  } catch (e) {
+  } catch {
     // no body
   }
 
@@ -218,12 +250,13 @@ export async function apiFetch(path, options = {}) {
         });
         try {
           data = await res.json();
-        } catch (e) {
+        } catch {
           // no body
         }
       }
     } catch (e) {
-      // ignore
+      e.isSsoError = true;
+      throw e;
     }
   }
 
@@ -233,23 +266,28 @@ export async function apiFetch(path, options = {}) {
     );
     err.status = res.status;
     err.data = data;
+    if (res.status === 401 || res.status === 403) {
+      err.isAuthError = true;
+    }
     throw err;
   }
   return data;
 }
 
 export async function ssoLogin(employeeId, ts, sig) {
-  const res = await fetch(`${API_BASE}/sso-login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ employee_id: employeeId, ts, sig }),
-  });
-
+  let res;
   let data = null;
   try {
-    data = await res.json();
-  } catch (e) {
-    // no body
+    res = await fetch(`${API_BASE}/sso-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ employee_id: employeeId, ts, sig }),
+    });
+    data = await res.json().catch(() => null);
+  } catch (fetchErr) {
+    clearStoredSession();
+    fetchErr.isSsoError = true;
+    throw fetchErr;
   }
 
   if (res.ok && data?.data?.token) {
@@ -261,7 +299,77 @@ export async function ssoLogin(employeeId, ts, sig) {
     };
   }
 
-  throw new Error(data?.message || "Could not sign in with SSO link.");
+  clearStoredSession();
+  const err = new Error(data?.message || "Could not sign in with SSO link.");
+  err.status = res.status;
+  err.data = data;
+  err.isSsoError = true;
+  throw err;
+}
+
+/**
+ * Determines whether an error represents an access denied / authorization / SSO failure.
+ * When SSO fails (e.g. 404 "No active account for this employee", 401 unauthorized,
+ * or user doesn't exist on purchase approval server), or when permission is denied,
+ * this returns true.
+ */
+export function isApprovalAccessDenied(err) {
+  if (!err) return false;
+
+  // Any SSO / login failure means the user cannot authenticate in purchase approval module
+  if (err.isSsoError || err.isAuthError) return true;
+
+  // HTTP unauthorized / forbidden
+  if (err.status === 401 || err.status === 403) return true;
+
+  const msg = (err.message || "").toLowerCase();
+
+  // If status is 404, check if it relates to missing/inactive user or SSO
+  if (err.status === 404) {
+    if (
+      msg.includes("no active account") ||
+      msg.includes("employee") ||
+      msg.includes("user") ||
+      msg.includes("approver") ||
+      msg.includes("account")
+    ) {
+      return true;
+    }
+  }
+
+  return (
+    msg.includes("not a management approver") ||
+    msg.includes("not authorized") ||
+    msg.includes("no active account") ||
+    msg.includes("no employee id") ||
+    msg.includes("access denied") ||
+    msg.includes("unauthorized") ||
+    msg.includes("forbidden") ||
+    msg.includes("permission") ||
+    msg.includes("sso link expired") ||
+    msg.includes("cannot authenticate")
+  );
+}
+
+/**
+ * Returns a user-friendly message for the Access Denied screen.
+ */
+export function getApprovalDeniedMessage(err) {
+  if (!err) return "This account is not authorized as a management approver.";
+
+  const raw = typeof err === "string" ? err : err.message || "";
+  const trimmed = raw.trim();
+
+  // If the message is a raw HTTP/fetch string or empty
+  if (
+    !trimmed ||
+    /^request failed \(\d+\)$/i.test(trimmed) ||
+    /^failed to fetch$/i.test(trimmed)
+  ) {
+    return "No active account or authorization found for this employee in the Purchase Approval module.";
+  }
+
+  return trimmed;
 }
 
 export async function getApprovalStats(from, to) {

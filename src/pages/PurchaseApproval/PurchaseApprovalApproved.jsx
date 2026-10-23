@@ -1,9 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { getApprovedDetails } from "../../services/purchaseApprovalService";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  getApprovedDetails,
+  isApprovalAccessDenied,
+  getApprovalDeniedMessage,
+} from "../../services/purchaseApprovalService";
 import { fmtAmount, formatDate } from "../../utils/approvalFormat";
 import DatePickerField from "../EffismLite/components/DatePickerField/DatePickerField";
 import { formatDateDisplayValue } from "../EffismLite/utils/effismLiteUtils";
+import ApprovalAccessDenied from "./components/ApprovalAccessDenied";
+import ApprovalLoader from "./components/ApprovalLoader";
 import "./PurchaseApproval.css";
 
 function toDateInputValue(d) {
@@ -26,7 +32,6 @@ function defaultDateRange() {
 
 export default function PurchaseApprovalApproved() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const urlFrom = searchParams.get("from");
   const urlTo = searchParams.get("to");
@@ -48,6 +53,8 @@ export default function PurchaseApprovalApproved() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [deniedMessage, setDeniedMessage] = useState("");
 
   const loadApproved = useCallback(async () => {
     setLoading(true);
@@ -55,9 +62,15 @@ export default function PurchaseApprovalApproved() {
     try {
       const data = await getApprovedDetails(range.from, range.to, subdivisionId);
       setItems(data || []);
+      setAccessDenied(false);
     } catch (err) {
       console.error("Could not load approved list:", err);
-      setError(err.message || "Could not load approved requests.");
+      if (isApprovalAccessDenied(err)) {
+        setAccessDenied(true);
+        setDeniedMessage(getApprovalDeniedMessage(err));
+      } else {
+        setError(err.message || "Could not load approved requests.");
+      }
     } finally {
       setLoading(false);
     }
@@ -92,6 +105,18 @@ export default function PurchaseApprovalApproved() {
       0
     );
   }, [items]);
+
+  if (loading) {
+    return <ApprovalLoader />;
+  }
+
+  if (accessDenied) {
+    return (
+      <section className="pa-screen">
+        <ApprovalAccessDenied message={deniedMessage} onRetry={loadApproved} />
+      </section>
+    );
+  }
 
   return (
     <section className="pa-screen">
@@ -164,15 +189,8 @@ export default function PurchaseApprovalApproved() {
       {/* Error state */}
       {error && <div className="pa-notice-banner">{error}</div>}
 
-      {/* Loading state */}
-      {loading && (
-        <div className="pa-empty-state">
-          <p>Loading approved requests...</p>
-        </div>
-      )}
-
       {/* Empty state */}
-      {!loading && !error && filtered.length === 0 && (
+      {!error && filtered.length === 0 && (
         <div className="pa-empty-state">
           <div className="pa-empty-icon">&#128221;</div>
           <p>No approved requests found in this range.</p>
@@ -180,7 +198,7 @@ export default function PurchaseApprovalApproved() {
       )}
 
       {/* Kanban Cards List */}
-      {!loading && filtered.length > 0 && (
+      {filtered.length > 0 && (
         <div className="pa-pending-list">
           {filtered.map((item) => (
             <div className="pa-approved-card" key={item.requesting_id}>

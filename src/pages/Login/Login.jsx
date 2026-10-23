@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.png";
 import "./Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +22,14 @@ export default function Login() {
     const result = await login(username.trim(), password);
 
     if (result.success) {
-      navigate("/");
+      let from = "/";
+      if (typeof location.state?.from === "string") {
+        from = location.state.from;
+      } else if (location.state?.from?.pathname) {
+        from = `${location.state.from.pathname}${location.state.from.search || ""}${location.state.from.hash || ""}`;
+      }
+      if (!from || from === "/login") from = "/";
+      navigate(from, { replace: true });
     } else {
       setError(result.error || "Login failed");
     }

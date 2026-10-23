@@ -3,11 +3,14 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getApprovalStats,
   ssoLogin,
-  getToken,
+  isApprovalAccessDenied,
+  getApprovalDeniedMessage,
 } from "../../services/purchaseApprovalService";
 import { fmtAmount } from "../../utils/approvalFormat";
 import DatePickerField from "../EffismLite/components/DatePickerField/DatePickerField";
 import { formatDateDisplayValue } from "../EffismLite/utils/effismLiteUtils";
+import ApprovalAccessDenied from "./components/ApprovalAccessDenied";
+import ApprovalLoader from "./components/ApprovalLoader";
 // import NotifyToggle from "./components/NotifyToggle";
 import "./PurchaseApproval.css";
 
@@ -43,6 +46,8 @@ export default function PurchaseApproval() {
   });
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("");
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [deniedMessage, setDeniedMessage] = useState("");
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
@@ -63,7 +68,10 @@ export default function PurchaseApproval() {
           window.location.pathname + window.location.hash
         );
       } catch (err) {
-        setNotice(err.message || "SSO link expired or invalid.");
+        setAccessDenied(true);
+        setDeniedMessage(getApprovalDeniedMessage(err));
+        setLoading(false);
+        return;
       }
     }
 
@@ -76,13 +84,11 @@ export default function PurchaseApproval() {
         approval_limit_monthly: 0,
         subdivisions: [],
       });
+      setAccessDenied(false);
     } catch (err) {
-      if (err.status === 401) {
-        setNotice(
-          "Approval session not active. Launch with an active SSO link to authenticate."
-        );
-      } else if (err.status === 403) {
-        setNotice(err.message || "This account is not authorized as a management approver.");
+      if (isApprovalAccessDenied(err)) {
+        setAccessDenied(true);
+        setDeniedMessage(getApprovalDeniedMessage(err));
       } else {
         setNotice(err.message || "Could not load approval dashboard.");
       }
@@ -94,6 +100,18 @@ export default function PurchaseApproval() {
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
+
+  if (loading) {
+    return <ApprovalLoader />;
+  }
+
+  if (accessDenied) {
+    return (
+      <section className="pa-screen">
+        <ApprovalAccessDenied message={deniedMessage} onRetry={loadDashboard} />
+      </section>
+    );
+  }
 
   return (
     <section className="pa-screen">

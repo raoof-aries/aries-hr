@@ -1,7 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getPendingApprovals } from "../../services/purchaseApprovalService";
+import {
+  getPendingApprovals,
+  isApprovalAccessDenied,
+  getApprovalDeniedMessage,
+} from "../../services/purchaseApprovalService";
 import { fmtAmount, formatDate, truncate } from "../../utils/approvalFormat";
+import ApprovalAccessDenied from "./components/ApprovalAccessDenied";
+import ApprovalLoader from "./components/ApprovalLoader";
 import "./PurchaseApproval.css";
 
 function takeActionUrl(item) {
@@ -48,14 +54,21 @@ export default function PurchaseApprovalPending() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [deniedMessage, setDeniedMessage] = useState("");
 
   const loadPending = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getPendingApprovals();
       setItems(data || []);
+      setAccessDenied(false);
     } catch (err) {
       console.error("Could not load pending list:", err);
+      if (isApprovalAccessDenied(err)) {
+        setAccessDenied(true);
+        setDeniedMessage(getApprovalDeniedMessage(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -75,6 +88,18 @@ export default function PurchaseApprovalPending() {
     });
   }, [items, search]);
 
+  if (loading) {
+    return <ApprovalLoader />;
+  }
+
+  if (accessDenied) {
+    return (
+      <section className="pa-screen">
+        <ApprovalAccessDenied message={deniedMessage} onRetry={loadPending} />
+      </section>
+    );
+  }
+
   return (
     <section className="pa-screen">
       <div className="pa-search-row">
@@ -87,20 +112,14 @@ export default function PurchaseApprovalPending() {
         />
       </div>
 
-      {loading && (
-        <div className="pa-empty-state">
-          <p>Loading...</p>
-        </div>
-      )}
-
-      {!loading && items.length === 0 && (
+      {items.length === 0 && (
         <div className="pa-empty-state">
           <div className="pa-empty-icon">&#10003;</div>
           Nothing waiting on your approval right now.
         </div>
       )}
 
-      {!loading && items.length > 0 && filtered.length === 0 && (
+      {items.length > 0 && filtered.length === 0 && (
         <div className="pa-empty-state">No matching requests.</div>
       )}
 
