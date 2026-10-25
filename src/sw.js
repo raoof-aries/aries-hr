@@ -21,7 +21,7 @@ try {
   registerRoute(navigationRoute);
 } catch {
   try {
-    const handler = createHandlerBoundToURL("/hrms2/index.html");
+    const handler = createHandlerBoundToURL("/hrms/index.html");
     const navigationRoute = new NavigationRoute(handler, {
       denylist: [
         /\/webservices\//,
@@ -74,8 +74,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: bodyText,
-    icon: payload.icon || "/hrms2/icons/icon-192.png",
-    badge: payload.badge || "/hrms2/icons/icon-192.png",
+    icon: payload.icon || "/hrms/icons/icon-192.png",
+    badge: payload.badge || "/hrms/icons/icon-192.png",
     data: {
       url: targetUrl,
       iconType,
@@ -127,7 +127,7 @@ self.addEventListener("notificationclick", (event) => {
     const cleanPath = rawTarget
       .replace(/^\/(hrms[0-9]*|hrms)/, "")
       .replace(/^\/?/, "/");
-    targetUrl = `/hrms2${cleanPath}`;
+    targetUrl = `/hrms${cleanPath}`;
   }
 
   event.waitUntil(
@@ -138,7 +138,7 @@ self.addEventListener("notificationclick", (event) => {
         for (const client of windowClients) {
           if (
             client.url &&
-            (client.url.includes("/hrms2") || client.url.includes("/hrms1") || client.url.includes("/hrms")) &&
+            client.url.includes("/hrms") &&
             "focus" in client
           ) {
             client.postMessage({

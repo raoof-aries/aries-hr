@@ -69,7 +69,7 @@
   ],
   "rewrites": [
     {
-      "source": "/hrms/",
+      "source": "/hrms/assets/(.*)",
       "destination": "/assets/$1"
     },
     {

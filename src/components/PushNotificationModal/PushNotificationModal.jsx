@@ -15,6 +15,12 @@ export default function PushNotificationModal() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Temporarily hidden for testing before production
+  const HIDE_PUSH_MODAL_FOR_TESTING = true;
+  if (HIDE_PUSH_MODAL_FOR_TESTING) {
+    return null;
+  }
+
   // Only show if user is logged in, push is supported, user is not subscribed,
   // and browser permission is not yet granted or denied.
   const shouldShow =

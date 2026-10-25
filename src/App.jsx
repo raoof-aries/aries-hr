@@ -336,7 +336,8 @@ export default function App() {
       <AuthProvider>
         <NotificationProvider>
           <AppRoutes />
-          <PushNotificationModal />
+          {/* Push notification popup hidden for testing before production */}
+          {/* <PushNotificationModal /> */}
         </NotificationProvider>
       </AuthProvider>
     </MobileOnlyWrapper>
