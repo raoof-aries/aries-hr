@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
+import { Routes, Route, Navigate, Link } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import Login from "./pages/Login/Login";
@@ -7,7 +7,6 @@ import Profile from "./pages/Profile/Profile";
 import BreakTimeLog from "./pages/BreakTimeLog/BreakTimeLog";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
 import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
-import CPE from "./pages/CPE/CPE";
 import EffismLite from "./pages/EffismLite/EffismLite";
 import FeatureUnderDevelopment from "./pages/FeatureUnderDevelopment/FeatureUnderDevelopment";
 import EffismLocking from "./pages/EffismLocking/EffismLocking";
@@ -17,15 +16,12 @@ import MobileOnlyWrapper from "./components/MobileOnlyWrapper/MobileOnlyWrapper"
 import AuthGateLoader from "./components/AuthGateLoader/AuthGateLoader";
 import { getIsRegularUser } from "./utils/userMode";
 import TimeTracker from "./pages/TimeTracker/TimeTracker";
-import Notifications from "./pages/Notifications/Notifications";
-import PushNotificationModal from "./components/PushNotificationModal/PushNotificationModal";
 import PurchaseApproval from "./pages/PurchaseApproval/PurchaseApproval";
 import PurchaseApprovalPending from "./pages/PurchaseApproval/PurchaseApprovalPending";
 import PurchaseApprovalAction from "./pages/PurchaseApproval/PurchaseApprovalAction";
 import PurchaseApprovalApproved from "./pages/PurchaseApproval/PurchaseApprovalApproved";
 import PurchaseApprovalSubdivisions from "./pages/PurchaseApproval/PurchaseApprovalSubdivisions";
 import ApprovalAccessDenied from "./pages/PurchaseApproval/components/ApprovalAccessDenied";
-import Grievance from "./pages/Grievance/Grievance";
 
 function EffismLiteGuard({ children }) {
   const { user } = useAuth();
@@ -104,35 +100,26 @@ function HomeRoute() {
 
 function LoginRoute() {
   const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
 
   if (isLoading) {
     return <AuthGateLoader />;
   }
 
   if (isAuthenticated) {
-    let from = "/";
-    if (typeof location.state?.from === "string") {
-      from = location.state.from;
-    } else if (location.state?.from?.pathname) {
-      from = `${location.state.from.pathname}${location.state.from.search || ""}${location.state.from.hash || ""}`;
-    }
-    if (!from || from === "/login") from = "/";
-    return <Navigate to={from} replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <Login />;
 }
 
 function ProtectedAppRoute({ children, allowNonRegular = false }) {
-  const location = useLocation();
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
 
   return (
     <ProtectedRoute>
       {!allowNonRegular && !isRegularUser ? (
-        <Navigate to="/" replace state={{ from: location }} />
+        <Navigate to="/" replace />
       ) : (
         <Layout>{children}</Layout>
       )}
@@ -220,7 +207,7 @@ function AppRoutes() {
         path="/notifications"
         element={
           <ProtectedAppRoute>
-            <Notifications />
+            <FeatureUnderDevelopment />
           </ProtectedAppRoute>
         }
       />
@@ -322,10 +309,11 @@ function AppRoutes() {
         path="/grievance"
         element={
           <ProtectedAppRoute>
-            <Grievance />
+            <FeatureUnderDevelopment />
           </ProtectedAppRoute>
         }
       />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

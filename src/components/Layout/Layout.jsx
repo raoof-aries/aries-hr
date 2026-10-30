@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LuBell, LuClock3, LuLock, LuLogOut } from "react-icons/lu";
 import { useAuth } from "../../context/AuthContext";
-import { useNotifications } from "../../context/NotificationContext";
 import { refreshApp } from "../../utils/pwa";
 import { getIsRegularUser } from "../../utils/userMode";
 import "./Layout.css";
@@ -98,27 +97,6 @@ const menuItems = [
       >
         <path d="M9 11l3 3L22 4"></path>
         <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-      </svg>
-    ),
-  },
-  {
-    id: "grievance",
-    title: "Grievance",
-    route: "/grievance",
-    icon: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
       </svg>
     ),
   },
@@ -259,16 +237,7 @@ export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, userName, logout } = useAuth();
-  const {
-    notifications,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    groupedNotifications,
-    formatTimeAgo,
-  } = useNotifications();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [notificationOpen, setNotificationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(
     window.innerWidth <= MOBILE_BREAKPOINT,
@@ -276,7 +245,6 @@ export default function Layout({ children }) {
   const [pullDistance, setPullDistance] = useState(0);
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(() => new Date());
-  const notificationRef = useRef(null);
   const pullStartYRef = useRef(0);
   const isPullTrackingRef = useRef(false);
   const pullDistanceRef = useRef(0);
@@ -292,26 +260,6 @@ export default function Layout({ children }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  // Close notification dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
-        setNotificationOpen(false);
-      }
-    };
-
-    if (notificationOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [notificationOpen]);
 
   useEffect(() => {
     if (!isMobile) {
@@ -361,7 +309,7 @@ export default function Layout({ children }) {
         return;
       }
 
-      if (mobileMenuOpen || notificationOpen || getScrollTop() > 0) {
+      if (mobileMenuOpen || getScrollTop() > 0) {
         return;
       }
 
@@ -422,7 +370,7 @@ export default function Layout({ children }) {
       window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("touchcancel", resetPull);
     };
-  }, [isMobile, isPullRefreshing, mobileMenuOpen, notificationOpen]);
+  }, [isMobile, isPullRefreshing, mobileMenuOpen]);
 
   useEffect(() => {
     return () => {
@@ -446,11 +394,9 @@ export default function Layout({ children }) {
     };
   }, []);
 
-  const { today, older } = groupedNotifications();
-
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/login", { replace: true, state: null });
   };
 
   const profileData = user || {};
@@ -592,31 +538,34 @@ export default function Layout({ children }) {
           </div>
 
           <nav className="layout-nav">
-            {menuItems.filter(item => {
-              if (item.id === "purchase-approval") {
-                const type = user?.usertype ?? user?.userType ?? user?.user_type;
-                if (Number(type) !== 4) return false;
-              }
-              if (user?.usertype === 3) {
-                return item.id === "time-tracker" || item.id === "profile";
-              }
-              if (item.id === "time-tracker") {
-                return false;
-              }
-              return true;
-            }).map((item) => {
-              const isActive = location.pathname === item.route;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.route}
-                  className={`layout-nav-item ${isActive ? "active" : ""}`}
-                >
-                  <span className="layout-nav-icon">{item.icon}</span>
-                  <span className="layout-nav-text">{item.title}</span>
-                </Link>
-              );
-            })}
+            {menuItems
+              .filter((item) => {
+                if (item.id === "purchase-approval") {
+                  const type =
+                    user?.usertype ?? user?.userType ?? user?.user_type;
+                  if (Number(type) !== 4) return false;
+                }
+                if (user?.usertype === 3) {
+                  return item.id === "time-tracker" || item.id === "profile";
+                }
+                if (item.id === "time-tracker") {
+                  return false;
+                }
+                return true;
+              })
+              .map((item) => {
+                const isActive = location.pathname === item.route;
+                return (
+                  <Link
+                    key={item.id}
+                    to={item.route}
+                    className={`layout-nav-item ${isActive ? "active" : ""}`}
+                  >
+                    <span className="layout-nav-icon">{item.icon}</span>
+                    <span className="layout-nav-text">{item.title}</span>
+                  </Link>
+                );
+              })}
           </nav>
 
           <div className="layout-sidebar-footer">
@@ -659,7 +608,6 @@ export default function Layout({ children }) {
         className={`layout-main ${isRegularUser ? "" : "layout-main-full"} ${isHomeScreen ? "layout-main-home" : "layout-main-page"} ${effectivePullDistance > 0 ? "layout-main--pulling" : ""} ${isPullRefreshing ? "layout-main--refreshing" : ""}`}
         style={{ "--pull-offset": `${effectivePullDistance}px` }}
       >
-
         {/* Top Bar */}
         <header
           className={`layout-header ${isHomeScreen ? "layout-header-home" : "layout-header-page"}`}
@@ -730,190 +678,24 @@ export default function Layout({ children }) {
                         className={`layout-notification-button layout-notification-button--light layout-home-lock-button ${Number(user?.is_lock) === 1 ? "is-locked" : ""}`}
                         onClick={() => navigate("/effism-locking")}
                         aria-label="Effism Locking"
-                        title={Number(user?.is_lock) === 1 ? "Effism is Locked" : "Effism Locking"}
+                        title={
+                          Number(user?.is_lock) === 1
+                            ? "Effism is Locked"
+                            : "Effism Locking"
+                        }
                       >
                         <LuLock size={20} />
                       </button>
                     </>
                   )}
-                  <div className="layout-notifications" ref={notificationRef}>
+                  <div className="layout-notifications">
                     <button
                       className="layout-notification-button layout-notification-button--light"
-                      onClick={() => {
-                        if (isMobile) {
-                          navigate("/notifications");
-                        } else {
-                          setNotificationOpen(!notificationOpen);
-                        }
-                      }}
+                      onClick={() => navigate("/notifications")}
                       aria-label="Notifications"
                     >
                       <LuBell size={20} />
-                      {unreadCount > 0 && (
-                        <span
-                          className="layout-notification-badge"
-                          aria-label={`${unreadCount} unread notifications`}
-                        ></span>
-                      )}
                     </button>
-                    {!isMobile && notificationOpen && (
-                      <div className="layout-notification-dropdown">
-                        <div className="layout-notification-header">
-                          <h3>Notifications</h3>
-                          {unreadCount > 0 && (
-                            <button
-                              type="button"
-                              className="layout-notification-mark-all"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                markAllAsRead();
-                              }}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                color: "#0F7A67",
-                                fontSize: "0.75rem",
-                                fontWeight: "600",
-                                cursor: "pointer",
-                                marginLeft: "auto",
-                                marginRight: "0.5rem",
-                              }}
-                            >
-                              Mark all read
-                            </button>
-                          )}
-                          <button
-                            className="layout-notification-close"
-                            onClick={() => setNotificationOpen(false)}
-                            aria-label="Close notifications"
-                          >
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <line x1="18" y1="6" x2="6" y2="18"></line>
-                              <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="layout-notification-list">
-                          {notifications.length > 0 ? (
-                            <>
-                              {today.length > 0 && (
-                                <>
-                                  <div className="layout-notification-group-header">
-                                    Today
-                                  </div>
-                                  {today.map((notif) => (
-                                    <div
-                                      key={notif.id}
-                                      className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                      onClick={() => {
-                                        markAsRead(notif.id);
-                                        if (notif.url) {
-                                          setNotificationOpen(false);
-                                          navigate(
-                                            notif.url.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/"
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      <div className="layout-notification-icon">
-                                        {notif.icon}
-                                      </div>
-                                      <div className="layout-notification-content">
-                                        <p className="layout-notification-title">
-                                          {notif.title}
-                                        </p>
-                                        <p className="layout-notification-message">
-                                          {notif.message}
-                                        </p>
-                                        <span className="layout-notification-time">
-                                          {formatTimeAgo(notif.timestamp)}
-                                        </span>
-                                      </div>
-                                      {!notif.read && (
-                                        <div className="layout-notification-unread-dot"></div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </>
-                              )}
-                              {older.length > 0 && (
-                                <>
-                                  <div className="layout-notification-group-header">
-                                    Older
-                                  </div>
-                                  {older.map((notif) => (
-                                    <div
-                                      key={notif.id}
-                                      className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                      onClick={() => {
-                                        markAsRead(notif.id);
-                                        if (notif.url) {
-                                          setNotificationOpen(false);
-                                          navigate(
-                                            notif.url.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/"
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      <div className="layout-notification-icon">
-                                        {notif.icon}
-                                      </div>
-                                      <div className="layout-notification-content">
-                                        <p className="layout-notification-title">
-                                          {notif.title}
-                                        </p>
-                                        <p className="layout-notification-message">
-                                          {notif.message}
-                                        </p>
-                                        <span className="layout-notification-time">
-                                          {formatTimeAgo(notif.timestamp)}
-                                        </span>
-                                      </div>
-                                      {!notif.read && (
-                                        <div className="layout-notification-unread-dot"></div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </>
-                              )}
-                            </>
-                          ) : (
-                            <div className="layout-notification-empty">
-                              No notifications
-                            </div>
-                          )}
-                        </div>
-                        <div
-                          style={{
-                            padding: "0.75rem",
-                            textAlign: "center",
-                            borderTop: "1px solid #F1F5F9",
-                          }}
-                        >
-                          <Link
-                            to="/notifications"
-                            onClick={() => setNotificationOpen(false)}
-                            style={{
-                              color: "#0F7A67",
-                              fontSize: "0.8125rem",
-                              fontWeight: "600",
-                              textDecoration: "none",
-                            }}
-                          >
-                            View all notifications
-                          </Link>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -954,7 +736,9 @@ export default function Layout({ children }) {
                     if (location.pathname === "/cpe") {
                       const params = new URLSearchParams(location.search);
                       if (params.get("exam")) {
-                        window.dispatchEvent(new CustomEvent("cpe-exam-back-attempt"));
+                        window.dispatchEvent(
+                          new CustomEvent("cpe-exam-back-attempt"),
+                        );
                         return;
                       }
                       if (params.get("video")) {
@@ -966,7 +750,9 @@ export default function Layout({ children }) {
                       } else {
                         navigate("/");
                       }
-                    } else if (location.pathname === "/purchase-approval/action") {
+                    } else if (
+                      location.pathname === "/purchase-approval/action"
+                    ) {
                       navigate("/purchase-approval/pending");
                     } else if (
                       location.pathname === "/purchase-approval/pending" ||
@@ -999,184 +785,14 @@ export default function Layout({ children }) {
               <h1 className="layout-header-title">{getPageTitle()}</h1>
               <div className="layout-header-right">
                 {user?.usertype !== 3 && (
-                  <div className="layout-notifications" ref={notificationRef}>
+                  <div className="layout-notifications">
                     <button
                       className="layout-notification-button layout-notification-button--light"
-                      onClick={() => {
-                        if (isMobile) {
-                          navigate("/notifications");
-                        } else {
-                          setNotificationOpen(!notificationOpen);
-                        }
-                      }}
+                      onClick={() => navigate("/notifications")}
                       aria-label="Notifications"
                     >
                       <LuBell size={20} />
-                      {unreadCount > 0 && (
-                        <span
-                          className="layout-notification-badge"
-                          aria-label={`${unreadCount} unread notifications`}
-                        ></span>
-                      )}
                     </button>
-                    {!isMobile && notificationOpen && (
-                      <div className="layout-notification-dropdown">
-                        <div className="layout-notification-header">
-                          <h3>Notifications</h3>
-                          {unreadCount > 0 && (
-                            <button
-                              type="button"
-                              className="layout-notification-mark-all"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                markAllAsRead();
-                              }}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                color: "#0F7A67",
-                                fontSize: "0.75rem",
-                                fontWeight: "600",
-                                cursor: "pointer",
-                                marginLeft: "auto",
-                                marginRight: "0.5rem",
-                              }}
-                            >
-                              Mark all read
-                            </button>
-                          )}
-                          <button
-                            className="layout-notification-close"
-                            onClick={() => setNotificationOpen(false)}
-                            aria-label="Close notifications"
-                          >
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <line x1="18" y1="6" x2="6" y2="18"></line>
-                              <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="layout-notification-list">
-                          {notifications.length > 0 ? (
-                            <>
-                              {today.length > 0 && (
-                                <>
-                                  <div className="layout-notification-group-header">
-                                    Today
-                                  </div>
-                                  {today.map((notif) => (
-                                    <div
-                                      key={notif.id}
-                                      className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                      onClick={() => {
-                                        markAsRead(notif.id);
-                                        if (notif.url) {
-                                          setNotificationOpen(false);
-                                          navigate(
-                                            notif.url.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/"
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      <div className="layout-notification-icon">
-                                        {notif.icon}
-                                      </div>
-                                      <div className="layout-notification-content">
-                                        <p className="layout-notification-title">
-                                          {notif.title}
-                                        </p>
-                                        <p className="layout-notification-message">
-                                          {notif.message}
-                                        </p>
-                                        <span className="layout-notification-time">
-                                          {formatTimeAgo(notif.timestamp)}
-                                        </span>
-                                      </div>
-                                      {!notif.read && (
-                                        <div className="layout-notification-unread-dot"></div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </>
-                              )}
-                              {older.length > 0 && (
-                                <>
-                                  <div className="layout-notification-group-header">
-                                    Older
-                                  </div>
-                                  {older.map((notif) => (
-                                    <div
-                                      key={notif.id}
-                                      className={`layout-notification-item ${notif.read ? "read" : ""}`}
-                                      onClick={() => {
-                                        markAsRead(notif.id);
-                                        if (notif.url) {
-                                          setNotificationOpen(false);
-                                          navigate(
-                                            notif.url.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/"
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      <div className="layout-notification-icon">
-                                        {notif.icon}
-                                      </div>
-                                      <div className="layout-notification-content">
-                                        <p className="layout-notification-title">
-                                          {notif.title}
-                                        </p>
-                                        <p className="layout-notification-message">
-                                          {notif.message}
-                                        </p>
-                                        <span className="layout-notification-time">
-                                          {formatTimeAgo(notif.timestamp)}
-                                        </span>
-                                      </div>
-                                      {!notif.read && (
-                                        <div className="layout-notification-unread-dot"></div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </>
-                              )}
-                            </>
-                          ) : (
-                            <div className="layout-notification-empty">
-                              No notifications
-                            </div>
-                          )}
-                        </div>
-                        <div
-                          style={{
-                            padding: "0.75rem",
-                            textAlign: "center",
-                            borderTop: "1px solid #F1F5F9",
-                          }}
-                        >
-                          <Link
-                            to="/notifications"
-                            onClick={() => setNotificationOpen(false)}
-                            style={{
-                              color: "#0F7A67",
-                              fontSize: "0.8125rem",
-                              fontWeight: "600",
-                              textDecoration: "none",
-                            }}
-                          >
-                            View all notifications
-                          </Link>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -1279,7 +895,9 @@ export default function Layout({ children }) {
                 to="/effism-locking"
                 className={`layout-mobile-nav-item ${location.pathname === "/effism-locking" ? "active" : ""} ${Number(user?.is_lock) === 1 ? "is-locked" : ""}`}
                 aria-label="Lock"
-                title={Number(user?.is_lock) === 1 ? "Effism is Locked" : "Lock"}
+                title={
+                  Number(user?.is_lock) === 1 ? "Effism is Locked" : "Lock"
+                }
               >
                 <LuLock size={22} />
               </Link>
@@ -1362,7 +980,8 @@ export default function Layout({ children }) {
               {menuItems
                 .filter((item) => {
                   if (item.id === "purchase-approval") {
-                    const type = user?.usertype ?? user?.userType ?? user?.user_type;
+                    const type =
+                      user?.usertype ?? user?.userType ?? user?.user_type;
                     if (Number(type) !== 4) return false;
                   }
                   if (user?.usertype === 3) {
@@ -1371,9 +990,7 @@ export default function Layout({ children }) {
                   if (item.id === "time-tracker") {
                     return false;
                   }
-                  return !["dashboard", "incentive"].includes(
-                    item.id,
-                  );
+                  return !["dashboard", "incentive"].includes(item.id);
                 })
                 .map((item) => {
                   const isActive = location.pathname === item.route;

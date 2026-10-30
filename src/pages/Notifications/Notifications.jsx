@@ -19,7 +19,9 @@ export default function Notifications() {
     if (notif.url) {
       const cleanUrl = notif.url.replace(/^https?:\/\/[^/]+/, "");
       const target =
-        cleanUrl.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/";
+        cleanUrl
+          .replace(/^\/(hrms|hrms[0-9]*|hrms)/, "")
+          .replace(/^\/?/, "/") || "/";
       navigate(target);
     }
   };
@@ -113,4 +115,3 @@ export default function Notifications() {
     </div>
   );
 }
-

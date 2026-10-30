@@ -119,7 +119,7 @@ export function NotificationProvider({ children }) {
   // Push notification state
   const isPushSupported = isPushNotificationSupported();
   const [pushPermission, setPushPermission] = useState(() =>
-    typeof Notification !== "undefined" ? Notification.permission : "default"
+    typeof Notification !== "undefined" ? Notification.permission : "default",
   );
   const [isPushSubscribed, setIsPushSubscribed] = useState(false);
 
@@ -207,7 +207,10 @@ export function NotificationProvider({ children }) {
         iconType: notif.iconType,
         url: notif.url,
       }));
-      localStorage.setItem("notifications", JSON.stringify(notificationsToSave));
+      localStorage.setItem(
+        "notifications",
+        JSON.stringify(notificationsToSave),
+      );
     } catch (e) {
       console.error("Error saving notifications to localStorage:", e);
     }
@@ -221,7 +224,11 @@ export function NotificationProvider({ children }) {
       setPushPermission(Notification.permission);
     }
 
-    if (typeof Notification !== "undefined" && Notification.permission === "granted" && isAuthenticated) {
+    if (
+      typeof Notification !== "undefined" &&
+      Notification.permission === "granted" &&
+      isAuthenticated
+    ) {
       const subscription = await subscribeUserToPush(null, null, token);
       setIsPushSubscribed(Boolean(subscription));
     } else {
@@ -262,16 +269,21 @@ export function NotificationProvider({ children }) {
         // Strip out base path if provided as full path for React Router
         const cleanUrl = url.replace(/^https?:\/\/[^/]+/, "");
         const relativeUrl =
-          cleanUrl.replace(/^\/(hrms[0-9]*|hrms)/, "").replace(/^\/?/, "/") || "/";
+          cleanUrl
+            .replace(/^\/(hrms|hrms[0-9]*|hrms)/, "")
+            .replace(/^\/?/, "/") || "/";
         navigate(relativeUrl);
       }
     };
 
-    navigator.serviceWorker.addEventListener("message", handleServiceWorkerMessage);
+    navigator.serviceWorker.addEventListener(
+      "message",
+      handleServiceWorkerMessage,
+    );
     return () => {
       navigator.serviceWorker.removeEventListener(
         "message",
-        handleServiceWorkerMessage
+        handleServiceWorkerMessage,
       );
     };
   }, [navigate]);
@@ -286,7 +298,7 @@ export function NotificationProvider({ children }) {
   // Mark notification as read (local + backend)
   const markAsRead = async (id) => {
     setNotifications((prev) =>
-      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
+      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)),
     );
 
     if (isAuthenticated && token && typeof id === "number") {
@@ -310,7 +322,9 @@ export function NotificationProvider({ children }) {
 
   // Mark all as read (local + backend)
   const markAllAsRead = async () => {
-    const unreadIds = notifications.filter((n) => !n.read && typeof n.id === "number").map((n) => n.id);
+    const unreadIds = notifications
+      .filter((n) => !n.read && typeof n.id === "number")
+      .map((n) => n.id);
     setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
 
     if (isAuthenticated && token && unreadIds.length > 0) {
@@ -417,9 +431,8 @@ export function useNotifications() {
   const context = useContext(NotificationContext);
   if (!context) {
     throw new Error(
-      "useNotifications must be used within a NotificationProvider"
+      "useNotifications must be used within a NotificationProvider",
     );
   }
   return context;
 }
-

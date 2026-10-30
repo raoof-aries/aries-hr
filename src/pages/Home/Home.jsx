@@ -39,7 +39,7 @@ export default function Home() {
   );
   const { user } = useAuth();
   const isRegularUser = getIsRegularUser(user);
-  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance", "purchase-approval", "grievance"]);
+  const implementedModuleIds = new Set(["break", "salary", "effism-lite", "time-tracker", "incentive", "hospital-assistance", "purchase-approval"]);
   const showOffTypeField = dayType === "off";
   const showLeaveTypeField = dayType === "leave";
 
@@ -266,31 +266,6 @@ export default function Home() {
       ),
       bgColor: "#E6F3EF",
       iconColor: "#0F7A67",
-      shadowColor: "rgba(1, 67, 66, 0.14)",
-    },
-    {
-      id: "grievance",
-      title: "Grievance",
-      description: "Complaint & feedback box",
-      route: "/grievance",
-      icon: (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-      ),
-      bgColor: "#E6F4F1",
-      iconColor: "#0D6C5F",
       shadowColor: "rgba(1, 67, 66, 0.14)",
     },
     {

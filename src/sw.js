@@ -1,6 +1,10 @@
 self.__WB_DISABLE_DEV_LOGS = true;
 
-import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from "workbox-precaching";
+import {
+  precacheAndRoute,
+  cleanupOutdatedCaches,
+  createHandlerBoundToURL,
+} from "workbox-precaching";
 import { registerRoute, NavigationRoute } from "workbox-routing";
 import { NetworkOnly } from "workbox-strategies";
 
@@ -9,19 +13,10 @@ cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
 // 1. Handle SPA navigation: Any page URL request serves the precached index.html app shell
-try {
-  const handler = createHandlerBoundToURL("index.html");
-  const navigationRoute = new NavigationRoute(handler, {
-    denylist: [
-      /\/webservices\//,
-      /arieshrms-api/,
-      /\.(?:png|jpe?g|gif|svg|webp|ico|css|js|map|json|pdf|woff2?|ttf|eot|csv|xlsx?|docx?)(\?.*)?$/i,
-    ],
-  });
-  registerRoute(navigationRoute);
-} catch {
+// In development, precaching is bypassed by Vite dev server, so this is only needed in production.
+if (!import.meta.env.DEV) {
   try {
-    const handler = createHandlerBoundToURL("/hrms/index.html");
+    const handler = createHandlerBoundToURL("index.html");
     const navigationRoute = new NavigationRoute(handler, {
       denylist: [
         /\/webservices\//,
@@ -41,7 +36,7 @@ registerRoute(
     url.pathname.includes("arieshrms-api") ||
     url.pathname.includes("/webservices/") ||
     url.hostname.includes("purchaseapproval.markndget.com"),
-  new NetworkOnly()
+  new NetworkOnly(),
 );
 
 // Activate new service worker immediately
@@ -125,7 +120,7 @@ self.addEventListener("notificationclick", (event) => {
   let targetUrl = rawTarget;
   if (!rawTarget.startsWith("http")) {
     const cleanPath = rawTarget
-      .replace(/^\/(hrms[0-9]*|hrms)/, "")
+      .replace(/^\/(hrms|hrms[0-9]*|hrms)/, "")
       .replace(/^\/?/, "/");
     targetUrl = `/hrms${cleanPath}`;
   }
@@ -136,11 +131,7 @@ self.addEventListener("notificationclick", (event) => {
       .then((windowClients) => {
         // If there's an existing app window open, focus it and notify navigation
         for (const client of windowClients) {
-          if (
-            client.url &&
-            client.url.includes("/hrms") &&
-            "focus" in client
-          ) {
+          if (client.url && client.url.includes("/hrms") && "focus" in client) {
             client.postMessage({
               type: "NAVIGATE_TO",
               url: targetUrl,
@@ -152,6 +143,6 @@ self.addEventListener("notificationclick", (event) => {
         if (self.clients.openWindow) {
           return self.clients.openWindow(targetUrl);
         }
-      })
+      }),
   );
 });
