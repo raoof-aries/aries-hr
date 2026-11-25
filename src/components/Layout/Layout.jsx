@@ -528,6 +528,13 @@ export default function Layout({ children }) {
     if (currentPath.startsWith("/purchase-approval")) {
       return "Purchase Approval";
     }
+    if (currentPath === "/cpe") {
+      const searchParams = new URLSearchParams(location.search);
+      if (searchParams.get("category") === "external-training") {
+        return "External Training";
+      }
+      return "CPE";
+    }
     return routeMap[currentPath] || "HRMS";
   };
 

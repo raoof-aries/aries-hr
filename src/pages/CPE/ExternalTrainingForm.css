@@ -1,0 +1,616 @@
+/* ==========================================================================
+   External Training Form - Clean, Uncluttered Modern Design (Aries HR)
+   ========================================================================== */
+
+.ext-training-page {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 4px 0 24px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: extFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes extFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Success Banner */
+.ext-success-banner {
+  border-radius: 16px;
+  background: #ECFDF5;
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.08);
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: extSlideDown 0.25s ease;
+}
+
+@keyframes extSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ext-success-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #D1FAE5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ext-success-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ext-success-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #065F46;
+}
+
+.ext-success-text {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #047857;
+  line-height: 1.45;
+}
+
+.ext-success-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.ext-success-link-btn {
+  background: none;
+  border: none;
+  color: #065F46;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ext-success-dismiss {
+  background: none;
+  border: none;
+  color: #047857;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.85;
+}
+
+/* Main Form Card */
+.ext-form-card {
+  border-radius: 20px;
+  border: 1px solid rgba(1, 67, 66, 0.08);
+  background: #FFFFFF;
+  box-shadow:
+    0 10px 28px rgba(1, 67, 66, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Generous breathing room between input groups to avoid clutter */
+  box-sizing: border-box;
+}
+
+.ext-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px; /* Clear label-to-input distance */
+  width: 100%;
+}
+
+.ext-field-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.84rem;
+  font-weight: 750;
+  color: #0D2D2A;
+  letter-spacing: -0.01em;
+}
+
+.ext-req-mark {
+  color: #DC2626;
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+.ext-optional-pill {
+  font-size: 0.67rem;
+  font-weight: 700;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 1px 7px;
+  border-radius: 99px;
+  margin-left: 4px;
+}
+
+.ext-label-with-presets {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Quick Presets Under Duration Input */
+.ext-quick-presets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.ext-presets-label {
+  font-size: 0.71rem;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.ext-presets-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ext-preset-btn {
+  background: #F1F5F4;
+  border: 1px solid rgba(15, 122, 103, 0.14);
+  color: #0F7A67;
+  font-size: 0.73rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ext-preset-btn:hover {
+  background: #E6F4F1;
+  border-color: #0F7A67;
+}
+
+.ext-preset-btn.active {
+  background: #0F7A67;
+  color: #FFFFFF;
+  border-color: #0F7A67;
+  box-shadow: 0 2px 6px rgba(15, 122, 103, 0.2);
+}
+
+/* Compact Segmented Switch for Training Type */
+.ext-type-segmented {
+  display: flex;
+  background: #EDF3F1;
+  padding: 4px;
+  border-radius: 14px;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ext-type-segmented-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #4A5F5C;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ext-type-segmented-btn.active {
+  background: #FFFFFF;
+  color: #014342;
+  box-shadow: 0 3px 10px rgba(1, 67, 66, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Modern Input Fields with Crisp White and Clean Borders */
+.ext-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 44px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 12px;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.ext-input-wrap:focus-within {
+  border-color: #0F7A67;
+  box-shadow: 0 0 0 3px rgba(15, 122, 103, 0.12);
+}
+
+.ext-input-wrap.has-error {
+  border-color: #EF4444;
+  background: #FEF2F2;
+}
+
+.ext-input-wrap.has-error:focus-within {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.ext-input-icon {
+  margin-left: 12px;
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.ext-input-wrap:focus-within .ext-input-icon {
+  color: #0F7A67;
+}
+
+.ext-text-input,
+.ext-date-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #0D2D2A;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.ext-text-input::placeholder {
+  color: #94A3B8;
+  font-weight: 450;
+}
+
+.ext-date-input {
+  cursor: pointer;
+  color: #0D2D2A;
+  font-family: inherit;
+}
+
+/* Two-column layout for Issued Date & Expiry Date (Side by Side) */
+.ext-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.ext-col {
+  min-width: 0;
+}
+
+/* Compact Dropzone */
+.ext-compact-dropzone {
+  width: 100%;
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 14px;
+  background: #FAFCFB;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.ext-compact-dropzone:hover {
+  border-color: #0F7A67;
+  background: #F0FAF7;
+}
+
+.ext-compact-dropzone.drag-over {
+  border-color: #0F7A67;
+  background: #E6F4F1;
+}
+
+.ext-compact-dropzone.has-error {
+  border-color: #EF4444;
+  background: #FEF2F2;
+}
+
+.ext-dropzone-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #E6F4F1;
+  color: #0F7A67;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ext-dropzone-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ext-dropzone-main {
+  font-size: 0.83rem;
+  color: #1E293B;
+}
+
+.ext-dropzone-main strong {
+  color: #0F7A67;
+}
+
+.ext-dropzone-sub {
+  font-size: 0.71rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+/* File Selected Card */
+.ext-file-card {
+  width: 100%;
+  border-radius: 14px;
+  border: 1.5px solid #0F7A67;
+  background: #F0FAF7;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-sizing: border-box;
+  animation: extFadeIn 0.2s ease;
+}
+
+.ext-file-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ext-file-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #0F7A67;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ext-file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ext-file-name {
+  font-size: 0.83rem;
+  font-weight: 750;
+  color: #0D2D2A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.ext-file-size {
+  font-size: 0.7rem;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.ext-file-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ext-file-change-btn {
+  background: #E6F4F1;
+  border: 1px solid rgba(15, 122, 103, 0.2);
+  color: #0F7A67;
+  font-size: 0.74rem;
+  font-weight: 750;
+  padding: 5px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ext-file-change-btn:hover {
+  background: #0F7A67;
+  color: #FFFFFF;
+}
+
+.ext-file-remove-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: #FEE2E2;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #DC2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ext-file-remove-btn:hover {
+  background: #DC2626;
+  color: #FFFFFF;
+}
+
+/* Textarea */
+.ext-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  font-weight: 550;
+  color: #0D2D2A;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 12px;
+  outline: none;
+  resize: vertical;
+  min-height: 64px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.18s ease;
+}
+
+.ext-textarea:focus {
+  border-color: #0F7A67;
+  box-shadow: 0 0 0 3px rgba(15, 122, 103, 0.12);
+}
+
+.ext-textarea::placeholder {
+  color: #94A3B8;
+  font-weight: 450;
+}
+
+.ext-char-count {
+  font-size: 0.7rem;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
+/* Error Text */
+.ext-error-text {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #DC2626;
+  margin-top: 2px;
+}
+
+/* Action Buttons */
+.ext-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.ext-btn-submit {
+  flex: 1.3;
+  height: 46px;
+  border-radius: 13px;
+  border: none;
+  background: linear-gradient(135deg, #014342 0%, #0F7A67 100%);
+  color: #FFFFFF;
+  font-size: 0.9rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(1, 67, 66, 0.18);
+  transition: all 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ext-btn-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(1, 67, 66, 0.24);
+}
+
+.ext-btn-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.ext-btn-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ext-btn-cancel {
+  flex: 1;
+  height: 46px;
+  border-radius: 13px;
+  border: 1.5px solid #CBD5E1;
+  background: #F8FAFC;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ext-btn-cancel:hover {
+  background: #F1F5F9;
+  border-color: #94A3B8;
+  color: #1E293B;
+}
+
+.ext-btn-cancel:active {
+  transform: scale(0.98);
+}
+
+.ext-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: extSpin 0.7s linear infinite;
+}
+
+@keyframes extSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

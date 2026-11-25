@@ -10,32 +10,42 @@ import {
   LuSparkles,
   LuRotateCcw,
   LuClock,
-  LuGraduationCap
+  LuGraduationCap,
+  LuX
 } from 'react-icons/lu';
 import { FiMoreVertical } from 'react-icons/fi';
 import './CPE.css';
 
-const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
-  const { url, title, description, duration: durationLabel } = video;
+const CHECKPOINT_INTERVAL = 30; // 30-Second interval checkpoint tracking
+
+const CpePlayer = ({ video, onClose, onComplete, onOpenExam, onCheckpointUpdate }) => {
+  const { url, title, description, duration: durationLabel, resumeTime = 0 } = video;
   
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+  const progressBarRef = useRef(null);
+  const lastCheckpointRef = useRef(resumeTime || 0);
+  const hasInitializedResumeRef = useRef(false);
   
   const [hasFinishedVideo, setHasFinishedVideo] = useState(false);
   const isFinished = hasFinishedVideo || Boolean(video.videoWatched || video.status === 'watched');
+  const [hasEnded, setHasEnded] = useState(false);
   
   // Player state
   const [isPlaying, setIsPlaying] = useState(true);
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1.0);
-  const [playedSeconds, setPlayedSeconds] = useState(0);
+  const [playedSeconds, setPlayedSeconds] = useState(resumeTime || 0);
   const [duration, setDuration] = useState(0);
-  const [maxWatched, setMaxWatched] = useState(0);
+  const [maxWatched, setMaxWatched] = useState(resumeTime || 0);
   
   // UI state
   const [showControls, setShowControls] = useState(true);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [hoverTime, setHoverTime] = useState(null);
+  const [hoverPosition, setHoverPosition] = useState(0);
+  const [showResumeBanner, setShowResumeBanner] = useState(false);
 
   // Sync state with native video element
   useEffect(() => {
@@ -67,19 +77,43 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
     }
   }, [playbackRate]);
 
+  // Initial resume seek fallback when video is already loaded
+  useEffect(() => {
+    const videoElem = videoRef.current;
+    if (!videoElem) return;
+
+    if (videoElem.readyState >= 1 && !hasInitializedResumeRef.current && resumeTime > 0 && !isFinished) {
+      hasInitializedResumeRef.current = true;
+      const dur = videoElem.duration || 0;
+      if (dur > 0 && resumeTime < dur) {
+        videoElem.currentTime = resumeTime;
+        setPlayedSeconds(resumeTime);
+        setMaxWatched(resumeTime);
+        lastCheckpointRef.current = resumeTime;
+        setShowResumeBanner(true);
+        const timer = setTimeout(() => setShowResumeBanner(false), 8000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [resumeTime, isFinished]);
+
   // Auto-hide controls after 3 seconds of inactivity
   useEffect(() => {
     let timeout;
-    if (isPlaying && showControls) {
+    if (isPlaying && showControls && !hasEnded) {
       timeout = setTimeout(() => {
         setShowControls(false);
         setShowOptionsMenu(false);
       }, 3000);
     }
     return () => clearTimeout(timeout);
-  }, [isPlaying, showControls]);
+  }, [isPlaying, showControls, hasEnded]);
 
   const handlePlayPause = () => {
+    if (hasEnded) {
+      handleReplay();
+      return;
+    }
     setIsPlaying(!isPlaying);
   };
 
@@ -99,10 +133,30 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
   };
 
   const formatTime = (seconds) => {
-    if (isNaN(seconds)) return '0:00';
+    if (isNaN(seconds) || seconds <= 0) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  // Replay Video handler
+  const handleReplay = () => {
+    if (!videoRef.current) return;
+    videoRef.current.currentTime = 0;
+    setPlayedSeconds(0);
+    setHasEnded(false);
+    setIsPlaying(true);
+    videoRef.current.play().catch((err) => console.log('Replay error:', err));
+  };
+
+  // Restart from beginning if user prefers not to resume
+  const handleRestartFromBeginning = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      setPlayedSeconds(0);
+      setIsPlaying(true);
+    }
+    setShowResumeBanner(false);
   };
 
   // Video Element event handlers
@@ -110,29 +164,43 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
     const videoElem = videoRef.current;
     if (!videoElem) return;
 
-    setPlayedSeconds(videoElem.currentTime);
+    const curTime = videoElem.currentTime;
+    setPlayedSeconds(curTime);
 
-    // Natural progress tracking (don't track if they somehow skipped forward)
-    if (videoElem.currentTime > maxWatched && videoElem.currentTime - maxWatched < 2.0) {
-      setMaxWatched(videoElem.currentTime);
+    // Natural progress tracking for forward-seek restriction
+    if (!isFinished) {
+      if (curTime > maxWatched && curTime - maxWatched < 2.0) {
+        setMaxWatched(curTime);
+      }
+
+      // 30-Second Checkpoint Trigger (0:30, 1:00, 1:30, etc.)
+      const milestone = Math.floor(curTime / CHECKPOINT_INTERVAL) * CHECKPOINT_INTERVAL;
+      if (milestone > 0 && milestone > lastCheckpointRef.current) {
+        lastCheckpointRef.current = milestone;
+        if (onCheckpointUpdate) {
+          onCheckpointUpdate(video.id, milestone);
+        }
+      }
     }
 
     // Check complete
-    if (duration && videoElem.currentTime / duration >= 0.99) {
+    if (duration && curTime / duration >= 0.99) {
       if (!isFinished) {
         setHasFinishedVideo(true);
+        setHasEnded(true);
+        setShowControls(true);
         if (onComplete) onComplete();
       }
     }
   };
 
-  // Native seeking event handler to block skipping forward
+  // Seeking event handler: block skipping forward ONLY during mandatory initial watch
   const handleSeeking = () => {
     const videoElem = videoRef.current;
     if (!videoElem) return;
 
-    // Block forward seeking past maxWatched
-    if (videoElem.currentTime > maxWatched) {
+    // Block forward seeking past maxWatched only if video is NOT finished yet
+    if (!isFinished && videoElem.currentTime > maxWatched) {
       videoElem.currentTime = maxWatched;
       setPlayedSeconds(maxWatched);
     }
@@ -140,8 +208,43 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
 
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
-      setDuration(videoRef.current.duration);
+      const dur = videoRef.current.duration;
+      setDuration(dur);
+
+      // Seek to checkpoint if video has resumeTime and isn't finished
+      if (!hasInitializedResumeRef.current && resumeTime > 0 && resumeTime < dur && !isFinished) {
+        hasInitializedResumeRef.current = true;
+        videoRef.current.currentTime = resumeTime;
+        setPlayedSeconds(resumeTime);
+        setMaxWatched(resumeTime);
+        lastCheckpointRef.current = resumeTime;
+        setShowResumeBanner(true);
+        setTimeout(() => setShowResumeBanner(false), 8000);
+      }
     }
+  };
+
+  // Scrubber / Seekbar Click Handler (unlocked when finished)
+  const handleProgressBarClick = (e) => {
+    if (!isFinished || !duration || !progressBarRef.current || !videoRef.current) return;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const clickRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const targetTime = clickRatio * duration;
+    videoRef.current.currentTime = targetTime;
+    setPlayedSeconds(targetTime);
+    setHasEnded(false);
+  };
+
+  const handleProgressBarMouseMove = (e) => {
+    if (!duration || !progressBarRef.current) return;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setHoverPosition(ratio * 100);
+    setHoverTime(ratio * duration);
+  };
+
+  const handleProgressBarMouseLeave = () => {
+    setHoverTime(null);
   };
 
   const handleFullscreen = () => {
@@ -227,6 +330,8 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
               onEnded={() => {
                 setIsPlaying(false);
                 setHasFinishedVideo(true);
+                setHasEnded(true);
+                setShowControls(true);
                 if (onComplete) onComplete();
               }}
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
@@ -234,14 +339,51 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
               autoPlay
             />
 
-            {/* Passive Non-Interactive Progress Bar */}
-            <div className="cpe-passive-progress-bar">
-              <div 
-                className="cpe-passive-progress-fill" 
-                style={{ width: `${duration ? (playedSeconds / duration) * 100 : 0}%` }}
-              />
-            </div>
+            {/* Passive bottom progress bar (visible when controls overlay is hidden) */}
+            {!showControls && (
+              <div className="cpe-passive-progress-bar">
+                <div 
+                  className="cpe-passive-progress-fill" 
+                  style={{ width: `${duration ? (playedSeconds / duration) * 100 : 0}%` }}
+                />
+              </div>
+            )}
           </div>
+
+          {/* End of Video Completion Overlay */}
+          {hasEnded && (
+            <div className="cpe-end-overlay" onClick={(e) => e.stopPropagation()}>
+              <div className="cpe-end-modal">
+                <div className="cpe-end-icon-badge">
+                  <LuAward size={30} />
+                </div>
+                <h3 className="cpe-end-title">Training Module Completed!</h3>
+                <p className="cpe-end-desc">
+                  You have finished watching this video module. Seeking controls are now unlocked for replay and review.
+                </p>
+                <div className="cpe-end-actions">
+                  <button 
+                    type="button" 
+                    className="cpe-end-btn cpe-end-btn--replay"
+                    onClick={handleReplay}
+                  >
+                    <LuRotateCcw size={16} />
+                    <span>Replay with Seek Controls</span>
+                  </button>
+                  {onOpenExam && !video.examPassed && (
+                    <button 
+                      type="button" 
+                      className="cpe-end-btn cpe-end-btn--exam"
+                      onClick={() => onOpenExam(video)}
+                    >
+                      <LuGraduationCap size={16} />
+                      <span>Attend Exam</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Custom Controls Overlay */}
           <div className={`cpe-controls-overlay ${showControls ? 'visible' : 'hidden'}`}>
@@ -251,12 +393,59 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
 
             {/* Bottom controls panel */}
             <div className="cpe-controls-footer">
+              
+              {/* Interactive Seekbar Scrubber */}
+              <div 
+                ref={progressBarRef}
+                className={`cpe-player-progressbar-wrap ${isFinished ? 'interactive' : 'locked'}`}
+                onClick={handleProgressBarClick}
+                onMouseMove={handleProgressBarMouseMove}
+                onMouseLeave={handleProgressBarMouseLeave}
+                title={isFinished ? "Click or drag to seek" : "Seeking forward is locked during initial training"}
+              >
+                <div className="cpe-player-progress-track">
+                  <div 
+                    className="cpe-player-progress-fill" 
+                    style={{ width: `${duration ? (playedSeconds / duration) * 100 : 0}%` }}
+                  />
+                  {isFinished && (
+                    <div 
+                      className="cpe-player-progress-thumb"
+                      style={{ left: `${duration ? (playedSeconds / duration) * 100 : 0}%` }}
+                    />
+                  )}
+                  {isFinished && hoverTime !== null && (
+                    <div 
+                      className="cpe-player-seek-tooltip"
+                      style={{ left: `${hoverPosition}%` }}
+                    >
+                      {formatTime(hoverTime)}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="cpe-controls-row">
-                {/* Left group: Play, Time */}
+                {/* Left group: Play, Replay, Time */}
                 <div className="cpe-controls-group">
-                  <button className="cpe-control-icon-btn" onClick={(e) => { e.stopPropagation(); handlePlayPause(); }}>
+                  <button 
+                    className="cpe-control-icon-btn" 
+                    onClick={(e) => { e.stopPropagation(); handlePlayPause(); }}
+                    title={isPlaying ? "Pause" : "Play"}
+                  >
                     {isPlaying ? <LuPause size={20} /> : <LuPlay size={20} />}
                   </button>
+
+                  {isFinished && (
+                    <button 
+                      className="cpe-control-icon-btn cpe-control-replay-btn" 
+                      onClick={(e) => { e.stopPropagation(); handleReplay(); }}
+                      title="Replay Video (Seek controls unlocked)"
+                    >
+                      <LuRotateCcw size={18} />
+                    </button>
+                  )}
+
                   <div className="cpe-time-display">
                     <span>{formatTime(playedSeconds)}</span>
                     <span className="cpe-time-separator">/</span>
@@ -339,6 +528,49 @@ const CpePlayer = ({ video, onClose, onComplete, onOpenExam }) => {
 
         {/* 2. Details Section (Continuation of Player Card) */}
         <div className="cpe-details-section">
+          
+          {/* Resume Checkpoint Info Banner (Positioned cleanly below the video) */}
+          {showResumeBanner && (
+            <div className="cpe-resume-below-banner">
+              <div className="cpe-resume-below-left">
+                <div className="cpe-resume-badge-icon">
+                  <LuPlay size={12} className="cpe-resume-play-icon" />
+                </div>
+                <div className="cpe-resume-below-content">
+                  <div className="cpe-resume-below-header">
+                    <span className="cpe-resume-pill-tag">Resumed</span>
+                    <span className="cpe-resume-time-text">
+                      Checkpoint: <strong>{formatTime(resumeTime)}</strong>
+                    </span>
+                  </div>
+                  <p className="cpe-resume-subtext">
+                    Playback continued from your previous progress
+                  </p>
+                </div>
+              </div>
+
+              <div className="cpe-resume-below-actions">
+                <button 
+                  type="button" 
+                  className="cpe-resume-restart-btn"
+                  onClick={handleRestartFromBeginning}
+                  title="Start video over from 0:00"
+                >
+                  <LuRotateCcw size={12} />
+                  <span>Restart (0:00)</span>
+                </button>
+                <button 
+                  type="button" 
+                  className="cpe-resume-dismiss-btn"
+                  onClick={() => setShowResumeBanner(false)}
+                  aria-label="Dismiss resume notice"
+                >
+                  <LuX size={15} />
+                </button>
+              </div>
+            </div>
+          )}
+
           <h2 className="cpe-details-title">{title}</h2>
           
           {description && <p className="cpe-details-desc">{description}</p>}

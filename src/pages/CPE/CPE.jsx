@@ -10,51 +10,20 @@ import {
   LuPrinter,
   LuX,
   LuGraduationCap,
-  LuFolder,
-  LuTv,
-  LuPresentation,
   LuBrain,
   LuUsers,
   LuLayers,
-  LuBookOpen,
   LuChevronRight,
   LuCheck
 } from 'react-icons/lu';
 import './CPE.css';
 import CpePlayer from './CpePlayer';
 import CpeExamPage from './CpeExamPage';
+import ExternalTrainingForm from './ExternalTrainingForm';
 import { useAuth } from '../../context/AuthContext';
 
 // 1. Parent Categories Definition (Aries HR Design System)
 const PARENT_CATEGORIES = [
-  {
-    id: 'ceo-commandments',
-    title: 'CEO Commandments',
-    icon: LuFolder,
-    badgeText: null,
-    totalText: null,
-    accentColor: '#D97706',
-    bgColor: '#FEF3C7',
-  },
-  {
-    id: '2026-cpe-ceo',
-    title: '2026 CPE (Framed By CEO)',
-    icon: LuTv,
-    hasInfo: false,
-    badgeText: null,
-    totalText: '10 Categories',
-    accentColor: '#0F7A67',
-    bgColor: '#E6F4F1',
-  },
-  {
-    id: 'ceo-videos',
-    title: 'CEO Videos',
-    icon: LuPresentation,
-    badgeText: null,
-    totalText: '14 Videos',
-    accentColor: '#1E88E5',
-    bgColor: '#EFF6FF',
-  },
   {
     id: 'ai-videos',
     title: 'AI Videos',
@@ -87,29 +56,33 @@ const PARENT_CATEGORIES = [
     title: 'External Training',
     icon: LuGraduationCap,
     badgeText: null,
-    totalText: null,
+    totalText: 'Form Submission',
     accentColor: '#D97706',
     bgColor: '#FFFBEB',
   },
-  {
-    id: 'my-training-details',
-    title: 'My Training Details',
-    icon: LuAward,
-    badgeText: null,
-    totalText: null,
-    accentColor: '#059669',
-    bgColor: '#ECFDF5',
-  },
-  {
-    id: 'hartoise',
-    title: 'Hartoise',
-    icon: LuBookOpen,
-    badgeText: null,
-    totalText: null,
-    accentColor: '#475569',
-    bgColor: '#F1F5F9',
-  },
 ];
+
+// Helper for formatting seconds into mm:ss
+const formatTime = (seconds) => {
+  if (isNaN(seconds) || seconds <= 0) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+};
+
+// Helper to retrieve saved checkpoint from localStorage (preserves progress across page refreshes)
+const getCheckpoint = (videoId, fallbackTime = 0) => {
+  try {
+    const saved = localStorage.getItem(`cpe_checkpoint_${videoId}`);
+    if (saved !== null) {
+      const parsed = parseFloat(saved);
+      if (!isNaN(parsed) && parsed >= 0) return parsed;
+    }
+  } catch (e) {
+    console.warn('LocalStorage read error:', e);
+  }
+  return fallbackTime;
+};
 
 // 2. Training module dataset organized by category with table fields
 const INITIAL_VIDEOS = [
@@ -125,6 +98,7 @@ const INITIAL_VIDEOS = [
     score: null,
     status: 'pending',
     videoWatched: false,
+    resumeTime: 30, // Hardcoded checkpoint: resumes at 30 seconds (backend placeholder)
     examAttended: false,
     examScore: null,
     examPassed: false,
@@ -142,6 +116,7 @@ const INITIAL_VIDEOS = [
     score: null,
     status: 'pending',
     videoWatched: false,
+    resumeTime: 0,
     examAttended: false,
     examScore: null,
     examPassed: false,
@@ -184,60 +159,6 @@ const INITIAL_VIDEOS = [
     hasCertificate: true,
     url: 'https://vjs.zencdn.net/v/oceans.mp4'
   },
-  // CEO Commandments
-  {
-    id: '5',
-    slNo: 1,
-    categoryId: 'ceo-commandments',
-    title: 'Company Mission & Core Values 2026',
-    tag: 'EXEC',
-    duration: '1:15',
-    passMark: '15 / 20',
-    score: null,
-    status: 'pending',
-    videoWatched: false,
-    examAttended: false,
-    examScore: null,
-    examPassed: false,
-    hasCertificate: false,
-    url: 'https://vjs.zencdn.net/v/oceans.mp4'
-  },
-  // 2026 CPE (Framed By CEO)
-  {
-    id: '6',
-    slNo: 1,
-    categoryId: '2026-cpe-ceo',
-    title: '2026 Organizational Growth & Goals',
-    tag: 'STRATEGY',
-    duration: '2:30',
-    passMark: '15 / 20',
-    score: null,
-    status: 'pending',
-    videoWatched: false,
-    examAttended: false,
-    examScore: null,
-    examPassed: false,
-    hasCertificate: false,
-    url: 'https://vjs.zencdn.net/v/oceans.mp4'
-  },
-  // CEO Videos
-  {
-    id: '7',
-    slNo: 1,
-    categoryId: 'ceo-videos',
-    title: 'Quarterly Townhall & Executive Address',
-    tag: 'EXEC',
-    duration: '3:00',
-    passMark: '15 / 20',
-    score: null,
-    status: 'pending',
-    videoWatched: false,
-    examAttended: false,
-    examScore: null,
-    examPassed: false,
-    hasCertificate: false,
-    url: 'https://vjs.zencdn.net/v/oceans.mp4'
-  },
   // AI Videos
   {
     id: '8',
@@ -274,69 +195,18 @@ const INITIAL_VIDEOS = [
     examPassed: false,
     hasCertificate: false,
     url: 'https://vjs.zencdn.net/v/oceans.mp4'
-  },
-  // External Training
-  {
-    id: '10',
-    slNo: 1,
-    categoryId: 'external-training',
-    title: 'HR Technology & Future Trends',
-    tag: 'AIMRI',
-    duration: '0:30',
-    passMark: '15 / 20',
-    score: '20 / 20',
-    status: 'watched',
-    statusText: 'Excellent Score : 20 / 20',
-    videoWatched: true,
-    examAttended: true,
-    examScore: 20,
-    examPassed: true,
-    hasCertificate: true,
-    url: 'https://vjs.zencdn.net/v/oceans.mp4'
-  },
-  // My Training Details
-  {
-    id: '11',
-    slNo: 1,
-    categoryId: 'my-training-details',
-    title: 'Personalized Skills Matrix & Competency Review',
-    tag: 'HR',
-    duration: '0:46',
-    passMark: '15 / 20',
-    score: '18 / 20',
-    status: 'watched',
-    statusText: 'Excellent Score : 18 / 20',
-    videoWatched: true,
-    examAttended: true,
-    examScore: 18,
-    examPassed: true,
-    hasCertificate: true,
-    url: 'https://vjs.zencdn.net/v/oceans.mp4'
-  },
-  // Hartoise
-  {
-    id: '12',
-    slNo: 1,
-    categoryId: 'hartoise',
-    title: 'Hartoise System Navigation & Knowledge Base',
-    tag: 'SYS',
-    duration: '0:46',
-    passMark: '15 / 20',
-    score: null,
-    status: 'pending',
-    videoWatched: false,
-    examAttended: false,
-    examScore: null,
-    examPassed: false,
-    hasCertificate: false,
-    url: 'https://vjs.zencdn.net/v/oceans.mp4'
   }
 ];
 
 const CPE = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('pending');
-  const [videos, setVideos] = useState(INITIAL_VIDEOS);
+  const [videos, setVideos] = useState(() => {
+    return INITIAL_VIDEOS.map(v => ({
+      ...v,
+      resumeTime: getCheckpoint(v.id, v.resumeTime || 0)
+    }));
+  });
   const [selectedCertificateVideo, setSelectedCertificateVideo] = useState(null);
   const { user, userName } = useAuth();
 
@@ -358,13 +228,43 @@ const CPE = () => {
   const watchedVideos = categoryVideos.filter(v => v.status === 'watched');
   const filteredVideos = activeTab === 'pending' ? pendingVideos : watchedVideos;
 
+  // 30-Second Checkpoint Progress Handler
+  const handleCheckpointUpdate = (videoId, checkpointSeconds) => {
+    // 1. Update React state
+    setVideos(prev => 
+      prev.map(v => v.id === videoId ? { 
+        ...v, 
+        resumeTime: checkpointSeconds 
+      } : v)
+    );
+
+    // 2. Persist in localStorage so it survives complete app closing / reload
+    try {
+      localStorage.setItem(`cpe_checkpoint_${videoId}`, checkpointSeconds.toString());
+    } catch (e) {
+      console.warn('LocalStorage save error:', e);
+    }
+
+    // 3. BACKEND INTEGRATION PLACEHOLDER:
+    // When backend API is connected, dispatch progress update to database here:
+    // e.g., api.post('/api/cpe/checkpoint', { videoId, checkpointSeconds });
+    console.log(`[CPE Progress Checkpoint Saved] Video ID: ${videoId}, Checkpoint: ${checkpointSeconds}s`);
+  };
+
   const handleVideoComplete = (videoId) => {
     setVideos(prev => 
       prev.map(v => v.id === videoId ? { 
         ...v, 
-        videoWatched: true
+        videoWatched: true,
+        resumeTime: 0 // Reset checkpoint once video is fully completed
       } : v)
     );
+
+    try {
+      localStorage.removeItem(`cpe_checkpoint_${videoId}`);
+    } catch (e) {
+      console.warn('LocalStorage remove error:', e);
+    }
   };
 
   const handleOpenExam = (video) => {
@@ -528,13 +428,25 @@ const CPE = () => {
           onClose={handleClosePlayer}
           onComplete={() => handleVideoComplete(activeVideo.id)}
           onOpenExam={handleOpenExam}
+          onCheckpointUpdate={handleCheckpointUpdate}
         />
         {renderCertificateModal()}
       </div>
     );
   }
 
-  // 2. INNER CATEGORY LISTING VIEW (Clean Kanban Cards - No redundant All Categories link/arrow)
+  // 2. EXTERNAL TRAINING FORM VIEW (Dedicated Form Submission)
+  if (selectedCategoryId === 'external-training') {
+    return (
+      <div className="cpe-container">
+        <ExternalTrainingForm 
+          onClose={() => setSearchParams({})} 
+        />
+      </div>
+    );
+  }
+
+  // 3. INNER CATEGORY LISTING VIEW (Clean Kanban Cards - No redundant All Categories link/arrow)
   if (selectedCategory) {
     const totalCount = categoryVideos.length;
     const completedCount = watchedVideos.length;
@@ -702,6 +614,16 @@ const CPE = () => {
                           <LuRotateCcw size={13} />
                           <span>Watch Again</span>
                         </button>
+                      ) : video.resumeTime > 0 ? (
+                        <button 
+                          type="button"
+                          className="cpe-table-btn cpe-table-btn--resume"
+                          onClick={() => handleOpenVideo(video.id)}
+                          title={`Resume from ${formatTime(video.resumeTime)}`}
+                        >
+                          <LuPlay size={13} />
+                          <span>Resume ({formatTime(video.resumeTime)})</span>
+                        </button>
                       ) : (
                         <button 
                           type="button"
@@ -813,56 +735,111 @@ const CPE = () => {
             </div>
           </div>
 
-          {/* 3 Breakdown Columns - In a Row */}
-          <div className="cpe-status-grid-3">
+          {/* Category Progress Breakdown - Clean, Uncluttered & Compact Panel */}
+          <div className="cpe-status-breakdown-panel" aria-label="Category Targets Breakdown">
             
-            {/* Column 1: General */}
-            <div className="cpe-status-col-card cpe-col--done">
-              <span className="cpe-col-name">General</span>
-              <span className="cpe-col-tag cpe-tag--done">
-                <LuCheck size={10} strokeWidth={3} />
-                Done
-              </span>
-              <div className="cpe-col-hours">
-                <span className="cpe-col-val cpe-val--done">12:30</span>
-                <span className="cpe-col-target">/ 12:30</span>
+            {/* Category 1: General Topics */}
+            <div 
+              className="cpe-breakdown-item"
+              onClick={() => handleSelectCategory('general-topics')}
+              role="button"
+              tabIndex={0}
+              title="View General Topics"
+            >
+              <div className="cpe-breakdown-row-top">
+                <div className="cpe-breakdown-left">
+                  <div className="cpe-breakdown-icon cpe-icon--teal">
+                    <LuUsers size={13} />
+                  </div>
+                  <span className="cpe-breakdown-name">General Topics</span>
+                  <span className="cpe-breakdown-excess-pill">+06:30 Excess</span>
+                </div>
+
+                <div className="cpe-breakdown-badges">
+                  <span className="cpe-breakdown-tag cpe-tag--done">
+                    <LuCheck size={10} strokeWidth={3} />
+                    Done
+                  </span>
+                </div>
               </div>
-              <div className="cpe-col-bar">
-                <div className="cpe-col-fill cpe-fill--green" style={{ width: '100%' }} />
+
+              <div className="cpe-breakdown-row-bottom">
+                <div className="cpe-breakdown-track">
+                  <div className="cpe-breakdown-bar cpe-bar--green" style={{ width: '100%' }} />
+                </div>
+                <span className="cpe-breakdown-hours">
+                  <strong className="cpe-hours--green">12:30</strong>
+                  <span className="cpe-hours-target"> / 12:30 hrs</span>
+                </span>
               </div>
-              <span className="cpe-col-excess cpe-excess--blue">+06:30 Excess</span>
             </div>
 
-            {/* Column 2: Division */}
-            <div className="cpe-status-col-card cpe-col--pending">
-              <span className="cpe-col-name">Division</span>
-              <span className="cpe-col-tag cpe-tag--pending">
-                11:30 left
-              </span>
-              <div className="cpe-col-hours">
-                <span className="cpe-col-val cpe-val--amber">1:00</span>
-                <span className="cpe-col-target">/ 12:30</span>
+            {/* Category 2: Division Topics */}
+            <div 
+              className="cpe-breakdown-item"
+              onClick={() => handleSelectCategory('division-topics')}
+              role="button"
+              tabIndex={0}
+              title="View Division Topics"
+            >
+              <div className="cpe-breakdown-row-top">
+                <div className="cpe-breakdown-left">
+                  <div className="cpe-breakdown-icon cpe-icon--purple">
+                    <LuLayers size={13} />
+                  </div>
+                  <span className="cpe-breakdown-name">Division Topics</span>
+                </div>
+
+                <div className="cpe-breakdown-badges">
+                  <span className="cpe-breakdown-tag cpe-tag--pending">
+                    11:30 left
+                  </span>
+                </div>
               </div>
-              <div className="cpe-col-bar">
-                <div className="cpe-col-fill cpe-fill--amber" style={{ width: '8%' }} />
+
+              <div className="cpe-breakdown-row-bottom">
+                <div className="cpe-breakdown-track">
+                  <div className="cpe-breakdown-bar cpe-bar--purple" style={{ width: '8%' }} />
+                </div>
+                <span className="cpe-breakdown-hours">
+                  <strong className="cpe-hours--amber">1:00</strong>
+                  <span className="cpe-hours-target"> / 12:30 hrs</span>
+                </span>
               </div>
-              <span className="cpe-col-excess cpe-excess--muted">Excess: 0</span>
             </div>
 
-            {/* Column 3: External */}
-            <div className="cpe-status-col-card cpe-col--pending">
-              <span className="cpe-col-name">External</span>
-              <span className="cpe-col-tag cpe-tag--pending">
-                10:00 left
-              </span>
-              <div className="cpe-col-hours">
-                <span className="cpe-col-val cpe-val--amber">15:00</span>
-                <span className="cpe-col-target">/ 25:00</span>
+            {/* Category 3: External Training */}
+            <div 
+              className="cpe-breakdown-item"
+              onClick={() => handleSelectCategory('external-training')}
+              role="button"
+              tabIndex={0}
+              title="View External Training"
+            >
+              <div className="cpe-breakdown-row-top">
+                <div className="cpe-breakdown-left">
+                  <div className="cpe-breakdown-icon cpe-icon--amber">
+                    <LuGraduationCap size={13} />
+                  </div>
+                  <span className="cpe-breakdown-name">External Training</span>
+                </div>
+
+                <div className="cpe-breakdown-badges">
+                  <span className="cpe-breakdown-tag cpe-tag--pending">
+                    10:00 left
+                  </span>
+                </div>
               </div>
-              <div className="cpe-col-bar">
-                <div className="cpe-col-fill cpe-fill--teal" style={{ width: '60%' }} />
+
+              <div className="cpe-breakdown-row-bottom">
+                <div className="cpe-breakdown-track">
+                  <div className="cpe-breakdown-bar cpe-bar--amber" style={{ width: '60%' }} />
+                </div>
+                <span className="cpe-breakdown-hours">
+                  <strong className="cpe-hours--amber">15:00</strong>
+                  <span className="cpe-hours-target"> / 25:00 hrs</span>
+                </span>
               </div>
-              <span className="cpe-col-excess cpe-excess--muted">Excess: 0</span>
             </div>
 
           </div>
