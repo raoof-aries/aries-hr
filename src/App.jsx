@@ -7,6 +7,7 @@ import Profile from "./pages/Profile/Profile";
 import BreakTimeLog from "./pages/BreakTimeLog/BreakTimeLog";
 import SalarySlip from "./pages/SalarySlip/SalarySlip";
 import IncentiveSlip from "./pages/IncentiveSlip/IncentiveSlip";
+import CPE from "./pages/CPE/CPE";
 import EffismLite from "./pages/EffismLite/EffismLite";
 import FeatureUnderDevelopment from "./pages/FeatureUnderDevelopment/FeatureUnderDevelopment";
 import EffismLocking from "./pages/EffismLocking/EffismLocking";
@@ -159,7 +160,7 @@ function AppRoutes() {
         path="/cpe"
         element={
           <ProtectedAppRoute>
-            <FeatureUnderDevelopment />
+            <CPE />
           </ProtectedAppRoute>
         }
       />
